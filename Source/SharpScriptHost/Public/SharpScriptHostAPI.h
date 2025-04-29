@@ -1,0 +1,7 @@
+#pragma once
+#include "coreclr_delegates.h"
+
+SHARPSCRIPTHOST_API extern load_assembly_and_get_function_pointer_fn HostfxrLoadAssemblyAndGetFunctionPointer;
+SHARPSCRIPTHOST_API extern get_function_pointer_fn HostfxrGetFunctionPointer;
+SHARPSCRIPTHOST_API extern load_assembly_fn HostfxrLoadAssembly;
+SHARPSCRIPTHOST_API extern load_assembly_bytes_fn HostfxrLoadAssemblyBytes;

@@ -1,0 +1,5 @@
+*.h eol=lf
+*.cpp eol=lf
+*.inl eol=lf
+*.cs eol=lf
+*.uplugin eol=lf
