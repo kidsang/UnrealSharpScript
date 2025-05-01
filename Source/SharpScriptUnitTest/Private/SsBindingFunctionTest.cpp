@@ -1,4 +1,6 @@
 #include "SsBindingFunctionTest.h"
+#include "Components/ActorComponent.h"
+#include "Components/SceneComponent.h"
 
 int8 USsBindingFunctionTest::FuncInt8(int8 InValue, int8& OutValue)
 {
@@ -165,4 +167,20 @@ TScriptInterface<ISsBindingTestChildInterface> USsBindingFunctionTest::FuncInter
 FSsBindingTestDelegate USsBindingFunctionTest::FuncDelegate(const FSsBindingTestDelegate& InValue)
 {
 	return InValue;
+}
+
+UActorComponent* USsBindingFunctionTest::FuncGenericRet(const TSubclassOf<UActorComponent>& InClass1, const TSubclassOf<USceneComponent>& InClass2, TArray<UActorComponent*>& Output1, TSet<UActorComponent*>& Output2, TMap<UActorComponent*, UActorComponent*>& Output3)
+{
+	Output1.Add(InClass1.GetDefaultObject());
+	Output2.Add(InClass1.GetDefaultObject());
+	Output3.Add(InClass1.GetDefaultObject(), InClass1.GetDefaultObject());
+	return InClass1.GetDefaultObject();
+}
+
+UActorComponent* USsBindingFunctionTest::FuncGenericOut(const TSubclassOf<UActorComponent>& InClass1, const TSubclassOf<USceneComponent>& InClass2, TArray<UActorComponent*>& Output1, TSet<UActorComponent*>& Output2, TMap<UActorComponent*, UActorComponent*>& Output3)
+{
+	Output1.Add(InClass2.GetDefaultObject());
+	Output2.Add(InClass2.GetDefaultObject());
+	Output3.Add(InClass2.GetDefaultObject(), InClass2.GetDefaultObject());
+	return InClass2.GetDefaultObject();
 }

@@ -38,6 +38,11 @@ public class ObjectPropertyTranslator : SimpleTypePropertyTranslator
 		return $"{GetManagedType(property)}?";
 	}
 
+	public override string GetGenericParamManagedType(UhtProperty property, string typeArgument)
+	{
+		return $"{typeArgument}?";
+	}
+
 	public override string GetMarshaller(UhtProperty property)
 	{
 		return $"ObjectMarshaller<{GetManagedType(property)}>";
@@ -46,5 +51,14 @@ public class ObjectPropertyTranslator : SimpleTypePropertyTranslator
 	public override string GetNullValue(UhtProperty property)
 	{
 		return "null";
+	}
+
+	public override void ExportGenericParamFromNative(CodeBuilder codeBuilder, UhtFunction function, UhtProperty property, string paramName, string typeArgument, string nativeBufferName, bool needDeclaration)
+	{
+		string funcEngineName = function.StrippedFunctionName;
+		string paramEngineName = property.EngineName;
+		string marshaller = $"ObjectMarshaller<{typeArgument}>";
+		string declaration = needDeclaration ? $"{typeArgument}? " : "";
+		codeBuilder.AppendLine($"{declaration}{paramName} = {marshaller}.FromNative({nativeBufferName} + {funcEngineName}_{paramEngineName}_Offset);");
 	}
 }

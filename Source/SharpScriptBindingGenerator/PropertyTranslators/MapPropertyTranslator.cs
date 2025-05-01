@@ -49,6 +49,25 @@ public class MapPropertyTranslator : ContainerPropertyTranslator
 		};
 	}
 
+	private string GetGenericPropManagedType(UhtProperty property, string typeArgument)
+	{
+		UhtProperty keyProperty = GetKeyProperty(property);
+		if (keyProperty is not UhtObjectPropertyBase)
+		{
+			return GetParamManagedType(property);
+		}
+
+		UhtProperty valueProperty = GetValueProperty(property);
+		PropertyTranslator valueTranslator = GetValueTranslator(property);
+		string valueManagedType = valueTranslator.GetParamManagedType(valueProperty);
+		return valueTranslator switch
+		{
+			StructPropertyTranslator => $"Map<{typeArgument}, {valueManagedType}, {valueTranslator.GetPropManagedType(valueProperty)}>",
+			DelegatePropertyTranslator => $"DelegateMap<{typeArgument}, {valueManagedType}, {valueTranslator.GetPropManagedType(valueProperty)}>",
+			_ => $"Map<{typeArgument}, {valueManagedType}>"
+		};
+	}
+
 	public override string GetParamManagedType(UhtProperty property)
 	{
 		UhtProperty keyProperty = GetKeyProperty(property);
@@ -64,6 +83,21 @@ public class MapPropertyTranslator : ContainerPropertyTranslator
 		string valueManagedType = valueTranslator.GetParamManagedType(valueProperty);
 
 		return $"Dictionary<{keyManagedType}, {valueManagedType}>";
+	}
+
+	public override string GetGenericParamManagedType(UhtProperty property, string typeArgument)
+	{
+		UhtProperty keyProperty = GetKeyProperty(property);
+		if (keyProperty is not UhtObjectPropertyBase)
+		{
+			return GetParamManagedType(property);
+		}
+
+		UhtProperty valueProperty = GetValueProperty(property);
+		PropertyTranslator valueTranslator = GetValueTranslator(property);
+		string valueManagedType = valueTranslator.GetParamManagedType(valueProperty);
+
+		return $"Dictionary<{typeArgument}, {valueManagedType}>";
 	}
 
 	public override void ExportPropertyGetter(CodeBuilder codeBuilder, UhtProperty property, string propertyManagedName, bool forClass)
@@ -137,6 +171,36 @@ public class MapPropertyTranslator : ContainerPropertyTranslator
 		string funcEngineName = function.StrippedFunctionName;
 		string paramEngineName = property.EngineName;
 		string declaration = needDeclaration ? $"{GetParamManagedType(property)} " : "";
+		switch (valueTranslator)
+		{
+			case StructPropertyTranslator:
+				codeBuilder.AppendLine($"{declaration}{paramName} = new {propManagedType}({nativeBufferName} + {funcEngineName}_{paramEngineName}_Offset, {funcEngineName}_{paramEngineName}_NativeProp, {keyMarshaller});");
+				break;
+			default:
+				codeBuilder.AppendLine($"{declaration}{paramName} = new {propManagedType}({nativeBufferName} + {funcEngineName}_{paramEngineName}_Offset, {funcEngineName}_{paramEngineName}_NativeProp, {keyMarshaller}, {valueMarshaller}.Instance);");
+				break;
+		}
+	}
+
+	public override void ExportGenericParamFromNative(CodeBuilder codeBuilder, UhtFunction function, UhtProperty property, string paramName, string typeArgument, string nativeBufferName, bool needDeclaration)
+	{
+		UhtProperty keyProperty = GetKeyProperty(property);
+		if (keyProperty is not UhtObjectPropertyBase)
+		{
+			ExportParamFromNative(codeBuilder, function, property, paramName, nativeBufferName, needDeclaration);
+			return;
+		}
+
+		string keyMarshaller = $"ObjectMarshaller<{typeArgument}>.Instance!";
+
+		UhtProperty valueProperty = GetValueProperty(property);
+		PropertyTranslator valueTranslator = GetValueTranslator(property);
+		string valueMarshaller = valueTranslator.GetMarshaller(valueProperty);
+
+		string propManagedType = GetGenericPropManagedType(property, typeArgument);
+		string funcEngineName = function.StrippedFunctionName;
+		string paramEngineName = property.EngineName;
+		string declaration = needDeclaration ? $"{GetGenericParamManagedType(property, typeArgument)} " : "";
 		switch (valueTranslator)
 		{
 			case StructPropertyTranslator:

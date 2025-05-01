@@ -99,4 +99,10 @@ public:
 
 	UFUNCTION(BlueprintCallable, Category = "CSharp|Internal")
 	static FSsBindingTestDelegate FuncDelegate(const FSsBindingTestDelegate& InValue);
+
+	UFUNCTION(BlueprintCallable, Category = "CSharp|Internal", meta = (DeterminesOutputType = "InClass1"))
+	static UActorComponent* FuncGenericRet(const TSubclassOf<UActorComponent>& InClass1, const TSubclassOf<USceneComponent>& InClass2, TArray<UActorComponent*>& Output1, TSet<UActorComponent*>& Output2, TMap<UActorComponent*, UActorComponent*>& Output3);
+
+	UFUNCTION(BlueprintCallable, Category = "CSharp|Internal", meta = (DeterminesOutputType = "InClass2", DynamicOutputParam="Output1,Output2,Output3"))
+	static UActorComponent* FuncGenericOut(const TSubclassOf<UActorComponent>& InClass1, const TSubclassOf<USceneComponent>& InClass2, TArray<UActorComponent*>& Output1, TSet<UActorComponent*>& Output2, TMap<UActorComponent*, UActorComponent*>& Output3);
 };

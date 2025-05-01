@@ -142,6 +142,34 @@ public class CodeBuilder : IDisposable
 }
 
 /// <summary>
+/// Indent and then unindent.
+/// </summary>
+public struct IndentBlock : IDisposable
+{
+	private CodeBuilder? _builder;
+
+	public IndentBlock()
+	{
+		throw new InvalidOperationException("Use the constructor with the CodeBuilder parameter");
+	}
+
+	public IndentBlock(CodeBuilder builder)
+	{
+		_builder = builder;
+		_builder.Indent();
+	}
+
+	public void Dispose()
+	{
+		if (_builder != null)
+		{
+			_builder.UnIndent();
+			_builder = null;
+		}
+	}
+}
+
+/// <summary>
 /// Code block area with braces.
 /// </summary>
 public struct CodeBlock : IDisposable

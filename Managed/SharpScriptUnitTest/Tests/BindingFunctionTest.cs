@@ -1,5 +1,6 @@
 using static UnrealEngine.Globals;
 using UnrealEngine.CoreUObject;
+using UnrealEngine.Engine;
 using UnrealEngine.Intrinsic;
 using UnrealEngine.SharpScriptUnitTest;
 using TestClass = UnrealEngine.SharpScriptUnitTest.SsBindingFunctionTest;
@@ -126,7 +127,7 @@ public class BindingFunctionTest : IUnitTestInterface
 		Utils.Assert(outputSoftObjectPtr == inputObject);
 
 		Class inputClass = SsBindingTestObject.StaticClass!;
-		Utils.Assert(TestClass.FuncClass(inputClass, out var outputClass) == inputClass);
+		Utils.Assert(TestClass.FuncClass<SsBindingTestObject, SsBindingTestObject>(inputClass, out var outputClass) == inputClass);
 		Utils.Assert(outputClass == inputClass);
 
 		Utils.Assert(TestClass.FuncSoftClassPtr(inputClass, out var outputSoftClassPtr) == inputClass);
@@ -138,6 +139,19 @@ public class BindingFunctionTest : IUnitTestInterface
 
 		FSsBindingTestDelegate inputDelegate = inputObject.CallFuncBlueprintNative;
 		Utils.Assert(TestClass.FuncDelegate(inputDelegate) == inputDelegate);
+
+		var testGenericClass1 = InputComponent.StaticClass;
+		var testGenericClass2 = CameraComponent.StaticClass;
+
+		Utils.Assert(TestClass.FuncGenericRet(testGenericClass1, testGenericClass2, out var outputGeneric11, out var outputGeneric12, out var outputGeneric13) == testGenericClass1.GetDefaultObject());
+		Utils.Assert(outputGeneric11[0] == testGenericClass1.GetDefaultObject());
+		Utils.Assert(outputGeneric12.Contains(testGenericClass1.GetDefaultObject()));
+		Utils.Assert(outputGeneric13[testGenericClass1.GetDefaultObject()!] == testGenericClass1.GetDefaultObject());
+
+		Utils.Assert(TestClass.FuncGenericOut(testGenericClass1, testGenericClass2, out var outputGeneric21, out var outputGeneric22, out var outputGeneric23) == testGenericClass2.GetDefaultObject());
+		Utils.Assert(outputGeneric21[0] == testGenericClass2.GetDefaultObject());
+		Utils.Assert(outputGeneric22.Contains(testGenericClass2.GetDefaultObject()));
+		Utils.Assert(outputGeneric23[testGenericClass2.GetDefaultObject()!] == testGenericClass2.GetDefaultObject());
 
 		return true;
 	}

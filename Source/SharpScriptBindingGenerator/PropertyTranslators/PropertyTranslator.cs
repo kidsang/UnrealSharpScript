@@ -49,6 +49,12 @@ public abstract class PropertyTranslator
 	// Get the managed type for this property when using as a parameter.
 	public abstract string GetParamManagedType(UhtProperty property);
 
+	// Get the generic managed type for this property when using as a parameter.
+	public virtual string GetGenericParamManagedType(UhtProperty property, string typeArgument)
+	{
+		return GetParamManagedType(property);
+	}
+
 	// Get the marshaller for this property to marshal back and forth between C++ and C#
 	public abstract string GetMarshaller(UhtProperty property);
 
@@ -158,6 +164,22 @@ public abstract class PropertyTranslator
 	public abstract void ExportParamFromNative(CodeBuilder codeBuilder, UhtFunction function, UhtProperty property, string paramName, string nativeBufferName, bool needDeclaration);
 
 	/// <summary>
+	/// Wrap generic C# function parameters into C++ function parameters.
+	/// </summary>
+	public virtual void ExportGenericParamToNative(CodeBuilder codeBuilder, UhtFunction function, UhtProperty property, string paramName, string typeArgument, string nativeBufferName)
+	{
+		ExportParamToNative(codeBuilder, function, property, paramName, nativeBufferName);
+	}
+
+	/// <summary>
+	/// Wrap C++ function return value into generic C# function return value.
+	/// </summary>
+	public virtual void ExportGenericParamFromNative(CodeBuilder codeBuilder, UhtFunction function, UhtProperty property, string paramName, string typeArgument, string nativeBufferName, bool needDeclaration)
+	{
+		ExportParamFromNative(codeBuilder, function, property, paramName, nativeBufferName, needDeclaration);
+	}
+
+	/// <summary>
 	/// Export C++ function parameter default value as C# variable.
 	/// </summary>
 	public abstract void ExportCppDefaultParameterAsLocalVariable(CodeBuilder codeBuilder, UhtProperty property, string paramName, string defaultValue);
@@ -238,7 +260,7 @@ public abstract class PropertyTranslator
 	public string? GetCppDefaultValue(UhtFunction function, UhtProperty parameter)
 	{
 		string metaDataKey = $"CPP_Default_{parameter.EngineName}";
-		function.MetaData.TryGetValue(metaDataKey, out var defaultValue);
+		function.TryGetMetadata(metaDataKey, out var defaultValue);
 		return defaultValue;
 	}
 }

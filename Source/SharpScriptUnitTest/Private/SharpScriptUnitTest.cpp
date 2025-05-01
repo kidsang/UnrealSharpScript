@@ -12,32 +12,32 @@ DEFINE_LOG_CATEGORY(LogSharpScript);
 #define LOCTEXT_NAMESPACE "FSharpScriptUnitTest"
 
 /**
-* 单元测试上下文
-* 用于和C#虚拟机通信，触发单元测试并获取结果。
+* Unit test context
+* Used for communicating with the C# virtual machine, triggering unit tests and obtaining results.
 */
 class FSharpScriptUnitTestContext
 {
 public:
-	/** 获取单元测试信息列表 */
+	/** Get the list of unit test information */
 	void GetAllTestInfos(TArray<FString>& OutBeautifiedNames, TArray<FString>& OutTestCommands);
 
-	/** 执行单元测试 */
+	/** Execute unit test */
 	static bool RunTest(const FString& TestCommand);
 
 private:
-	/** 获取单元测试信息列表的C#回调 */
+	/** C# callback for getting the list of unit test information */
 	static void OnGetOneTestInfos(FSharpScriptUnitTestContext* Context, const TCHAR* TestName, const TCHAR* FilePath, int LineNo);
 
-	/** 编译构建C#测试用例程序集 */
+	/** Compile and build C# test case assemblies */
 	static bool BuildUnitTestAssemblies();
 
-	/** 加载C#测试用例程序集 */
+	/** Load C# test case assemblies */
 	static void LoadUnitTestAssemblies();
 
-	/** 卸载C#测试用例程序集 */
+	/** Unload C# test case assemblies */
 	static void UnloadUnitTestAssemblies();
 
-	/** 从测试用例程序集里获取C#函数指针 */
+	/** Get C# function pointer from test case assembly */
 	static void GetManagedFunction(const TCHAR* FuncName, void** OutManagedFunc);
 
 public:
@@ -51,7 +51,7 @@ private:
 
 void FSharpScriptUnitTestContext::GetAllTestInfos(TArray<FString>& OutBeautifiedNames, TArray<FString>& OutTestCommands)
 {
-	// 获取测试用例信息之前重新构建测试用例程序集
+	// Rebuild test case assemblies before getting test case information
 	if (!BuildUnitTestAssemblies())
 	{
 		UE_LOG(LogSharpScript, Error, TEXT("Build unit test assemblies failed!"));
@@ -60,7 +60,7 @@ void FSharpScriptUnitTestContext::GetAllTestInfos(TArray<FString>& OutBeautified
 
 	LoadUnitTestAssemblies();
 
-	// 获取单元测试信息列表
+	// Get the list of unit test information
 	void (*ManagedGetAllTestInfos)(FSharpScriptUnitTestContext* Context, decltype(OnGetOneTestInfos)* Callback);
 	GetManagedFunction(TEXT("GetAllTestInfos"), (void**)&ManagedGetAllTestInfos);
 	ManagedGetAllTestInfos(this, OnGetOneTestInfos);
@@ -157,7 +157,7 @@ void FSharpScriptUnitTestContext::LoadUnitTestAssemblies()
 void FSharpScriptUnitTestContext::UnloadUnitTestAssemblies()
 {
 	bool bResult = FSsAssemblyManager::UnloadAssembly(UnitTestAssemblyName);
-	check(bResult || FSharpScriptHostModule::IsUsingMonoRuntime()); // NOTE: 至少在8.0.6版本，Mono运行时依旧不支持卸载程序集。
+	check(bResult || FSharpScriptHostModule::IsUsingMonoRuntime()); // NOTE: Untill 9.0.4, mono runtime still can't unload assemblies.
 }
 
 void FSharpScriptUnitTestContext::GetManagedFunction(const TCHAR* FuncName, void** OutManagedFunc)
