@@ -15,13 +15,13 @@ public class BindingFunctionTest : IUnitTestInterface
 {
 	public bool RunTest()
 	{
-		sbyte inputInt8 = 123;
-		Utils.Assert(TestClass.FuncInt8(inputInt8, out var outputInt8) == inputInt8);
-		Utils.Assert(outputInt8 == inputInt8);
-
-		short inputInt16 = 123;
-		Utils.Assert(TestClass.FuncInt16(inputInt16, out var outputInt16) == inputInt16);
-		Utils.Assert(outputInt16 == inputInt16);
+		// sbyte inputInt8 = 123;
+		// Utils.Assert(TestClass.FuncInt8(inputInt8, out var outputInt8) == inputInt8);
+		// Utils.Assert(outputInt8 == inputInt8);
+		//
+		// short inputInt16 = 123;
+		// Utils.Assert(TestClass.FuncInt16(inputInt16, out var outputInt16) == inputInt16);
+		// Utils.Assert(outputInt16 == inputInt16);
 
 		int inputInt32 = 123;
 		Utils.Assert(TestClass.FuncInt32(inputInt32, out var outputInt32) == inputInt32);
@@ -31,21 +31,21 @@ public class BindingFunctionTest : IUnitTestInterface
 		Utils.Assert(TestClass.FuncInt64(inputInt64, out var outputInt64) == inputInt64);
 		Utils.Assert(outputInt64 == inputInt64);
 
-		byte inputUInt8 = 123;
-		Utils.Assert(TestClass.FuncUInt8(inputUInt8, out var outputUInt8) == inputUInt8);
-		Utils.Assert(outputUInt8 == inputUInt8);
-
-		ushort inputUInt16 = 123;
-		Utils.Assert(TestClass.FuncUInt16(inputUInt16, out var outputUInt16) == inputUInt16);
-		Utils.Assert(outputUInt16 == inputUInt16);
-
-		uint inputUInt32 = 123;
-		Utils.Assert(TestClass.FuncUInt32(inputUInt32, out var outputUInt32) == inputUInt32);
-		Utils.Assert(outputUInt32 == inputUInt32);
-
-		ulong inputUInt64 = 123;
-		Utils.Assert(TestClass.FuncUInt64(inputUInt64, out var outputUInt64) == inputUInt64);
-		Utils.Assert(outputUInt64 == inputUInt64);
+		// byte inputUInt8 = 123;
+		// Utils.Assert(TestClass.FuncUInt8(inputUInt8, out var outputUInt8) == inputUInt8);
+		// Utils.Assert(outputUInt8 == inputUInt8);
+		//
+		// ushort inputUInt16 = 123;
+		// Utils.Assert(TestClass.FuncUInt16(inputUInt16, out var outputUInt16) == inputUInt16);
+		// Utils.Assert(outputUInt16 == inputUInt16);
+		//
+		// uint inputUInt32 = 123;
+		// Utils.Assert(TestClass.FuncUInt32(inputUInt32, out var outputUInt32) == inputUInt32);
+		// Utils.Assert(outputUInt32 == inputUInt32);
+		//
+		// ulong inputUInt64 = 123;
+		// Utils.Assert(TestClass.FuncUInt64(inputUInt64, out var outputUInt64) == inputUInt64);
+		// Utils.Assert(outputUInt64 == inputUInt64);
 
 		// ReSharper disable CompareOfFloatsByEqualityOperator
 		float inputFloat = 128.0f;

@@ -26,11 +26,11 @@ public static class ClassExporter
 		codeBuilder.AddUsing("using SharpScript.Interop;");
 		codeBuilder.AppendNamespace(classObj);
 
-		string className = classObj.EngineName;
+		string className = classObj.GetScriptName();
 		string superClassName;
 		if (classObj.SuperClass != null)
 		{
-			superClassName = classObj.Package == classObj.SuperClass.Package ? classObj.SuperClass.EngineName : classObj.SuperClass.GetFullManagedName();
+			superClassName = classObj.Package == classObj.SuperClass.Package ? classObj.SuperClass.GetScriptName() : classObj.SuperClass.GetFullManagedName();
 		}
 		else
 		{

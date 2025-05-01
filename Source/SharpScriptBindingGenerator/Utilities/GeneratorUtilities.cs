@@ -23,6 +23,13 @@ public static class GeneratorUtilities
 			return false;
 		}
 
+		if (!function.HasAnyFlags(EFunctionFlags.BlueprintCallable | EFunctionFlags.BlueprintEvent)
+			|| function.HasMetadata("ScriptNoExport")
+			|| function.HasMetadata("BlueprintInternalUseOnly"))
+		{
+			return false;
+		}
+
 		return true;
 	}
 

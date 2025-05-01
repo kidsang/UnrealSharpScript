@@ -45,17 +45,41 @@ public static class NameMapper
 
 	public static string GetManagedName(this UhtType type)
 	{
-		return type.EngineName;
+		return type.GetScriptName();
 	}
 
 	public static string GetFullManagedName(this UhtType type)
 	{
-		return $"{type.GetNamespace()}.{type.EngineName}";
+		return $"{type.GetNamespace()}.{type.GetScriptName()}";
 	}
 
 	public static string GetInterfaceFullManagedName(this UhtType type)
 	{
-		return $"{type.GetNamespace()}.I{type.EngineName}";
+		return $"{type.GetNamespace()}.I{type.GetScriptName()}";
+	}
+
+	public static string GetScriptName(this UhtType type)
+	{
+		if (type is UhtEnum)
+		{
+			return type.EngineName;
+		}
+
+		if (type.MetaData.TryGetValue("ScriptName", out string? scriptName))
+		{
+			scriptName = scriptName.Trim();
+			if (scriptName.Length > 0)
+			{
+				return scriptName;
+			}
+		}
+
+		if (type is UhtFunction functionType)
+		{
+			return functionType.StrippedFunctionName;
+		}
+
+		return type.EngineName;
 	}
 
 	public static string GetNamespace(this UhtType typeObj)

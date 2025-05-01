@@ -73,7 +73,7 @@ public class FunctionExporter
 		BlueprintVisibility = blueprintVisibility;
 		SuppressGeneric = suppressGeneric;
 
-		FunctionName = function.StrippedFunctionName;
+		FunctionName = function.GetScriptName();
 
 		Modifiers = "";
 		switch (protectionMode)
@@ -105,7 +105,7 @@ public class FunctionExporter
 		{
 			Modifiers += "static ";
 			InvokeFunction = "InvokeStaticFunctionCall";
-			InvokeArguments = $"NativeType, {FunctionName}_NativeFunc, ";
+			InvokeArguments = $"NativeType, {Function.StrippedFunctionName}_NativeFunc, ";
 		}
 		else
 		{
@@ -120,7 +120,7 @@ public class FunctionExporter
 			}
 
 			InvokeFunction = "InvokeFunctionCall";
-			InvokeArguments = $"{FunctionName}_NativeFunc, ";
+			InvokeArguments = $"{Function.StrippedFunctionName}_NativeFunc, ";
 		}
 
 		// handle conflict functions
@@ -381,7 +381,7 @@ public class FunctionExporter
 
 		FunctionExporter exporter = new FunctionExporter(function, protectionMode, overloadMode, blueprintVisibility, suppressGeneric)
 		{
-			FunctionName = $"F{function.StrippedFunctionName}",
+			FunctionName = $"F{function.GetScriptName()}",
 			InvokeArguments = "",
 			InvokeFunction = function.HasAnyFlags(EFunctionFlags.MulticastDelegate)
 				? "instance.ProcessMulticastDelegate"
