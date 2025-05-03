@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using EpicGames.Core;
 using EpicGames.UHT.Types;
 using SharpScriptBindingGenerator.PropertyTranslators;
@@ -81,7 +82,7 @@ public static class ClassExporter
 		}
 	}
 
-	static void ExportClassFunctions(CodeBuilder codeBuilder, List<UhtFunction> exportedFunctions, HashSet<UhtFunction> unsupportedFunctions)
+	private static void ExportClassFunctions(CodeBuilder codeBuilder, List<UhtFunction> exportedFunctions, HashSet<UhtFunction> unsupportedFunctions)
 	{
 		foreach (UhtFunction function in exportedFunctions)
 		{
@@ -93,9 +94,24 @@ public static class ClassExporter
 		}
 	}
 
-	static void ExportExtensionMethods(CodeBuilder codeBuilder, string hostClassName, List<UhtFunction> exportedFunctions, HashSet<UhtFunction> unsupportedFunctions)
+	private static string GetExtensionMethodName(UhtFunction function)
 	{
-		Dictionary<UhtStruct, List<UhtFunction>> extensionMethodsByTarget = new();
+		string methodName = function.GetMetadata("ScriptMethod").Trim();
+		if (methodName.Length > 0)
+		{
+			int semiColonIndex = methodName.IndexOf(";", StringComparison.Ordinal);
+			if (semiColonIndex >= 0)
+			{
+				methodName = methodName.Substring(0, semiColonIndex);
+			}
+		}
+
+		return methodName.Length > 0 ? methodName : function.GetScriptName();
+	}
+
+	private static void ExportExtensionMethods(CodeBuilder codeBuilder, string hostClassName, List<UhtFunction> exportedFunctions, HashSet<UhtFunction> unsupportedFunctions)
+	{
+		Dictionary<UhtStruct, List<ExtensionMethod>> extensionMethodsByTarget = new();
 		foreach (UhtFunction function in exportedFunctions)
 		{
 			if (!function.HasAnyFlags(EFunctionFlags.Static))
@@ -124,7 +140,7 @@ public static class ClassExporter
 				continue;
 			}
 
-			UhtStruct? typeObj = null;
+			UhtStruct? typeObj;
 			if (firstParam is UhtObjectProperty objectProperty)
 			{
 				typeObj = objectProperty.Class;
@@ -133,17 +149,42 @@ public static class ClassExporter
 			{
 				typeObj = structProperty.ScriptStruct;
 			}
-
-			if (typeObj != null)
+			else
 			{
-				if (!extensionMethodsByTarget.TryGetValue(typeObj, out var functions))
-				{
-					functions = new List<UhtFunction>();
-					extensionMethodsByTarget.Add(typeObj, functions);
-				}
-
-				functions.Add(function);
+				continue;
 			}
+
+			if (!extensionMethodsByTarget.TryGetValue(typeObj, out var functions))
+			{
+				functions = new List<ExtensionMethod>();
+				extensionMethodsByTarget.Add(typeObj, functions);
+			}
+
+			EExtensionMethodType methodtype = EExtensionMethodType.Normal;
+			if (function.MetaData.ContainsKey("BlueprintAutocast"))
+			{
+				if (function.Children.Count == 2
+					&& ((UhtProperty)function.Children[1]).HasAnyFlags(EPropertyFlags.ReturnParm)
+					&& function.Children[1] is UhtStructProperty)
+				{
+					methodtype = EExtensionMethodType.Autocast;
+				}
+			}
+
+			string methodName = methodtype switch
+			{
+				EExtensionMethodType.Normal => GetExtensionMethodName(function),
+				_ => ""
+			};
+
+			ExtensionMethod method = new ExtensionMethod()
+			{
+				MethodType = methodtype,
+				MethodName = methodName,
+				Function = function,
+			};
+
+			functions.Add(method);
 		}
 
 		foreach (var pair in extensionMethodsByTarget)
@@ -166,9 +207,9 @@ public static class ClassExporter
 							codeBuilder.AppendLine();
 						}
 
-						UhtFunction function = extensionMethods[i];
-						using var withEditorBlock = new WithEditorBlock(codeBuilder, function);
-						FunctionExporter.ExportExtensionMethod(codeBuilder, hostClassName, function);
+						ExtensionMethod extensionMethod = extensionMethods[i];
+						using var withEditorBlock = new WithEditorBlock(codeBuilder, extensionMethod.Function);
+						FunctionExporter.ExportExtensionMethod(codeBuilder, hostClassName, extensionMethod);
 					}
 				}
 			}

@@ -17,8 +17,10 @@ public class ScriptMethodTest : IUnitTestInterface
 			Y = 20
 		};
 
+		// override ToString
 		Utils.Assert(testStruct.ToString() == "X=10 Y=20");
 
+		// test default value
 		testStruct.TestDefaultValue();
 		Utils.Assert(testStruct.X == 1);
 		Utils.Assert(testStruct.Y == 0);
@@ -26,6 +28,11 @@ public class ScriptMethodTest : IUnitTestInterface
 		testStruct.TestDefaultValue(new Vector { X = 10, Y = 20 });
 		Utils.Assert(testStruct.X == 10);
 		Utils.Assert(testStruct.Y == 20);
+
+		// test auto cast
+		IntPoint testPoint = testStruct;
+		Utils.Assert(testPoint.X == 10);
+		Utils.Assert(testPoint.Y == 20);
 
 		return true;
 	}

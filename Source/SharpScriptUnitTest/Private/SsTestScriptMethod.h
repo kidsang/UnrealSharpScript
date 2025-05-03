@@ -30,4 +30,7 @@ public:
 
 	UFUNCTION(BlueprintCallable, Category = "CSharp|Internal", meta=(ScriptMethod))
 	static void TestDefaultValue(FSsTestNumericStruct& InStruct, const FVector& InVector = FVector::ForwardVector, const FVector& InVector2 = FVector::ZeroVector);
+
+	UFUNCTION(BlueprintCallable, Category = "CSharp|Internal", meta=(ScriptMethod, BlueprintAutocast))
+	static FIntPoint NumericStructToIntPoint(const FSsTestNumericStruct& InStruct);
 };

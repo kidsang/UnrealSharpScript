@@ -37,6 +37,19 @@ public struct FunctionOverload
 	public UhtProperty Parameter;
 }
 
+public enum EExtensionMethodType
+{
+	Normal,
+	Autocast,
+}
+
+public struct ExtensionMethod
+{
+	public EExtensionMethodType MethodType;
+	public string MethodName;
+	public UhtFunction Function;
+}
+
 public class FunctionExporter
 {
 	protected UhtFunction Function;
@@ -375,38 +388,25 @@ public class FunctionExporter
 		exporter.ExportInterfaceSignature(codeBuilder);
 	}
 
-	public static void ExportExtensionMethod(CodeBuilder codeBuilder, string hostClassName, UhtFunction function)
+	public static void ExportExtensionMethod(CodeBuilder codeBuilder, string hostClassName, ExtensionMethod extensionMethod)
 	{
 		EFunctionProtectionMode protectionMode = EFunctionProtectionMode.OverrideWithPublic;
-		EOverloadMode overloadMode = EOverloadMode.AllowOverloads;
+		EOverloadMode overloadMode = extensionMethod.MethodType == EExtensionMethodType.Normal ? EOverloadMode.AllowOverloads : EOverloadMode.SuppressOverloads;
 		EBlueprintVisibility blueprintVisibility = EBlueprintVisibility.Call;
 		bool suppressGeneric = true;
 
-		FunctionExporter exporter = new FunctionExporter(function, protectionMode, overloadMode, blueprintVisibility, suppressGeneric);
-
-		string extensionMethodName = function.GetMetadata("ScriptMethod").Trim();
-		if (extensionMethodName.Length > 0)
+		FunctionExporter exporter = new FunctionExporter(extensionMethod.Function, protectionMode, overloadMode, blueprintVisibility, suppressGeneric)
 		{
-			int semiColonIndex = extensionMethodName.IndexOf(";", StringComparison.Ordinal);
-			if (semiColonIndex >= 0)
-			{
-				extensionMethodName = extensionMethodName.Substring(0, semiColonIndex);
-			}
+			Modifiers = ""
+		};
 
-			if (extensionMethodName.Length > 0)
-			{
-				exporter.FunctionName = extensionMethodName;
-			}
-		}
-
-		exporter.Modifiers = "";
-		if (exporter.FunctionName == "ToString")
+		if (extensionMethod.MethodName == "ToString")
 		{
 			exporter.Modifiers = "override ";
 		}
 
-		exporter.ExportExtensionOverloads(codeBuilder, hostClassName);
-		exporter.ExportExtensionFunction(codeBuilder, hostClassName);
+		exporter.ExportExtensionOverloads(codeBuilder, hostClassName, extensionMethod);
+		exporter.ExportExtensionFunction(codeBuilder, hostClassName, extensionMethod);
 	}
 
 	public void ExportDelegateInvoker(CodeBuilder codeBuilder)
@@ -445,7 +445,7 @@ public class FunctionExporter
 		}
 	}
 
-	private void ExportExtensionOverloads(CodeBuilder codeBuilder, string hostClassName)
+	private void ExportExtensionOverloads(CodeBuilder codeBuilder, string hostClassName, ExtensionMethod extensionMethod)
 	{
 		foreach (FunctionOverload overload in Overloads)
 		{
@@ -461,7 +461,7 @@ public class FunctionExporter
 			}
 
 			string paramString = GetExtensionMethodParamString(overload.ParamString);
-			codeBuilder.AppendLine($"{Protection}{Modifiers}{returnType} {FunctionName}({paramString})");
+			codeBuilder.AppendLine($"{Protection}{Modifiers}{returnType} {extensionMethod.MethodName}({paramString})");
 
 			using (new CodeBlock(codeBuilder)) // function body
 			{
@@ -471,7 +471,7 @@ public class FunctionExporter
 				{
 					paramStringCall = paramStringCall.Substring(0, commaIndex); // remove the last param
 				}
-				codeBuilder.AppendLine($"{returnStatement}{hostClassName}.{Function.GetScriptName()}({paramStringCall});");
+				codeBuilder.AppendLine($"{returnStatement}{hostClassName}.{FunctionName}({paramStringCall});");
 			}
 
 			codeBuilder.AppendLine();
@@ -489,14 +489,14 @@ public class FunctionExporter
 		}
 	}
 
-	private void ExportExtensionFunction(CodeBuilder codeBuilder, string hostClassName)
+	private void ExportExtensionFunction(CodeBuilder codeBuilder, string hostClassName, ExtensionMethod extensionMethod)
 	{
 		codeBuilder.AppendTooltip(Function);
 		ExportDeprecation(codeBuilder);
-		ExportExtensionMethodSignature(codeBuilder);
+		ExportExtensionMethodSignature(codeBuilder, extensionMethod);
 		using (new CodeBlock(codeBuilder)) // function body
 		{
-			ExportExtensionMethodInvoke(codeBuilder, hostClassName);
+			ExportExtensionMethodInvoke(codeBuilder, hostClassName, extensionMethod);
 		}
 	}
 
@@ -617,11 +617,18 @@ public class FunctionExporter
 		return paramString;
 	}
 
-	public void ExportExtensionMethodSignature(CodeBuilder codeBuilder)
+	public void ExportExtensionMethodSignature(CodeBuilder codeBuilder, ExtensionMethod extensionMethod)
 	{
-		string paramString = GetExtensionMethodParamString(ParamStringWithDefault);
 		string returnType = GetReturnType();
-		codeBuilder.AppendLine($"{Protection}{Modifiers}{returnType} {FunctionName}({paramString})");
+		if (extensionMethod.MethodType == EExtensionMethodType.Normal)
+		{
+			string paramString = GetExtensionMethodParamString(ParamStringWithDefault);
+			codeBuilder.AppendLine($"{Protection}{Modifiers}{returnType} {extensionMethod.MethodName}({paramString})");
+		}
+		else if (extensionMethod.MethodType == EExtensionMethodType.Autocast)
+		{
+			codeBuilder.AppendLine($"{Protection}static implicit operator {returnType}({ParamStringWithDefault})");
+		}
 	}
 
 	private void ExportGenericConstraints(CodeBuilder codeBuilder)
@@ -739,12 +746,18 @@ public class FunctionExporter
 		return paramString;
 	}
 
-	private void ExportExtensionMethodInvoke(CodeBuilder codeBuilder, string hostClassName)
+	private void ExportExtensionMethodInvoke(CodeBuilder codeBuilder, string hostClassName, ExtensionMethod extensionMethod)
 	{
-		string functionName = Function.GetScriptName();
-		string returnStatement = Function.ReturnProperty != null ? "return " : "";
-		string paramStringCall = GetExtensionMethodParamStringCall(ParamStringCall);
-		codeBuilder.AppendLine($"{returnStatement}{hostClassName}.{functionName}({paramStringCall});");
+		if (extensionMethod.MethodType == EExtensionMethodType.Normal)
+		{
+			string returnStatement = Function.ReturnProperty != null ? "return " : "";
+			string paramStringCall = GetExtensionMethodParamStringCall(ParamStringCall);
+			codeBuilder.AppendLine($"{returnStatement}{hostClassName}.{FunctionName}({paramStringCall});");
+		}
+		else if (extensionMethod.MethodType == EExtensionMethodType.Autocast)
+		{
+			codeBuilder.AppendLine($"return {hostClassName}.{FunctionName}({ParamStringCall});");
+		}
 	}
 
 	public void ForEachParameter(Action<PropertyTranslator, UhtProperty> action)

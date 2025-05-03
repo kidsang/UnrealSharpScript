@@ -10,3 +10,8 @@ void USsTestScriptMethod::TestDefaultValue(FSsTestNumericStruct& InStruct, const
 	InStruct.X = (int)InVector.X;
 	InStruct.Y = (int)InVector.Y;
 }
+
+FIntPoint USsTestScriptMethod::NumericStructToIntPoint(const FSsTestNumericStruct& InStruct)
+{
+	return FIntPoint(InStruct.X, InStruct.Y);
+}
