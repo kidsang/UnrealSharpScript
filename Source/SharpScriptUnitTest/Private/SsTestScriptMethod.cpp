@@ -15,3 +15,8 @@ FIntPoint USsTestScriptMethod::NumericStructToIntPoint(const FSsTestNumericStruc
 {
 	return FIntPoint(InStruct.X, InStruct.Y);
 }
+
+bool USsTestScriptMethod::Equals(const FSsTestNumericStruct& IntA, const FSsTestNumericStruct& IntB)
+{
+	return IntA.X == IntB.X && IntA.Y == IntB.Y;
+}

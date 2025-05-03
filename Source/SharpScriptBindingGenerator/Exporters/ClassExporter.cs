@@ -109,6 +109,61 @@ public static class ClassExporter
 		return methodName.Length > 0 ? methodName : function.GetScriptName();
 	}
 
+	private static EExtensionMethodType GetExtensionMethodTypeAndName(UhtFunction function, out string methodName)
+	{
+		string? operatorName = null;
+
+		EExtensionMethodType methodtype = EExtensionMethodType.Normal;
+		if (function.MetaData.ContainsKey("BlueprintAutocast"))
+		{
+			if (function.Children.Count == 2
+				&& ((UhtProperty)function.Children[1]).HasAnyFlags(EPropertyFlags.ReturnParm)
+				&& function.Children[1] is UhtStructProperty)
+			{
+				methodtype = EExtensionMethodType.Autocast;
+			}
+		}
+		else if (function.MetaData.ContainsKey("ScriptOperator"))
+		{
+			operatorName = function.GetMetadata("ScriptOperator").Trim();
+			if (operatorName == "==")
+			{
+				// see UKismetMathLibrary::NotEqual_IntPointIntPoint
+				if (function.StrippedFunctionName.Contains("NotEqual", StringComparison.OrdinalIgnoreCase))
+				{
+					operatorName = "!=";
+				}
+			}
+
+			switch (operatorName)
+			{
+				case "==":
+				case "!=":
+				{
+					if (function.Children.Count == 3
+						&& function.Children[2] is UhtBoolProperty
+						&& function.Children[0] is UhtStructProperty lhs
+						&& function.Children[1] is UhtStructProperty rhs
+						&& lhs.ScriptStruct == rhs.ScriptStruct)
+					{
+						methodtype = EExtensionMethodType.Operator;
+					}
+
+					break;
+				}
+			}
+		}
+
+		methodName = methodtype switch
+		{
+			EExtensionMethodType.Normal => GetExtensionMethodName(function),
+			EExtensionMethodType.Operator => operatorName!,
+			_ => ""
+		};
+
+		return methodtype;
+	}
+
 	private static void ExportExtensionMethods(CodeBuilder codeBuilder, string hostClassName, List<UhtFunction> exportedFunctions, HashSet<UhtFunction> unsupportedFunctions)
 	{
 		Dictionary<UhtStruct, List<ExtensionMethod>> extensionMethodsByTarget = new();
@@ -160,23 +215,7 @@ public static class ClassExporter
 				extensionMethodsByTarget.Add(typeObj, functions);
 			}
 
-			EExtensionMethodType methodtype = EExtensionMethodType.Normal;
-			if (function.MetaData.ContainsKey("BlueprintAutocast"))
-			{
-				if (function.Children.Count == 2
-					&& ((UhtProperty)function.Children[1]).HasAnyFlags(EPropertyFlags.ReturnParm)
-					&& function.Children[1] is UhtStructProperty)
-				{
-					methodtype = EExtensionMethodType.Autocast;
-				}
-			}
-
-			string methodName = methodtype switch
-			{
-				EExtensionMethodType.Normal => GetExtensionMethodName(function),
-				_ => ""
-			};
-
+			EExtensionMethodType methodtype = GetExtensionMethodTypeAndName(function, out var methodName);
 			ExtensionMethod method = new ExtensionMethod()
 			{
 				MethodType = methodtype,
@@ -189,6 +228,61 @@ public static class ClassExporter
 
 		foreach (var pair in extensionMethodsByTarget)
 		{
+			var extensionMethods = pair.Value;
+			HashSet<string> methodNames = new HashSet<string>();
+			foreach (ExtensionMethod extensionMethod in extensionMethods)
+			{
+				methodNames.Add(extensionMethod.MethodName);
+			}
+
+			bool hasEqualsOperator = false;
+
+			// Some operators must be overloaded in pairs (eg. "==" and "!=").
+			// Go through the operators to ensure this rule.
+			for (int i = methodNames.Count - 1; i >= 0; i--)
+			{
+				var extensionMethod = extensionMethods[i];
+				if (extensionMethod.MethodType != EExtensionMethodType.Operator)
+				{
+					continue;
+				}
+
+				string methodName = extensionMethod.MethodName;
+				if (methodName == "==")
+				{
+					hasEqualsOperator = true;
+
+					if (methodNames.Add("!="))
+					{
+						// Add operator overload "!=" using negative version of "Equals".
+						extensionMethods.Insert(i + 1, new ExtensionMethod
+						{
+							MethodType = EExtensionMethodType.Operator,
+							MethodName = "!(==)",
+							Function = extensionMethod.Function,
+						});
+					}
+
+					if (methodNames.Add("Equals"))
+					{
+						// Add method "Equals".
+						extensionMethods.Insert(i, new ExtensionMethod
+						{
+							MethodType = EExtensionMethodType.Normal,
+							MethodName = "Equals",
+							Function = extensionMethod.Function,
+						});
+					}
+				}
+				else if (methodName == "!=")
+				{
+					if (!methodNames.Contains("=="))
+					{
+						extensionMethods.RemoveAt(i);
+					}
+				}
+			}
+
 			UhtStruct typeObj = pair.Key;
 			string typeDecl = typeObj is UhtClass ? "class" : "struct";
 
@@ -196,10 +290,16 @@ public static class ClassExporter
 			codeBuilder.AppendLine($"namespace {typeObj.GetNamespace()}");
 			using (new CodeBlock(codeBuilder)) // namespace
 			{
-				codeBuilder.AppendLine($"public partial {typeDecl} {typeObj.GetScriptName()}");
+				string typeName = typeObj.GetScriptName();
+				codeBuilder.AppendLine($"public partial {typeDecl} {typeName}");
+
+				if (hasEqualsOperator)
+				{
+					codeBuilder.Append($" : IEquatable<{typeName}>");
+				}
+
 				using (new CodeBlock(codeBuilder)) // type body
 				{
-					var extensionMethods = pair.Value;
 					for (int i = 0; i < extensionMethods.Count; i++)
 					{
 						if (i > 0)
@@ -210,6 +310,25 @@ public static class ClassExporter
 						ExtensionMethod extensionMethod = extensionMethods[i];
 						using var withEditorBlock = new WithEditorBlock(codeBuilder, extensionMethod.Function);
 						FunctionExporter.ExportExtensionMethod(codeBuilder, hostClassName, extensionMethod);
+					}
+
+					if (hasEqualsOperator)
+					{
+						// override object.Equals
+						codeBuilder.AppendLine();
+						codeBuilder.AppendLine("public override bool Equals(object? obj)");
+						using (new CodeBlock(codeBuilder))
+						{
+							codeBuilder.AppendLine($"return obj is {typeName} other && Equals(other);");
+						}
+
+						// override ValueType.GetHashCode
+						codeBuilder.AppendLine();
+						codeBuilder.AppendLine("public override int GetHashCode()");
+						using (new CodeBlock(codeBuilder))
+						{
+							codeBuilder.AppendLine("return base.GetHashCode();");
+						}
 					}
 				}
 			}

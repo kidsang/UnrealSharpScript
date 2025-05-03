@@ -41,6 +41,7 @@ public enum EExtensionMethodType
 {
 	Normal,
 	Autocast,
+	Operator,
 }
 
 public struct ExtensionMethod
@@ -118,7 +119,7 @@ public class FunctionExporter
 		// handle conflict functions
 		switch (FunctionName)
 		{
-			// override ToString
+			// override object.ToString
 			case "ToString":
 			{
 				if (function.Children.Count == 1)
@@ -395,16 +396,7 @@ public class FunctionExporter
 		EBlueprintVisibility blueprintVisibility = EBlueprintVisibility.Call;
 		bool suppressGeneric = true;
 
-		FunctionExporter exporter = new FunctionExporter(extensionMethod.Function, protectionMode, overloadMode, blueprintVisibility, suppressGeneric)
-		{
-			Modifiers = ""
-		};
-
-		if (extensionMethod.MethodName == "ToString")
-		{
-			exporter.Modifiers = "override ";
-		}
-
+		FunctionExporter exporter = new FunctionExporter(extensionMethod.Function, protectionMode, overloadMode, blueprintVisibility, suppressGeneric);
 		exporter.ExportExtensionOverloads(codeBuilder, hostClassName, extensionMethod);
 		exporter.ExportExtensionFunction(codeBuilder, hostClassName, extensionMethod);
 	}
@@ -461,7 +453,7 @@ public class FunctionExporter
 			}
 
 			string paramString = GetExtensionMethodParamString(overload.ParamString);
-			codeBuilder.AppendLine($"{Protection}{Modifiers}{returnType} {extensionMethod.MethodName}({paramString})");
+			codeBuilder.AppendLine($"{Protection}{returnType} {extensionMethod.MethodName}({paramString})");
 
 			using (new CodeBlock(codeBuilder)) // function body
 			{
@@ -619,15 +611,41 @@ public class FunctionExporter
 
 	public void ExportExtensionMethodSignature(CodeBuilder codeBuilder, ExtensionMethod extensionMethod)
 	{
+		string methodName = extensionMethod.MethodName;
 		string returnType = GetReturnType();
 		if (extensionMethod.MethodType == EExtensionMethodType.Normal)
 		{
+			string modifiers = "";
 			string paramString = GetExtensionMethodParamString(ParamStringWithDefault);
-			codeBuilder.AppendLine($"{Protection}{Modifiers}{returnType} {extensionMethod.MethodName}({paramString})");
+
+			if (methodName == "ToString")
+			{
+				// override object.ToString
+				modifiers = "override ";
+			}
+			else if (methodName == "Equals")
+			{
+				// parameter with "in" modifier does not match function signature of "IEquatable".
+				if (paramString.StartsWith("in "))
+				{
+					paramString = paramString[3..];
+				}
+			}
+
+			codeBuilder.AppendLine($"{Protection}{modifiers}{returnType} {methodName}({paramString})");
 		}
 		else if (extensionMethod.MethodType == EExtensionMethodType.Autocast)
 		{
 			codeBuilder.AppendLine($"{Protection}static implicit operator {returnType}({ParamStringWithDefault})");
+		}
+		else if (extensionMethod.MethodType == EExtensionMethodType.Operator)
+		{
+			if (methodName == "!(==)")
+			{
+				methodName = "!=";
+			}
+
+			codeBuilder.AppendLine($"{Protection}static {returnType} operator {methodName}({ParamStringWithDefault})");
 		}
 	}
 
@@ -757,6 +775,12 @@ public class FunctionExporter
 		else if (extensionMethod.MethodType == EExtensionMethodType.Autocast)
 		{
 			codeBuilder.AppendLine($"return {hostClassName}.{FunctionName}({ParamStringCall});");
+		}
+		else if (extensionMethod.MethodType == EExtensionMethodType.Operator)
+		{
+			codeBuilder.AppendLine(extensionMethod.MethodName == "!(==)"
+				? $"return !{hostClassName}.{FunctionName}({ParamStringCall});"
+				: $"return {hostClassName}.{FunctionName}({ParamStringCall});");
 		}
 	}
 

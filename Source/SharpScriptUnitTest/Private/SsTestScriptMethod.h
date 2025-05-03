@@ -33,4 +33,7 @@ public:
 
 	UFUNCTION(BlueprintCallable, Category = "CSharp|Internal", meta=(ScriptMethod, BlueprintAutocast))
 	static FIntPoint NumericStructToIntPoint(const FSsTestNumericStruct& InStruct);
+
+	UFUNCTION(BlueprintCallable, Category = "CSharp|Internal", meta=(ScriptMethod, ScriptOperator="=="))
+	static bool Equals(const FSsTestNumericStruct& IntA, const FSsTestNumericStruct& IntB);
 };

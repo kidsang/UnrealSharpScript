@@ -34,6 +34,17 @@ public class ScriptMethodTest : IUnitTestInterface
 		Utils.Assert(testPoint.X == 10);
 		Utils.Assert(testPoint.Y == 20);
 
+		// test equality
+		TestStruct structA = testStruct;
+		TestStruct structB = new();
+		Utils.Assert(testStruct.Equals(structA));
+		Utils.Assert(!testStruct.Equals(structB));
+		Utils.Assert(testStruct.Equals(structA as object));
+		Utils.Assert(!testStruct.Equals(structB as object));
+		Utils.Assert(!testStruct.Equals(null));
+		Utils.Assert(testStruct == structA);
+		Utils.Assert(testStruct != structB);
+
 		return true;
 	}
 }
