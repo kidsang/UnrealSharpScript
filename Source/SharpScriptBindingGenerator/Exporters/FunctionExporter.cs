@@ -392,13 +392,20 @@ public class FunctionExporter
 			{
 				extensionMethodName = extensionMethodName.Substring(0, semiColonIndex);
 			}
+
+			if (extensionMethodName.Length > 0)
+			{
+				exporter.FunctionName = extensionMethodName;
+			}
 		}
 
-		if (extensionMethodName.Length > 0)
+		exporter.Modifiers = "";
+		if (exporter.FunctionName == "ToString")
 		{
-			exporter.FunctionName = extensionMethodName;
+			exporter.Modifiers = "override ";
 		}
 
+		exporter.ExportExtensionOverloads(codeBuilder, hostClassName);
 		exporter.ExportExtensionFunction(codeBuilder, hostClassName);
 	}
 
@@ -432,6 +439,39 @@ public class FunctionExporter
 			{
 				overload.Translator.ExportCppDefaultParameterAsLocalVariable(codeBuilder, overload.Parameter, overload.CSharpParamName, overload.CppDefaultValue);
 				codeBuilder.AppendLine($"{returnStatement}{FunctionName}({overload.ParamStringCall});");
+			}
+
+			codeBuilder.AppendLine();
+		}
+	}
+
+	private void ExportExtensionOverloads(CodeBuilder codeBuilder, string hostClassName)
+	{
+		foreach (FunctionOverload overload in Overloads)
+		{
+			ExportDeprecation(codeBuilder);
+
+			string returnType = "void";
+			string returnStatement = "";
+			if (Function.ReturnProperty != null)
+			{
+				PropertyTranslator returnValueTranslator = PropertyTranslatorManager.GetTranslator(Function.ReturnProperty);
+				returnType = returnValueTranslator.GetParamManagedType(Function.ReturnProperty);
+				returnStatement = "return ";
+			}
+
+			string paramString = GetExtensionMethodParamString(overload.ParamString);
+			codeBuilder.AppendLine($"{Protection}{Modifiers}{returnType} {FunctionName}({paramString})");
+
+			using (new CodeBlock(codeBuilder)) // function body
+			{
+				string paramStringCall = GetExtensionMethodParamStringCall(overload.ParamStringCall);
+				int commaIndex = paramStringCall.LastIndexOf(",", StringComparison.Ordinal);
+				if (commaIndex >= 0)
+				{
+					paramStringCall = paramStringCall.Substring(0, commaIndex); // remove the last param
+				}
+				codeBuilder.AppendLine($"{returnStatement}{hostClassName}.{Function.GetScriptName()}({paramStringCall});");
 			}
 
 			codeBuilder.AppendLine();
@@ -570,19 +610,18 @@ public class FunctionExporter
 		codeBuilder.Append(";");
 	}
 
+	private string GetExtensionMethodParamString(string paramStringWithDefault)
+	{
+		int commaIndex = paramStringWithDefault.IndexOf(",", StringComparison.Ordinal);
+		string paramString = commaIndex >= 0 ? paramStringWithDefault.Substring(commaIndex + 2) : "";
+		return paramString;
+	}
+
 	public void ExportExtensionMethodSignature(CodeBuilder codeBuilder)
 	{
-		string modifiers = "";
-		if (FunctionName == "ToString")
-		{
-			modifiers = "override ";
-		}
-
-		int commaIndex = ParamStringWithDefault.IndexOf(",", StringComparison.Ordinal);
-		string paramString = commaIndex >= 0 ? ParamStringWithDefault.Substring(commaIndex + 2) : "";
+		string paramString = GetExtensionMethodParamString(ParamStringWithDefault);
 		string returnType = GetReturnType();
-		codeBuilder.AppendLine($"{Protection}{modifiers}{returnType} {FunctionName}({paramString})");
-		ExportGenericConstraints(codeBuilder);
+		codeBuilder.AppendLine($"{Protection}{Modifiers}{returnType} {FunctionName}({paramString})");
 	}
 
 	private void ExportGenericConstraints(CodeBuilder codeBuilder)
@@ -676,27 +715,36 @@ public class FunctionExporter
 		}
 	}
 
-	private void ExportExtensionMethodInvoke(CodeBuilder codeBuilder, string hostClassName)
+	/// <summary>
+	/// Replace first parameter to "this".
+	/// </summary>
+	private string GetExtensionMethodParamStringCall(string paramStringCall)
 	{
 		UhtProperty selfParam = (UhtProperty)Function.Children[0];
 		string refQualifier = GetRefQualifier(selfParam);
 
-		string paramString = "this";
+		string paramString = $"{refQualifier}this";
 		if (selfParam is UhtClassProperty classProperty)
 		{
 			UhtClass metaClass = classProperty.MetaClass!;
 			paramString = $"new SubclassOf<{metaClass.GetFullManagedName()}>(this)";
 		}
 
-		int commaIndex = ParamStringCall.IndexOf(",", StringComparison.Ordinal);
+		int commaIndex = paramStringCall.IndexOf(",", StringComparison.Ordinal);
 		if (commaIndex >= 0)
 		{
-			paramString += ParamStringCall.Substring(commaIndex);
+			paramString += paramStringCall.Substring(commaIndex);
 		}
 
+		return paramString;
+	}
+
+	private void ExportExtensionMethodInvoke(CodeBuilder codeBuilder, string hostClassName)
+	{
 		string functionName = Function.GetScriptName();
-		codeBuilder.AppendLine(Function.ReturnProperty != null ? "return " : "");
-		codeBuilder.Append($"{hostClassName}.{functionName}({refQualifier}{paramString});");
+		string returnStatement = Function.ReturnProperty != null ? "return " : "";
+		string paramStringCall = GetExtensionMethodParamStringCall(ParamStringCall);
+		codeBuilder.AppendLine($"{returnStatement}{hostClassName}.{functionName}({paramStringCall});");
 	}
 
 	public void ForEachParameter(Action<PropertyTranslator, UhtProperty> action)

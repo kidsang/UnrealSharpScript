@@ -27,4 +27,7 @@ class USsTestScriptMethod : public UBlueprintFunctionLibrary
 public:
 	UFUNCTION(BlueprintCallable, Category = "CSharp|Internal", meta=(ScriptMethod="ToString"))
 	static FString NumericStructToString(const FSsTestNumericStruct& InStruct);
+
+	UFUNCTION(BlueprintCallable, Category = "CSharp|Internal", meta=(ScriptMethod))
+	static void TestDefaultValue(FSsTestNumericStruct& InStruct, const FVector& InVector = FVector::ForwardVector, const FVector& InVector2 = FVector::ZeroVector);
 };

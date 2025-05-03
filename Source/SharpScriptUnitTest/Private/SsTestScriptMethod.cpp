@@ -4,3 +4,9 @@ FString USsTestScriptMethod::NumericStructToString(const FSsTestNumericStruct& I
 {
     return FString::Printf(TEXT("X=%d Y=%d"), InStruct.X, InStruct.Y);
 }
+
+void USsTestScriptMethod::TestDefaultValue(FSsTestNumericStruct& InStruct, const FVector& InVector, const FVector& InVector2)
+{
+	InStruct.X = (int)InVector.X;
+	InStruct.Y = (int)InVector.Y;
+}
