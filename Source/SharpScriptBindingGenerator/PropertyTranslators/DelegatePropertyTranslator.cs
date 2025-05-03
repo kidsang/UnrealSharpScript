@@ -7,7 +7,6 @@ public class DelegatePropertyTranslator : NativeReferencePropertyTranslator
 {
 	private const EPropertyUsageFlags SupportedUsages = EPropertyUsageFlags.Property
 														| EPropertyUsageFlags.Parameter
-														| EPropertyUsageFlags.ReturnValue
 														| EPropertyUsageFlags.InnerValue;
 
 	public DelegatePropertyTranslator() : base(SupportedUsages)

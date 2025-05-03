@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using EpicGames.Core;
 using EpicGames.UHT.Types;
 using SharpScriptBindingGenerator.PropertyTranslators;
 using SharpScriptBindingGenerator.Utilities;
@@ -24,41 +25,46 @@ public static class ClassExporter
 		codeBuilder.AddUsing("#pragma warning disable CS0108"); // CS0108: 'member1' hides inherited member 'member2'. Use the new keyword if hiding was intended.
 		codeBuilder.AddUsing("using UnrealEngine.Intrinsic;");
 		codeBuilder.AddUsing("using SharpScript.Interop;");
-		codeBuilder.AppendNamespace(classObj);
 
-		string className = classObj.GetScriptName();
-		string superClassName;
-		if (classObj.SuperClass != null)
+		codeBuilder.AppendLine($"namespace {classObj.GetNamespace()}");
+		using (new CodeBlock(codeBuilder)) // namespace
 		{
-			superClassName = classObj.Package == classObj.SuperClass.Package ? classObj.SuperClass.GetScriptName() : classObj.SuperClass.GetFullManagedName();
+			string className = classObj.GetScriptName();
+			string superClassName;
+			if (classObj.SuperClass != null)
+			{
+				superClassName = classObj.Package == classObj.SuperClass.Package ? classObj.SuperClass.GetScriptName() : classObj.SuperClass.GetFullManagedName();
+			}
+			else
+			{
+				superClassName = "ObjectBase";
+			}
+
+			superClassName = $"{superClassName}, IStaticClass<{className}>";
+
+			List<UhtClass> interfaces = classObj.GetInterfaces();
+			foreach (UhtClass interfaceClass in unsupportedInterfaces)
+			{
+				interfaces.Remove(interfaceClass);
+			}
+
+			codeBuilder.AppendTooltip(classObj);
+			codeBuilder.AppendTypeDeclare("class", className, baseTypeName: superClassName, nativeInterfaces: interfaces);
+
+			using (new CodeBlock(codeBuilder)) // class body
+			{
+				StaticConstructorUtilities.ExportStaticConstructor(codeBuilder, classObj,
+					exportedProperties,
+					exportedFunctions,
+					exportedOverrides,
+					unsupportedFunctions);
+
+				ExportProterties(codeBuilder, exportedProperties);
+				ExportClassFunctions(codeBuilder, exportedFunctions, unsupportedFunctions);
+			}
 		}
-		else
-		{
-			superClassName = "ObjectBase";
-		}
 
-		superClassName = $"{superClassName}, IStaticClass<{className}>";
-
-		List<UhtClass> interfaces = classObj.GetInterfaces();
-		foreach (UhtClass interfaceClass in unsupportedInterfaces)
-		{
-			interfaces.Remove(interfaceClass);
-		}
-
-		codeBuilder.AppendTooltip(classObj);
-		codeBuilder.AppendTypeDeclare("class", className, baseTypeName: superClassName, nativeInterfaces: interfaces);
-
-		using (new CodeBlock(codeBuilder)) // class body
-		{
-			StaticConstructorUtilities.ExportStaticConstructor(codeBuilder, classObj,
-				exportedProperties,
-				exportedFunctions,
-				exportedOverrides,
-				unsupportedFunctions);
-
-			ExportProterties(codeBuilder, exportedProperties);
-			ExportClassFunctions(codeBuilder, exportedFunctions, unsupportedFunctions);
-		}
+		ExportExtensionMethods(codeBuilder, classObj.GetFullManagedName(), exportedFunctions, unsupportedFunctions);
 
 		codeBuilder.AppendLine();
 		FileExporter.SaveGeneratedToDisk(classObj, codeBuilder);
@@ -84,6 +90,88 @@ public static class ClassExporter
 			using var unsupportedBlock = new UnsupportedBlock(codeBuilder, unsupported);
 			using var withEditorBlock = new WithEditorBlock(codeBuilder, function);
 			FunctionExporter.ExportFunction(codeBuilder, function);
+		}
+	}
+
+	static void ExportExtensionMethods(CodeBuilder codeBuilder, string hostClassName, List<UhtFunction> exportedFunctions, HashSet<UhtFunction> unsupportedFunctions)
+	{
+		Dictionary<UhtStruct, List<UhtFunction>> extensionMethodsByTarget = new();
+		foreach (UhtFunction function in exportedFunctions)
+		{
+			if (!function.HasAnyFlags(EFunctionFlags.Static))
+			{
+				continue;
+			}
+
+			if (unsupportedFunctions.Contains(function))
+			{
+				continue;
+			}
+
+			if (!function.MetaData.ContainsKey("ScriptMethod"))
+			{
+				continue;
+			}
+
+			if (function.Children.Count == 0)
+			{
+				continue;
+			}
+
+			UhtProperty firstParam = (UhtProperty)function.Children[0];
+			if (firstParam.HasAnyFlags(EPropertyFlags.ReturnParm))
+			{
+				continue;
+			}
+
+			UhtStruct? typeObj = null;
+			if (firstParam is UhtObjectProperty objectProperty)
+			{
+				typeObj = objectProperty.Class;
+			}
+			else if (firstParam is UhtStructProperty structProperty)
+			{
+				typeObj = structProperty.ScriptStruct;
+			}
+
+			if (typeObj != null)
+			{
+				if (!extensionMethodsByTarget.TryGetValue(typeObj, out var functions))
+				{
+					functions = new List<UhtFunction>();
+					extensionMethodsByTarget.Add(typeObj, functions);
+				}
+
+				functions.Add(function);
+			}
+		}
+
+		foreach (var pair in extensionMethodsByTarget)
+		{
+			UhtStruct typeObj = pair.Key;
+			string typeDecl = typeObj is UhtClass ? "class" : "struct";
+
+			codeBuilder.AppendLine();
+			codeBuilder.AppendLine($"namespace {typeObj.GetNamespace()}");
+			using (new CodeBlock(codeBuilder)) // namespace
+			{
+				codeBuilder.AppendLine($"public partial {typeDecl} {typeObj.GetScriptName()}");
+				using (new CodeBlock(codeBuilder)) // type body
+				{
+					var extensionMethods = pair.Value;
+					for (int i = 0; i < extensionMethods.Count; i++)
+					{
+						if (i > 0)
+						{
+							codeBuilder.AppendLine();
+						}
+
+						UhtFunction function = extensionMethods[i];
+						using var withEditorBlock = new WithEditorBlock(codeBuilder, function);
+						FunctionExporter.ExportExtensionMethod(codeBuilder, hostClassName, function);
+					}
+				}
+			}
 		}
 	}
 }

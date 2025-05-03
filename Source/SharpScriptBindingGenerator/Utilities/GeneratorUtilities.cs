@@ -1,5 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using EpicGames.Core;
 using EpicGames.UHT.Types;
 using SharpScriptBindingGenerator.PropertyTranslators;
@@ -35,21 +34,12 @@ public static class GeneratorUtilities
 
 	public static bool CanExportParameters(UhtFunction function)
 	{
-		bool CanExportParameter(UhtProperty property, Func<PropertyTranslator, bool> isSupported)
-		{
-			PropertyTranslator translator = PropertyTranslatorManager.GetTranslator(property);
-			return translator.GetType() != typeof(UnsupportedPropertyTranslator) &&
-					isSupported(translator) && translator.CanExport(property);
-		}
-
-		if (function.ReturnProperty != null && !CanExportParameter(function.ReturnProperty, translator => translator.IsSupportedAsReturnValue))
-		{
-			return false;
-		}
-
 		foreach (UhtProperty parameter in function.Properties)
 		{
-			if (!CanExportParameter(parameter, translator => translator.IsSupportedAsParameter))
+			PropertyTranslator translator = PropertyTranslatorManager.GetTranslator(parameter);
+			if (translator.GetType() == typeof(UnsupportedPropertyTranslator)
+				|| !translator.IsSupportedAsParameter
+				|| !translator.CanExport(parameter))
 			{
 				return false;
 			}

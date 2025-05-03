@@ -10,9 +10,8 @@ public enum EPropertyUsageFlags : byte
 	None = 0x00,
 	Property = 0x01,
 	Parameter = 0x02,
-	ReturnValue = 0x04,
-	InnerKey = 0x08,
-	InnerValue = 0x10,
+	InnerKey = 0x04,
+	InnerValue = 0x08,
 	Any = 0xFF,
 };
 
@@ -20,13 +19,8 @@ public abstract class PropertyTranslator
 {
 	private readonly EPropertyUsageFlags _supportedPropertyUsage;
 
-	protected const EPropertyUsageFlags ContainerSupportedUsages = EPropertyUsageFlags.Property
-																	| EPropertyUsageFlags.Parameter
-																	| EPropertyUsageFlags.ReturnValue;
-
 	public bool IsSupportedAsProperty => _supportedPropertyUsage.HasFlag(EPropertyUsageFlags.Property);
 	public bool IsSupportedAsParameter => _supportedPropertyUsage.HasFlag(EPropertyUsageFlags.Parameter);
-	public bool IsSupportedAsReturnValue => _supportedPropertyUsage.HasFlag(EPropertyUsageFlags.ReturnValue);
 	public bool IsSupportedAsInnerKey => _supportedPropertyUsage.HasFlag(EPropertyUsageFlags.InnerKey);
 	public bool IsSupportedAsInnerValue => _supportedPropertyUsage.HasFlag(EPropertyUsageFlags.InnerValue);
 

@@ -76,6 +76,12 @@ public static class NameMapper
 
 		if (type is UhtFunction functionType)
 		{
+			if (functionType.StrippedFunctionName == "GetType")
+			{
+				// never override System.Object.GetType()
+				return "K2_GetType";
+			}
+
 			return functionType.StrippedFunctionName;
 		}
 

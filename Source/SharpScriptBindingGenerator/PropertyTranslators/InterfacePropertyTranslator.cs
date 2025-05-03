@@ -7,7 +7,6 @@ public class InterfacePropertyTranslator : PropertyTranslator
 {
 	private const EPropertyUsageFlags SupportedUsages = EPropertyUsageFlags.Property
 														| EPropertyUsageFlags.Parameter
-														| EPropertyUsageFlags.ReturnValue
 														| EPropertyUsageFlags.InnerValue;
 
 	public InterfacePropertyTranslator() : base(SupportedUsages)

@@ -105,4 +105,13 @@ public:
 
 	UFUNCTION(BlueprintCallable, Category = "CSharp|Internal", meta = (DeterminesOutputType = "InClass2", DynamicOutputParam="Output1,Output2,Output3"))
 	static UActorComponent* FuncGenericOut(const TSubclassOf<UActorComponent>& InClass1, const TSubclassOf<USceneComponent>& InClass2, TArray<UActorComponent*>& Output1, TSet<UActorComponent*>& Output2, TMap<UActorComponent*, UActorComponent*>& Output3);
+
+	UFUNCTION(BlueprintCallable, Category = "CSharp|Internal", meta = (DeterminesOutputType = "InClass"))
+	static TArray<UActorComponent*> FuncGenericRetArray(const TSubclassOf<UActorComponent>& InClass);
+
+	UFUNCTION(BlueprintCallable, Category = "CSharp|Internal", meta = (DeterminesOutputType = "InClass"))
+	static TSet<UActorComponent*> FuncGenericRetSet(const TSubclassOf<UActorComponent>& InClass);
+
+	UFUNCTION(BlueprintCallable, Category = "CSharp|Internal", meta = (DeterminesOutputType = "InClass"))
+	static TMap<UActorComponent*, UActorComponent*> FuncGenericRetMap(const TSubclassOf<UActorComponent>& InClass);
 };

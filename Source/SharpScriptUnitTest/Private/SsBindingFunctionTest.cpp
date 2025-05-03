@@ -184,3 +184,24 @@ UActorComponent* USsBindingFunctionTest::FuncGenericOut(const TSubclassOf<UActor
 	Output3.Add(InClass2.GetDefaultObject(), InClass2.GetDefaultObject());
 	return InClass2.GetDefaultObject();
 }
+
+TArray<UActorComponent*> USsBindingFunctionTest::FuncGenericRetArray(const TSubclassOf<UActorComponent>& InClass)
+{
+	TArray<UActorComponent*> Out;
+	Out.Add(InClass.GetDefaultObject());
+	return Out;
+}
+
+TSet<UActorComponent*> USsBindingFunctionTest::FuncGenericRetSet(const TSubclassOf<UActorComponent>& InClass)
+{
+	TSet<UActorComponent*> Out;
+	Out.Add(InClass.GetDefaultObject());
+	return Out;
+}
+
+TMap<UActorComponent*, UActorComponent*> USsBindingFunctionTest::FuncGenericRetMap(const TSubclassOf<UActorComponent>& InClass)
+{
+	TMap<UActorComponent*, UActorComponent*> Out;
+	Out.Add(InClass.GetDefaultObject(), InClass.GetDefaultObject());
+	return Out;
+}

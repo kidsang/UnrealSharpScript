@@ -78,10 +78,4 @@ public partial struct Guid : IEquatable<Guid>, IComparable<Guid>
 			D = span[3],
 		};
 	}
-
-	public override string ToString()
-	{
-		System.Guid guid = this;
-		return guid.ToString("N");
-	}
 }

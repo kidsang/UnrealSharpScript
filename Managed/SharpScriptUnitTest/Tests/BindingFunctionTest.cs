@@ -153,6 +153,10 @@ public class BindingFunctionTest : IUnitTestInterface
 		Utils.Assert(outputGeneric22.Contains(testGenericClass2.GetDefaultObject()));
 		Utils.Assert(outputGeneric23[testGenericClass2.GetDefaultObject()!] == testGenericClass2.GetDefaultObject());
 
+		Utils.Assert(TestClass.FuncGenericRetArray(testGenericClass1)[0] == testGenericClass1.GetDefaultObject());
+		Utils.Assert(TestClass.FuncGenericRetSet(testGenericClass1).Contains(testGenericClass1.GetDefaultObject()));
+		Utils.Assert(TestClass.FuncGenericRetMap(testGenericClass1)[testGenericClass1.GetDefaultObject()!] == testGenericClass1.GetDefaultObject());
+
 		return true;
 	}
 }

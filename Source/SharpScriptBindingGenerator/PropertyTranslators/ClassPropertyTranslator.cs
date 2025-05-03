@@ -11,13 +11,13 @@ public class ClassPropertyTranslator : SimpleTypePropertyTranslator
 
 	public override bool CanExport(UhtProperty property)
 	{
-		UhtClassProperty? objectProperty = property as UhtClassProperty;
-		if (objectProperty == null)
+		UhtClassProperty? classProperty = property as UhtClassProperty;
+		if (classProperty == null)
 		{
 			return false;
 		}
 
-		return BindingGenerator.ShouldExportTypes.Contains(objectProperty.MetaClass!);
+		return BindingGenerator.ShouldExportTypes.Contains(classProperty.MetaClass!);
 	}
 
 	public override string GetPropManagedType(UhtProperty property)

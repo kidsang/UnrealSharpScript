@@ -46,7 +46,9 @@ public class FunctionExporter
 	protected bool SuppressGeneric;
 
 	protected string FunctionName;
+	protected string Protection;
 	protected string Modifiers;
+	protected string ParamStringCall;
 	protected string ParamStringWithDefault;
 	protected string InvokeFunction;
 	protected string InvokeArguments;
@@ -74,33 +76,9 @@ public class FunctionExporter
 		SuppressGeneric = suppressGeneric;
 
 		FunctionName = function.GetScriptName();
+		Protection = CalculateProtection();
 
 		Modifiers = "";
-		switch (protectionMode)
-		{
-			case EFunctionProtectionMode.UseUFunctionProtection:
-				if (function.HasAnyFlags(EFunctionFlags.Public))
-				{
-					Modifiers = "public ";
-				}
-				else if (function.HasAnyFlags(EFunctionFlags.Protected) || function.HasMetadata("BlueprintProtected"))
-				{
-					Modifiers = "protected ";
-				}
-				else
-				{
-					Modifiers = "public ";
-				}
-
-				break;
-			case EFunctionProtectionMode.OverrideWithInternal:
-				Modifiers = "internal ";
-				break;
-			case EFunctionProtectionMode.OverrideWithPublic:
-				Modifiers = "public ";
-				break;
-		}
-
 		if (function.HasAnyFlags(EFunctionFlags.Static))
 		{
 			Modifiers += "static ";
@@ -116,7 +94,8 @@ public class FunctionExporter
 
 			if (function.IsInterfaceFunction())
 			{
-				Modifiers = "public ";
+				Protection = "public ";
+				Modifiers = "";
 			}
 
 			InvokeFunction = "InvokeFunctionCall";
@@ -145,12 +124,6 @@ public class FunctionExporter
 
 				break;
 			}
-			// never override System.Object.GetType()
-			case "GetType":
-			{
-				FunctionName = "K2_" + FunctionName;
-				break;
-			}
 			// override ObjectBase.IsValid()
 			case "IsValid":
 			{
@@ -167,7 +140,7 @@ public class FunctionExporter
 
 		bool hasDefaultParameters = false;
 		string paramString = "";
-		string paramStringCall = "";
+		ParamStringCall = "";
 		ParamStringWithDefault = "";
 
 		foreach (var uhtType in function.Children)
@@ -184,7 +157,7 @@ public class FunctionExporter
 			if (paramString.Length > 0)
 			{
 				paramString = $"{paramString}, ";
-				paramStringCall = $"{paramStringCall}, ";
+				ParamStringCall = $"{ParamStringCall}, ";
 			}
 
 			string refQualifier = GetRefQualifier(param);
@@ -197,77 +170,77 @@ public class FunctionExporter
 				paramManagedType = translator.GetGenericParamManagedType(param, typeArgument);
 			}
 
-			// if (_selfParameter == param)
-			// {
-			// 	if (string.IsNullOrEmpty(paramsStringCallGenerics))
-			// 	{
-			// 		paramsStringCallGenerics += refQualifier + paramName;
-			// 	}
-			// 	else
-			// 	{
-			// 		paramsStringCallGenerics = $"{paramName},  " + _paramsStringCall.Substring(0, _paramsStringCall.Length - 2);
-			// 	}
-			//
-			// 	if (string.IsNullOrEmpty(_paramsStringCall))
-			// 	{
-			// 		_paramsStringCall += refQualifier + paramName;
-			// 	}
-			// 	else
-			// 	{
-			// 		_paramsStringCall = $"{paramName},  " + _paramsStringCall.Substring(0, _paramsStringCall.Length - 2);
-			// 	}
-			// 	paramsStringCallNative += paramName;
-			// }
-			// else
+			ParamStringCall = $"{ParamStringCall}{refQualifier}{paramName}";
+			paramString = $"{paramString}{refQualifier}{paramManagedType} {paramName}";
+
+			string? cppDefaultValue = translator.GetCppDefaultValue(function, param);
+			hasDefaultParameters = hasDefaultParameters || cppDefaultValue != null;
+
+			string? csharpDefaultValue = null;
+			if (hasDefaultParameters && Overloads.Count == 0)
 			{
-				paramStringCall = $"{paramStringCall}{refQualifier}{paramName}";
-				paramString = $"{paramString}{refQualifier}{paramManagedType} {paramName}";
-
-				string? cppDefaultValue = translator.GetCppDefaultValue(function, param);
-				hasDefaultParameters = hasDefaultParameters || cppDefaultValue != null;
-
-				string? csharpDefaultValue = null;
-				if (hasDefaultParameters && Overloads.Count == 0)
+				if (string.IsNullOrEmpty(cppDefaultValue) || cppDefaultValue == "None")
 				{
-					if (string.IsNullOrEmpty(cppDefaultValue) || cppDefaultValue == "None")
-					{
-						csharpDefaultValue = translator.GetNullValue(param);
-					}
-					else if (translator.ExportDefaultParameter)
-					{
-						csharpDefaultValue = translator.ConvertCppDefaultValue(cppDefaultValue, param);
-					}
+					csharpDefaultValue = translator.GetNullValue(param);
 				}
-
-				if (!string.IsNullOrEmpty(csharpDefaultValue))
+				else if (translator.ExportDefaultParameter)
 				{
-					if (ParamStringWithDefault.Length > 0)
-					{
-						ParamStringWithDefault = $"{ParamStringWithDefault}, ";
-					}
-
-					ParamStringWithDefault = $"{ParamStringWithDefault}{refQualifier}{paramManagedType} {paramName} = {csharpDefaultValue}";
-				}
-				else if (hasDefaultParameters && OverloadMode == EOverloadMode.AllowOverloads)
-				{
-					FunctionOverload overload = new FunctionOverload
-					{
-						ParamString = ParamStringWithDefault,
-						ParamStringCall = paramStringCall,
-						CSharpParamName = paramName,
-						CppDefaultValue = cppDefaultValue ?? string.Empty,
-						Translator = translator,
-						Parameter = param,
-					};
-
-					Overloads.Add(overload);
-					ParamStringWithDefault = paramString;
-				}
-				else
-				{
-					ParamStringWithDefault = paramString;
+					csharpDefaultValue = translator.ConvertCppDefaultValue(cppDefaultValue, param);
 				}
 			}
+
+			if (!string.IsNullOrEmpty(csharpDefaultValue))
+			{
+				if (ParamStringWithDefault.Length > 0)
+				{
+					ParamStringWithDefault = $"{ParamStringWithDefault}, ";
+				}
+
+				ParamStringWithDefault = $"{ParamStringWithDefault}{refQualifier}{paramManagedType} {paramName} = {csharpDefaultValue}";
+			}
+			else if (hasDefaultParameters && OverloadMode == EOverloadMode.AllowOverloads)
+			{
+				FunctionOverload overload = new FunctionOverload
+				{
+					ParamString = ParamStringWithDefault,
+					ParamStringCall = ParamStringCall,
+					CSharpParamName = paramName,
+					CppDefaultValue = cppDefaultValue ?? string.Empty,
+					Translator = translator,
+					Parameter = param,
+				};
+
+				Overloads.Add(overload);
+				ParamStringWithDefault = paramString;
+			}
+			else
+			{
+				ParamStringWithDefault = paramString;
+			}
+		}
+	}
+
+	private string CalculateProtection()
+	{
+		switch (ProtectionMode)
+		{
+			case EFunctionProtectionMode.UseUFunctionProtection:
+				if (Function.HasAnyFlags(EFunctionFlags.Public))
+				{
+					return "public ";
+				}
+
+				if (Function.HasAnyFlags(EFunctionFlags.Protected) || Function.HasMetadata("BlueprintProtected"))
+				{
+					return "protected ";
+				}
+
+				return "public ";
+			case EFunctionProtectionMode.OverrideWithInternal:
+				return "internal ";
+			case EFunctionProtectionMode.OverrideWithPublic:
+			default:
+				return "public ";
 		}
 	}
 
@@ -402,6 +375,33 @@ public class FunctionExporter
 		exporter.ExportInterfaceSignature(codeBuilder);
 	}
 
+	public static void ExportExtensionMethod(CodeBuilder codeBuilder, string hostClassName, UhtFunction function)
+	{
+		EFunctionProtectionMode protectionMode = EFunctionProtectionMode.OverrideWithPublic;
+		EOverloadMode overloadMode = EOverloadMode.AllowOverloads;
+		EBlueprintVisibility blueprintVisibility = EBlueprintVisibility.Call;
+		bool suppressGeneric = true;
+
+		FunctionExporter exporter = new FunctionExporter(function, protectionMode, overloadMode, blueprintVisibility, suppressGeneric);
+
+		string extensionMethodName = function.GetMetadata("ScriptMethod").Trim();
+		if (extensionMethodName.Length > 0)
+		{
+			int semiColonIndex = extensionMethodName.IndexOf(";", StringComparison.Ordinal);
+			if (semiColonIndex >= 0)
+			{
+				extensionMethodName = extensionMethodName.Substring(0, semiColonIndex);
+			}
+		}
+
+		if (extensionMethodName.Length > 0)
+		{
+			exporter.FunctionName = extensionMethodName;
+		}
+
+		exporter.ExportExtensionFunction(codeBuilder, hostClassName);
+	}
+
 	public void ExportDelegateInvoker(CodeBuilder codeBuilder)
 	{
 		ExportDelegateInvokerSignature(codeBuilder);
@@ -426,7 +426,7 @@ public class FunctionExporter
 				returnStatement = "return ";
 			}
 
-			codeBuilder.AppendLine($"{Modifiers}unsafe {returnType} {FunctionName}({overload.ParamString})");
+			codeBuilder.AppendLine($"{Protection}{Modifiers}unsafe {returnType} {FunctionName}({overload.ParamString})");
 
 			using (new CodeBlock(codeBuilder)) // function body
 			{
@@ -446,6 +446,17 @@ public class FunctionExporter
 		using (new CodeBlock(codeBuilder)) // function body
 		{
 			ExportInvoke(codeBuilder);
+		}
+	}
+
+	private void ExportExtensionFunction(CodeBuilder codeBuilder, string hostClassName)
+	{
+		codeBuilder.AppendTooltip(Function);
+		ExportDeprecation(codeBuilder);
+		ExportExtensionMethodSignature(codeBuilder);
+		using (new CodeBlock(codeBuilder)) // function body
+		{
+			ExportExtensionMethodInvoke(codeBuilder, hostClassName);
 		}
 	}
 
@@ -514,7 +525,7 @@ public class FunctionExporter
 	{
 		string returnType = GetReturnType();
 		string typeParams = GetTypeParams();
-		codeBuilder.AppendLine($"{Modifiers}unsafe {returnType} {FunctionName}{typeParams}({ParamStringWithDefault})");
+		codeBuilder.AppendLine($"{Protection}{Modifiers}unsafe {returnType} {FunctionName}{typeParams}({ParamStringWithDefault})");
 		ExportGenericConstraints(codeBuilder);
 	}
 
@@ -557,6 +568,21 @@ public class FunctionExporter
 		codeBuilder.AppendLine($"public {returnType} {FunctionName}{typeParams}({ParamStringWithDefault})");
 		ExportGenericConstraints(codeBuilder);
 		codeBuilder.Append(";");
+	}
+
+	public void ExportExtensionMethodSignature(CodeBuilder codeBuilder)
+	{
+		string modifiers = "";
+		if (FunctionName == "ToString")
+		{
+			modifiers = "override ";
+		}
+
+		int commaIndex = ParamStringWithDefault.IndexOf(",", StringComparison.Ordinal);
+		string paramString = commaIndex >= 0 ? ParamStringWithDefault.Substring(commaIndex + 2) : "";
+		string returnType = GetReturnType();
+		codeBuilder.AppendLine($"{Protection}{modifiers}{returnType} {FunctionName}({paramString})");
+		ExportGenericConstraints(codeBuilder);
 	}
 
 	private void ExportGenericConstraints(CodeBuilder codeBuilder)
@@ -648,6 +674,29 @@ public class FunctionExporter
 		{
 			codeBuilder.AppendLine("return returnValue;");
 		}
+	}
+
+	private void ExportExtensionMethodInvoke(CodeBuilder codeBuilder, string hostClassName)
+	{
+		UhtProperty selfParam = (UhtProperty)Function.Children[0];
+		string refQualifier = GetRefQualifier(selfParam);
+
+		string paramString = "this";
+		if (selfParam is UhtClassProperty classProperty)
+		{
+			UhtClass metaClass = classProperty.MetaClass!;
+			paramString = $"new SubclassOf<{metaClass.GetFullManagedName()}>(this)";
+		}
+
+		int commaIndex = ParamStringCall.IndexOf(",", StringComparison.Ordinal);
+		if (commaIndex >= 0)
+		{
+			paramString += ParamStringCall.Substring(commaIndex);
+		}
+
+		string functionName = Function.GetScriptName();
+		codeBuilder.AppendLine(Function.ReturnProperty != null ? "return " : "");
+		codeBuilder.Append($"{hostClassName}.{functionName}({refQualifier}{paramString});");
 	}
 
 	public void ForEachParameter(Action<PropertyTranslator, UhtProperty> action)

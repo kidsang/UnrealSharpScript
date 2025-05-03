@@ -5,7 +5,10 @@ namespace SharpScriptBindingGenerator.PropertyTranslators;
 
 public abstract class ContainerPropertyTranslator : NativeReferencePropertyTranslator
 {
-	protected ContainerPropertyTranslator() : base(ContainerSupportedUsages)
+	private const EPropertyUsageFlags SupportedUsages = EPropertyUsageFlags.Property
+														| EPropertyUsageFlags.Parameter;
+
+	protected ContainerPropertyTranslator() : base(SupportedUsages)
 	{
 	}
 
