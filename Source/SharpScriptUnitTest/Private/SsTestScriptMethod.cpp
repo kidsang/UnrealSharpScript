@@ -16,7 +16,27 @@ FIntPoint USsTestScriptMethod::NumericStructToIntPoint(const FSsTestNumericStruc
 	return FIntPoint(InStruct.X, InStruct.Y);
 }
 
-bool USsTestScriptMethod::Equals(const FSsTestNumericStruct& IntA, const FSsTestNumericStruct& IntB)
+bool USsTestScriptMethod::Equals(const FSsTestNumericStruct& Lhs, const FSsTestNumericStruct& Rhs)
 {
-	return IntA.X == IntB.X && IntA.Y == IntB.Y;
+	return Lhs.X == Rhs.X && Lhs.Y == Rhs.Y;
+}
+
+FSsTestNumericStruct USsTestScriptMethod::AddInt(const FSsTestNumericStruct& Lhs, int Rhs)
+{
+	return FSsTestNumericStruct(Lhs.X + Rhs, Lhs.Y + Rhs);
+}
+
+FSsTestNumericStruct USsTestScriptMethod::SubtractInt(const FSsTestNumericStruct& Lhs, int Rhs)
+{
+	return FSsTestNumericStruct(Lhs.X - Rhs, Lhs.Y - Rhs);
+}
+
+FSsTestNumericStruct USsTestScriptMethod::MultiplyInt(const FSsTestNumericStruct& Lhs, int Rhs)
+{
+	return FSsTestNumericStruct(Lhs.X * Rhs, Lhs.Y * Rhs);
+}
+
+FSsTestNumericStruct USsTestScriptMethod::DivideInt(const FSsTestNumericStruct& Lhs, int Rhs)
+{
+	return FSsTestNumericStruct(Lhs.X / Rhs, Lhs.Y / Rhs);
 }

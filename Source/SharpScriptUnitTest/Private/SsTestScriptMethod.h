@@ -35,5 +35,17 @@ public:
 	static FIntPoint NumericStructToIntPoint(const FSsTestNumericStruct& InStruct);
 
 	UFUNCTION(BlueprintCallable, Category = "CSharp|Internal", meta=(ScriptMethod, ScriptOperator="=="))
-	static bool Equals(const FSsTestNumericStruct& IntA, const FSsTestNumericStruct& IntB);
+	static bool Equals(const FSsTestNumericStruct& Lhs, const FSsTestNumericStruct& Rhs);
+
+	UFUNCTION(BlueprintCallable, Category = "CSharp|Internal", meta=(ScriptMethod, ScriptOperator="+"))
+	static FSsTestNumericStruct AddInt(const FSsTestNumericStruct& Lhs, int Rhs);
+
+	UFUNCTION(BlueprintCallable, Category = "CSharp|Internal", meta=(ScriptMethod, ScriptOperator="-"))
+	static FSsTestNumericStruct SubtractInt(const FSsTestNumericStruct& Lhs, int Rhs);
+
+	UFUNCTION(BlueprintCallable, Category = "CSharp|Internal", meta=(ScriptMethod, ScriptOperator="*"))
+	static FSsTestNumericStruct MultiplyInt(const FSsTestNumericStruct& Lhs, int Rhs);
+
+	UFUNCTION(BlueprintCallable, Category = "CSharp|Internal", meta=(ScriptMethod, ScriptOperator="/"))
+	static FSsTestNumericStruct DivideInt(const FSsTestNumericStruct& Lhs, int Rhs);
 };

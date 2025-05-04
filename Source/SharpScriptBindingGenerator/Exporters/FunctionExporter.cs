@@ -11,6 +11,7 @@ public enum EOverloadMode
 {
 	AllowOverloads,
 	SuppressOverloads,
+	SuppressDefaultValues, // this will also supress overloads
 }
 
 public enum EFunctionProtectionMode
@@ -187,7 +188,9 @@ public class FunctionExporter
 			ParamStringCall = $"{ParamStringCall}{refQualifier}{paramName}";
 			paramString = $"{paramString}{refQualifier}{paramManagedType} {paramName}";
 
-			string? cppDefaultValue = translator.GetCppDefaultValue(function, param);
+			string? cppDefaultValue = OverloadMode != EOverloadMode.SuppressDefaultValues
+				? translator.GetCppDefaultValue(function, param)
+				: null;
 			hasDefaultParameters = hasDefaultParameters || cppDefaultValue != null;
 
 			string? csharpDefaultValue = null;
@@ -392,7 +395,12 @@ public class FunctionExporter
 	public static void ExportExtensionMethod(CodeBuilder codeBuilder, string hostClassName, ExtensionMethod extensionMethod)
 	{
 		EFunctionProtectionMode protectionMode = EFunctionProtectionMode.OverrideWithPublic;
-		EOverloadMode overloadMode = extensionMethod.MethodType == EExtensionMethodType.Normal ? EOverloadMode.AllowOverloads : EOverloadMode.SuppressOverloads;
+		EOverloadMode overloadMode = extensionMethod.MethodType switch
+		{
+			EExtensionMethodType.Normal => EOverloadMode.AllowOverloads,
+			EExtensionMethodType.Operator => EOverloadMode.SuppressDefaultValues,
+			_ => EOverloadMode.SuppressOverloads
+		};
 		EBlueprintVisibility blueprintVisibility = EBlueprintVisibility.Call;
 		bool suppressGeneric = true;
 
@@ -463,6 +471,7 @@ public class FunctionExporter
 				{
 					paramStringCall = paramStringCall.Substring(0, commaIndex); // remove the last param
 				}
+
 				codeBuilder.AppendLine($"{returnStatement}{hostClassName}.{FunctionName}({paramStringCall});");
 			}
 

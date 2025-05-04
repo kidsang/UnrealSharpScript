@@ -113,14 +113,14 @@ public static class ClassExporter
 	{
 		string? operatorName = null;
 
-		EExtensionMethodType methodtype = EExtensionMethodType.Normal;
+		EExtensionMethodType methodType = EExtensionMethodType.Normal;
 		if (function.MetaData.ContainsKey("BlueprintAutocast"))
 		{
 			if (function.Children.Count == 2
 				&& ((UhtProperty)function.Children[1]).HasAnyFlags(EPropertyFlags.ReturnParm)
 				&& function.Children[1] is UhtStructProperty)
 			{
-				methodtype = EExtensionMethodType.Autocast;
+				methodType = EExtensionMethodType.Autocast;
 			}
 		}
 		else if (function.MetaData.ContainsKey("ScriptOperator"))
@@ -134,6 +134,22 @@ public static class ClassExporter
 					operatorName = "!=";
 				}
 			}
+			else if (operatorName.Contains('+'))
+			{
+				operatorName = "+";
+			}
+			else if (operatorName.Contains('-'))
+			{
+				operatorName = "-";
+			}
+			else if (operatorName.Contains('*'))
+			{
+				operatorName = "*";
+			}
+			else if (operatorName.Contains('/'))
+			{
+				operatorName = "/";
+			}
 
 			switch (operatorName)
 			{
@@ -141,12 +157,30 @@ public static class ClassExporter
 				case "!=":
 				{
 					if (function.Children.Count == 3
-						&& function.Children[2] is UhtBoolProperty
+						&& function.Children[2] is UhtBoolProperty ret
+						&& ret.HasAnyFlags(EPropertyFlags.ReturnParm)
 						&& function.Children[0] is UhtStructProperty lhs
 						&& function.Children[1] is UhtStructProperty rhs
 						&& lhs.ScriptStruct == rhs.ScriptStruct)
 					{
-						methodtype = EExtensionMethodType.Operator;
+						methodType = EExtensionMethodType.Operator;
+					}
+
+					break;
+				}
+
+				case "+":
+				case "-":
+				case "*":
+				case "/":
+				{
+					if (function.Children.Count == 3
+						&& function.Children[2] is UhtStructProperty ret
+						&& ret.HasAnyFlags(EPropertyFlags.ReturnParm)
+						&& function.Children[0] is UhtStructProperty lhs
+						&& lhs.ScriptStruct == ret.ScriptStruct)
+					{
+						methodType = EExtensionMethodType.Operator;
 					}
 
 					break;
@@ -154,14 +188,16 @@ public static class ClassExporter
 			}
 		}
 
-		methodName = methodtype switch
+		methodName = methodType switch
 		{
 			EExtensionMethodType.Normal => GetExtensionMethodName(function),
+			EExtensionMethodType.Autocast => "->",
 			EExtensionMethodType.Operator => operatorName!,
+			// ReSharper disable once UnreachableSwitchArmDueToIntegerAnalysis
 			_ => ""
 		};
 
-		return methodtype;
+		return methodType;
 	}
 
 	private static void ExportExtensionMethods(CodeBuilder codeBuilder, string hostClassName, List<UhtFunction> exportedFunctions, HashSet<UhtFunction> unsupportedFunctions)
@@ -228,109 +264,110 @@ public static class ClassExporter
 
 		foreach (var pair in extensionMethodsByTarget)
 		{
-			var extensionMethods = pair.Value;
-			HashSet<string> methodNames = new HashSet<string>();
-			foreach (ExtensionMethod extensionMethod in extensionMethods)
+			ExportOneExtensionMethod(codeBuilder, hostClassName, pair.Key, pair.Value);
+		}
+	}
+
+	private static void ExportOneExtensionMethod(CodeBuilder codeBuilder, string hostClassName, UhtType typeObj, List<ExtensionMethod> extensionMethods)
+	{
+		HashSet<string> methodNames = new HashSet<string>();
+		foreach (ExtensionMethod extensionMethod in extensionMethods)
+		{
+			methodNames.Add(extensionMethod.MethodName);
+		}
+
+		bool hasEqualsOperator = false;
+
+		// Some operators must be overloaded in pairs (eg. "==" and "!=").
+		// Go through the operators to ensure this rule.
+		for (int i = extensionMethods.Count - 1; i >= 0; i--)
+		{
+			var extensionMethod = extensionMethods[i];
+			if (extensionMethod.MethodType != EExtensionMethodType.Operator)
 			{
-				methodNames.Add(extensionMethod.MethodName);
+				continue;
 			}
 
-			bool hasEqualsOperator = false;
-
-			// Some operators must be overloaded in pairs (eg. "==" and "!=").
-			// Go through the operators to ensure this rule.
-			for (int i = methodNames.Count - 1; i >= 0; i--)
+			string methodName = extensionMethod.MethodName;
+			if (methodName == "==")
 			{
-				var extensionMethod = extensionMethods[i];
-				if (extensionMethod.MethodType != EExtensionMethodType.Operator)
+				hasEqualsOperator = true;
+
+				if (methodNames.Add("!="))
 				{
-					continue;
+					// Add operator overload "!=" using negative version of "Equals".
+					extensionMethods.Insert(i + 1, new ExtensionMethod
+					{
+						MethodType = EExtensionMethodType.Operator,
+						MethodName = "!(==)",
+						Function = extensionMethod.Function,
+					});
 				}
 
-				string methodName = extensionMethod.MethodName;
-				if (methodName == "==")
+				if (methodNames.Add("Equals"))
 				{
-					hasEqualsOperator = true;
-
-					if (methodNames.Add("!="))
+					// Add method "Equals".
+					extensionMethods.Insert(i, new ExtensionMethod
 					{
-						// Add operator overload "!=" using negative version of "Equals".
-						extensionMethods.Insert(i + 1, new ExtensionMethod
-						{
-							MethodType = EExtensionMethodType.Operator,
-							MethodName = "!(==)",
-							Function = extensionMethod.Function,
-						});
-					}
-
-					if (methodNames.Add("Equals"))
-					{
-						// Add method "Equals".
-						extensionMethods.Insert(i, new ExtensionMethod
-						{
-							MethodType = EExtensionMethodType.Normal,
-							MethodName = "Equals",
-							Function = extensionMethod.Function,
-						});
-					}
-				}
-				else if (methodName == "!=")
-				{
-					if (!methodNames.Contains("=="))
-					{
-						extensionMethods.RemoveAt(i);
-					}
+						MethodType = EExtensionMethodType.Normal,
+						MethodName = "Equals",
+						Function = extensionMethod.Function,
+					});
 				}
 			}
+			else if (methodName == "!=")
+			{
+				if (!methodNames.Contains("=="))
+				{
+					extensionMethods.RemoveAt(i);
+				}
+			}
+		}
 
-			UhtStruct typeObj = pair.Key;
-			string typeDecl = typeObj is UhtClass ? "class" : "struct";
+		codeBuilder.AppendLine();
+		codeBuilder.AppendLine($"namespace {typeObj.GetNamespace()}");
+		using var namespaceBlock = new CodeBlock(codeBuilder);
 
+		string typeDecl = typeObj is UhtClass ? "class" : "struct";
+		string typeName = typeObj.GetScriptName();
+		codeBuilder.AppendLine($"public partial {typeDecl} {typeName}");
+
+		if (hasEqualsOperator)
+		{
+			codeBuilder.Append($" : IEquatable<{typeName}>");
+		}
+
+		using var typeBodyBlock = new CodeBlock(codeBuilder);
+		for (int i = 0; i < extensionMethods.Count; i++)
+		{
+			if (i > 0)
+			{
+				codeBuilder.AppendLine();
+			}
+
+			ExtensionMethod extensionMethod = extensionMethods[i];
+			using var withEditorBlock = new WithEditorBlock(codeBuilder, extensionMethod.Function);
+			FunctionExporter.ExportExtensionMethod(codeBuilder, hostClassName, extensionMethod);
+		}
+
+		if (hasEqualsOperator)
+		{
+			// override object.Equals to fix CS0661.
+			// CS0661: https://learn.microsoft.com/dotnet/csharp/misc/cs0661
 			codeBuilder.AppendLine();
-			codeBuilder.AppendLine($"namespace {typeObj.GetNamespace()}");
-			using (new CodeBlock(codeBuilder)) // namespace
+			codeBuilder.AppendLine("public override bool Equals(object? obj)");
+			using (new CodeBlock(codeBuilder))
 			{
-				string typeName = typeObj.GetScriptName();
-				codeBuilder.AppendLine($"public partial {typeDecl} {typeName}");
+				codeBuilder.AppendLine($"return obj is {typeName} other && Equals(other);");
+			}
 
-				if (hasEqualsOperator)
-				{
-					codeBuilder.Append($" : IEquatable<{typeName}>");
-				}
-
-				using (new CodeBlock(codeBuilder)) // type body
-				{
-					for (int i = 0; i < extensionMethods.Count; i++)
-					{
-						if (i > 0)
-						{
-							codeBuilder.AppendLine();
-						}
-
-						ExtensionMethod extensionMethod = extensionMethods[i];
-						using var withEditorBlock = new WithEditorBlock(codeBuilder, extensionMethod.Function);
-						FunctionExporter.ExportExtensionMethod(codeBuilder, hostClassName, extensionMethod);
-					}
-
-					if (hasEqualsOperator)
-					{
-						// override object.Equals
-						codeBuilder.AppendLine();
-						codeBuilder.AppendLine("public override bool Equals(object? obj)");
-						using (new CodeBlock(codeBuilder))
-						{
-							codeBuilder.AppendLine($"return obj is {typeName} other && Equals(other);");
-						}
-
-						// override ValueType.GetHashCode
-						codeBuilder.AppendLine();
-						codeBuilder.AppendLine("public override int GetHashCode()");
-						using (new CodeBlock(codeBuilder))
-						{
-							codeBuilder.AppendLine("return base.GetHashCode();");
-						}
-					}
-				}
+			// override ValueType.GetHashCode to fix CS0660.
+			// CS0660: https://learn.microsoft.com/dotnet/csharp/misc/cs0660
+			codeBuilder.AppendLine();
+			codeBuilder.AppendLine("public override int GetHashCode()");
+			using (new CodeBlock(codeBuilder))
+			{
+				codeBuilder.AppendLine("return base.GetHashCode();");
 			}
 		}
 	}

@@ -45,6 +45,12 @@ public class ScriptMethodTest : IUnitTestInterface
 		Utils.Assert(testStruct == structA);
 		Utils.Assert(testStruct != structB);
 
+		// test numeric operation
+		Utils.Assert(testStruct + 10 ==  new TestStruct{X = 20, Y = 30});
+		Utils.Assert(testStruct - 10 ==  new TestStruct{X = 0, Y = 10});
+		Utils.Assert(testStruct * 2 ==  new TestStruct{X = 20, Y = 40});
+		Utils.Assert(testStruct / 2 ==  new TestStruct{X = 5, Y = 10});
+
 		return true;
 	}
 }
