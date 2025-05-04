@@ -40,3 +40,8 @@ FSsTestNumericStruct USsTestScriptMethod::DivideInt(const FSsTestNumericStruct& 
 {
 	return FSsTestNumericStruct(Lhs.X / Rhs, Lhs.Y / Rhs);
 }
+
+FSsTestNumericStruct USsTestScriptMethod::Negate(const FSsTestNumericStruct& Lhs)
+{
+	return FSsTestNumericStruct(-Lhs.X, -Lhs.Y);
+}

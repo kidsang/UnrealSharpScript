@@ -48,4 +48,7 @@ public:
 
 	UFUNCTION(BlueprintCallable, Category = "CSharp|Internal", meta=(ScriptMethod, ScriptOperator="/"))
 	static FSsTestNumericStruct DivideInt(const FSsTestNumericStruct& Lhs, int Rhs);
+
+	UFUNCTION(BlueprintCallable, Category = "CSharp|Internal", meta=(ScriptMethod, ScriptOperator="neg"))
+	static FSsTestNumericStruct Negate(const FSsTestNumericStruct& Lhs);
 };

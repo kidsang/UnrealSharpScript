@@ -185,6 +185,21 @@ public static class ClassExporter
 
 					break;
 				}
+
+				case "neg":
+				{
+					if (function.Children.Count == 2
+						&& function.Children[1] is UhtStructProperty ret
+						&& ret.HasAnyFlags(EPropertyFlags.ReturnParm)
+						&& function.Children[0] is UhtStructProperty lhs
+						&& lhs.ScriptStruct == ret.ScriptStruct)
+					{
+						operatorName = "-";
+						methodType = EExtensionMethodType.Operator;
+					}
+
+					break;
+				}
 			}
 		}
 
