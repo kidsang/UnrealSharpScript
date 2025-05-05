@@ -13,6 +13,8 @@ public class DelegatePropertyTranslator : NativeReferencePropertyTranslator
 	{
 	}
 
+	public override bool ParamNeedInitialize => true;
+
 	public override bool CanExport(UhtProperty property)
 	{
 		UhtDelegateProperty delegateProperty = (UhtDelegateProperty)property;

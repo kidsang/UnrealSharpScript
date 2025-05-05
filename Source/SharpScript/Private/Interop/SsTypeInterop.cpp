@@ -46,7 +46,7 @@ void USsTypeInterop::InitializeStruct(const UStruct* InType, void* Buffer)
 	InType->InitializeStruct(Buffer);
 }
 
-void USsTypeInterop::UninitializeStruct(const UStruct* InType, void* Buffer)
+void USsTypeInterop::DeinitializeStruct(const UStruct* InType, void* Buffer)
 {
 	InType->DestroyStruct(Buffer);
 }
@@ -69,6 +69,30 @@ UFunction* USsTypeInterop::FindFunction(const UClass* InClass, FName InFuncName)
 int USsTypeInterop::GetFunctionParamsSize(const UFunction* InFunc)
 {
 	return InFunc->ParmsSize;
+}
+
+void USsTypeInterop::InitializeFunctionParams(const UFunction* InFunc, void* Buffer)
+{
+	// see: UObject::CallFunctionByNameWithArguments
+	for (FProperty* Property = InFunc->PropertyLink; Property && Property->HasAnyPropertyFlags(CPF_Parm); Property = Property->PropertyLinkNext)
+	{
+		if (Property->HasAnyPropertyFlags(CPF_ZeroConstructor))
+		{
+			// Buffer has been zero initialized.
+			continue;
+		}
+
+		Property->InitializeValue_InContainer(Buffer);
+	}
+}
+
+void USsTypeInterop::DeinitializeFunctionParams(const UFunction* InFunc, void* Buffer)
+{
+	// see: UObject::CallFunctionByNameWithArguments
+	for (FProperty* Property = InFunc->PropertyLink; Property && Property->HasAnyPropertyFlags(CPF_Parm); Property = Property->PropertyLinkNext)
+	{
+		Property->DestroyValue_InContainer(Buffer);
+	}
 }
 
 FProperty* USsTypeInterop::GetFirstProperty(const UStruct* InStruct)
@@ -165,11 +189,13 @@ void USsTypeInterop::DoExportFunctions(FSsBindNativeCallbackFunc BindNativeCallb
 	BindNativeCallbackFunc(&DestroyStructInstance, TEXT("TypeInterop.NativeDestroyStructInstance"));
 	BindNativeCallbackFunc(&GetStructureSize, TEXT("TypeInterop.NativeGetStructureSize"));
 	BindNativeCallbackFunc(&InitializeStruct, TEXT("TypeInterop.NativeInitializeStruct"));
-	BindNativeCallbackFunc(&UninitializeStruct, TEXT("TypeInterop.NativeUninitializeStruct"));
+	BindNativeCallbackFunc(&DeinitializeStruct, TEXT("TypeInterop.NativeDeinitializeStruct"));
 	BindNativeCallbackFunc(&GetTypeName, TEXT("TypeInterop.NativeGetTypeName"));
 	BindNativeCallbackFunc(&FindEnum, TEXT("TypeInterop.NativeFindEnum"));
 	BindNativeCallbackFunc(&FindFunction, TEXT("TypeInterop.NativeFindFunction"));
 	BindNativeCallbackFunc(&GetFunctionParamsSize, TEXT("TypeInterop.NativeGetFunctionParamsSize"));
+	BindNativeCallbackFunc(&InitializeFunctionParams, TEXT("TypeInterop.NativeInitializeFunctionParams"));
+	BindNativeCallbackFunc(&DeinitializeFunctionParams, TEXT("TypeInterop.NativeDeinitializeFunctionParams"));
 	BindNativeCallbackFunc(&GetFirstProperty, TEXT("TypeInterop.NativeGetFirstProperty"));
 	BindNativeCallbackFunc(&GetNextProperty, TEXT("TypeInterop.NativeGetNextProperty"));
 	BindNativeCallbackFunc(&FindProperty, TEXT("TypeInterop.NativeFindProerty"));

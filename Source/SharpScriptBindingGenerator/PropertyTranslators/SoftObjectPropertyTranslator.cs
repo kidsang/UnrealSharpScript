@@ -6,6 +6,8 @@ public class SoftObjectPropertyTranslator : ObjectPropertyTranslator
 {
 	public override bool IsNullable => false;
 
+	public override bool ParamNeedInitialize => true;
+
 	public override string GetPropManagedType(UhtProperty property)
 	{
 		return $"SoftObjectPtr<{GetManagedType(property)}>";

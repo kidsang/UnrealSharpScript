@@ -268,6 +268,7 @@ public class BindingObjectTest : IUnitTestInterface
 		obj.StructArray[0].Name = "Name";
 		Utils.Assert(obj.StructArray[0].Name == "Name");
 		obj.StructArray[0].Text = new Text("Text");
+		Utils.Assert(obj.StructArray[0].Text == "Text");
 		obj.StructArray[0].StringArray.CopyFrom(["String", "Array"]);
 		Utils.Assert(obj.StructArray[0].StringArray.SequenceEqual(["String", "Array"]));
 		obj.StructArray[0].StringSet.CopyFrom(["String", "Set"]);
@@ -349,6 +350,10 @@ public class BindingObjectTest : IUnitTestInterface
 
 		FieldPath fieldPath = SsBindingTestObject.ReturnFieldPath();
 		Utils.Assert(fieldPath.Path == "/Script/SharpScriptUnitTest.SsBindingTestObject:FieldPath");
+
+		obj.SetInt(42);
+		Utils.Assert(obj.Int == 42);
+		Utils.Assert(obj.GetInt() == 42);
 
 		// Test Delegate property
 		Utils.Assert(!obj.Delegate.IsBound());

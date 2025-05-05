@@ -12,6 +12,8 @@ public abstract class ContainerPropertyTranslator : NativeReferencePropertyTrans
 	{
 	}
 
+	public override bool ParamNeedInitialize => true;
+
 	protected UhtProperty GetValueProperty(UhtProperty property)
 	{
 		UhtContainerBaseProperty containerProperty = (UhtContainerBaseProperty)property;

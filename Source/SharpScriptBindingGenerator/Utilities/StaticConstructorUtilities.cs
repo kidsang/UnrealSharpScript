@@ -129,7 +129,7 @@ public static class StaticConstructorUtilities
 
 			codeBuilder.AppendLine($"{modifier} IntPtr {nativeFuncName};");
 
-			if (!function.HasParametersOrReturnValue())
+			if (!function.HasParametersOrReturnValue() || function.HasSingleBlittableParam())
 			{
 				continue;
 			}
@@ -164,7 +164,7 @@ public static class StaticConstructorUtilities
 				? $"{nativeFuncName} = TypeInterop.GetDelegateSignatureFunction(nativeDelegateProp);"
 				: $"{nativeFuncName} = TypeInterop.FindFunction(NativeType, \"{funcName}\");");
 
-			if (!function.HasParametersOrReturnValue())
+			if (!function.HasParametersOrReturnValue() || function.HasSingleBlittableParam())
 			{
 				continue;
 			}

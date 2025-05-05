@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using EpicGames.Core;
 using EpicGames.UHT.Types;
+using SharpScriptBindingGenerator.PropertyTranslators;
 
 namespace SharpScriptBindingGenerator.Utilities;
 
@@ -70,9 +71,16 @@ public static class FunctionUtilities
 		return function.Children.Count > 0;
 	}
 
-	public static string GetNativeFunctionName(this UhtFunction function)
+	public static bool HasSingleBlittableParam(this UhtFunction function)
 	{
-		return $"{function.SourceName}_NativeFunction";
+		if (function.Children.Count != 1)
+		{
+			return false;
+		}
+
+		UhtProperty param = (UhtProperty)function.Children[0];
+		PropertyTranslator translator = PropertyTranslatorManager.GetTranslator(param);
+		return translator.IsBlittable;
 	}
 
 	public static bool HasSameSignature(this UhtFunction function, UhtFunction otherFunction)
@@ -93,41 +101,6 @@ public static class FunctionUtilities
 		}
 
 		return true;
-	}
-
-	public static bool IsAutocast(this UhtFunction function)
-	{
-		if (!function.FunctionFlags.HasAllFlags(EFunctionFlags.Static) || function.ReturnProperty == null || function.Children.Count != 2)
-		{
-			return false;
-		}
-
-		if (function.Properties.First() is not UhtStructProperty)
-		{
-			return false;
-		}
-
-		// These will be interfaces in C#, which implicit conversion doesn't work for.
-		// TODO: Support these in the future.
-		UhtProperty returnProperty = function.ReturnProperty!;
-		if (returnProperty is UhtArrayProperty or UhtSetProperty or UhtMapProperty)
-		{
-			return false;
-		}
-
-		if (function.HasMetadata("BlueprintAutocast"))
-		{
-			return true;
-		}
-
-		string sourceName = function.SourceName;
-		return sourceName.StartsWith("Conv_", StringComparison.OrdinalIgnoreCase) || sourceName.StartsWith("To");
-	}
-
-	public static string GetBlueprintAutocastName(this UhtFunction function)
-	{
-		int toTypeIndex = function.SourceName.IndexOf("Conv_", StringComparison.Ordinal);
-		return toTypeIndex == -1 ? function.SourceName : function.SourceName.Substring(toTypeIndex + 5);
 	}
 
 	// private static bool IsBlueprintAccessor(this UhtFunction function, string accessorType, Func<UhtProperty, UhtFunction?> getBlueprintAccessor)
@@ -212,52 +185,6 @@ public static class FunctionUtilities
 	// 	return function.IsBlueprintAccessor("BlueprintSetter", property => property.GetBlueprintSetter())
 	// 			|| function.IsNativeAccessor(GetterSetterMode.Set);
 	// }
-	//
-	//  public static bool HasGenericTypeSupport(this UhtFunction function)
-	//  {
-	//      if (!function.HasMetadata("DeterminesOutputType")) return false;
-	//
-	//      var propertyDOTEngineName = function.GetMetadata("DeterminesOutputType");
-	//
-	//      var propertyDeterminingOutputType = function.Properties
-	// .FirstOrDefault(p => p.EngineName == propertyDOTEngineName);
-	//
-	//      if (propertyDeterminingOutputType == null) return false;
-	//
-	//      PropertyTranslator dotParamTranslator = PropertyTranslatorManager.GetTranslator(propertyDeterminingOutputType)!;
-	//      if (!dotParamTranslator.CanSupportGenericType(propertyDeterminingOutputType)) return false;
-	//
-	//      if (function.HasMetadata("DynamicOutputParam"))
-	//      {
-	//          var propertyDynamicOutputParam = function.Properties
-	// 	.FirstOrDefault(p => p.EngineName == function.GetMetadata("DynamicOutputParam"));
-	//
-	//          if (propertyDynamicOutputParam == null) return false;
-	//
-	//          if (propertyDeterminingOutputType!.GetGenericManagedType() != propertyDynamicOutputParam.GetGenericManagedType()) return false;
-	//
-	//          PropertyTranslator dopParamTranslator = PropertyTranslatorManager.GetTranslator(propertyDynamicOutputParam)!;
-	//          return dopParamTranslator.CanSupportGenericType(propertyDynamicOutputParam);
-	//      }
-	//
-	//      if (function.HasReturnProperty)
-	//      {
-	//          PropertyTranslator returnParamTranslator = PropertyTranslatorManager.GetTranslator(function.ReturnProperty!)!;
-	//          return returnParamTranslator.CanSupportGenericType(function.ReturnProperty!);
-	//      }
-	//
-	//      return false;
-	//  }
-	//
-	//  public static string GetGenericTypeConstraint(this UhtFunction function)
-	//  {
-	//      if (!function.HasMetadata("DeterminesOutputType")) return string.Empty;
-	//
-	//      var propertyDeterminingOutputType = function.Properties
-	// .FirstOrDefault(p => p.EngineName == function.GetMetadata("DeterminesOutputType"));
-	//
-	//      return propertyDeterminingOutputType?.GetGenericManagedType() ?? string.Empty;
-	//  }
 
 	public static bool HasCustomStructParamSupport(this UhtFunction function)
 	{

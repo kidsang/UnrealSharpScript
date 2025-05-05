@@ -9,6 +9,8 @@ public class SoftClassPropertyTranslator : SimpleTypePropertyTranslator
 	{
 	}
 
+	public override bool ParamNeedInitialize => true;
+
 	public override bool CanExport(UhtProperty property)
 	{
 		UhtSoftClassProperty? softClassProperty = property as UhtSoftClassProperty;

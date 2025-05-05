@@ -24,7 +24,7 @@ class USsTypeInterop : public USsNativeFuncExporter
 
 	static void InitializeStruct(const UStruct* InType, void* Buffer);
 
-	static void UninitializeStruct(const UStruct* InType, void* Buffer);
+	static void DeinitializeStruct(const UStruct* InType, void* Buffer);
 
 	static FName GetTypeName(const UStruct* InType);
 
@@ -33,6 +33,10 @@ class USsTypeInterop : public USsNativeFuncExporter
 	static UFunction* FindFunction(const UClass* InClass, FName InFuncName);
 
 	static int GetFunctionParamsSize(const UFunction* InFunc);
+
+	static void InitializeFunctionParams(const UFunction* InFunc, void* Buffer);
+
+	static void DeinitializeFunctionParams(const UFunction* InFunc, void* Buffer);
 
 	static FProperty* GetFirstProperty(const UStruct* InStruct);
 

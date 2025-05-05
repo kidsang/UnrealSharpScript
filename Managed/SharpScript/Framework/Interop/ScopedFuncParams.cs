@@ -16,14 +16,14 @@ public unsafe struct ScopedFuncParams() : IDisposable
 	{
 		_nativeFunc = nativeFunc;
 		_buffer = (IntPtr)buffer;
-		TypeInterop.InitializeStruct(nativeFunc, _buffer);
+		TypeInterop.InitializeFunctionParams(nativeFunc, _buffer);
 	}
 
 	public void Dispose()
 	{
 		if (_buffer != IntPtr.Zero)
 		{
-			TypeInterop.UninitializeStruct(_nativeFunc, _buffer);
+			TypeInterop.DeinitializeFunctionParams(_nativeFunc, _buffer);
 			_buffer = IntPtr.Zero;
 		}
 	}

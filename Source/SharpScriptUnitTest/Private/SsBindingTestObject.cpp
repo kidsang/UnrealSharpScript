@@ -103,6 +103,16 @@ int32 USsBindingTestObject::GetConstantValue()
 	return 10;
 }
 
+void USsBindingTestObject::SetInt(int InValue)
+{
+	Int = InValue;
+}
+
+int USsBindingTestObject::GetInt() const
+{
+	return Int;
+}
+
 int32 USsBindingTestObject::FuncInterface(const int32 InValue) const
 {
 	return InValue;

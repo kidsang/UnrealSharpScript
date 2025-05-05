@@ -76,6 +76,7 @@ public static class PropertyTranslatorManager
 		AddPropertyTranslator(typeof(UhtStructProperty), new StructPropertyTranslator());
 
 		BlittableStructs.Add("SsBindingTestBlittableStruct");
+		BlittableStructs.Add("SsTestNumericStruct");
 	}
 
 	public static PropertyTranslator GetTranslator(UhtProperty property)

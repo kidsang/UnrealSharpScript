@@ -174,6 +174,12 @@ public:
 	UFUNCTION(BlueprintPure, Category = "CSharp|Internal", meta=(ScriptConstant="ConstantValue"))
 	static int32 GetConstantValue();
 
+	UFUNCTION(BlueprintCallable, Category = "CSharp|Internal")
+	void SetInt(int InValue);
+
+	UFUNCTION(BlueprintCallable, Category = "CSharp|Internal")
+	int GetInt() const;
+
 	virtual int32 FuncInterface(const int32 InValue) const override;
 
 	virtual int32 FuncInterfaceChild(const int32 InValue) const override;

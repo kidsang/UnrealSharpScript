@@ -5,6 +5,10 @@ namespace SharpScriptBindingGenerator.PropertyTranslators;
 
 public class BlittableStructPropertyTranslator : StructPropertyTranslator
 {
+	public override bool IsBlittable => true;
+
+	public override bool ParamNeedInitialize => false;
+
 	public override bool CanExport(UhtProperty property)
 	{
 		UhtStructProperty? structProperty = property as UhtStructProperty;

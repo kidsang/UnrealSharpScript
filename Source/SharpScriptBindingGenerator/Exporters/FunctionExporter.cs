@@ -674,9 +674,34 @@ public class FunctionExporter
 		}
 	}
 
+	private string AllocParamBuffer(CodeBuilder codeBuilder)
+	{
+		codeBuilder.AppendLine($"byte* _paramsBuffer = stackalloc byte[{Function.StrippedFunctionName}_ParamsSize];");
+
+		bool needInitialize = false;
+		foreach (var translator in ParamTranslators)
+		{
+			if (translator.ParamNeedInitialize)
+			{
+				needInitialize = true;
+				break;
+			}
+		}
+
+		if (!needInitialize)
+		{
+			// fast pass: no need to initialize/deinitialize parameter buffer.
+			return "(IntPtr)_paramsBuffer";
+		}
+
+		// slow pass: need to initialize param buffer at the begining and deinitialize after function call.
+		string nativeFunctionPtr = $"{Function.StrippedFunctionName}_NativeFunc";
+		codeBuilder.AppendLine($"using ScopedFuncParams _params = new ScopedFuncParams({nativeFunctionPtr}, _paramsBuffer);");
+		return "_params.Buffer";
+	}
+
 	private void ExportInvoke(CodeBuilder codeBuilder)
 	{
-		string nativeFunctionPtr = $"{Function.StrippedFunctionName}_NativeFunc";
 		if (!Function.HasParametersOrReturnValue())
 		{
 			codeBuilder.AppendLine($"{InvokeFunction}({InvokeArguments}IntPtr.Zero);");
@@ -688,8 +713,13 @@ public class FunctionExporter
 			codeBuilder.AppendLine("if (!base.IsValid()) { return false; }");
 		}
 
-		codeBuilder.AppendLine($"byte* _paramsBuffer = stackalloc byte[{Function.StrippedFunctionName}_ParamsSize];");
-		codeBuilder.AppendLine($"using ScopedFuncParams _params = new ScopedFuncParams({nativeFunctionPtr}, _paramsBuffer);");
+		if (Function.HasSingleBlittableParam())
+		{
+			ExportInvokeSingleParam(codeBuilder);
+			return;
+		}
+
+		string paramBuffer = AllocParamBuffer(codeBuilder);
 
 		ForEachParameter((translator, param) =>
 		{
@@ -703,15 +733,15 @@ public class FunctionExporter
 			if (ParamGenericTypeArguments != null && param is UhtClassProperty)
 			{
 				string typeArgument = ParamGenericTypeArguments[param];
-				translator.ExportGenericParamToNative(codeBuilder, Function, param, paramName, typeArgument, "_params.Buffer");
+				translator.ExportGenericParamToNative(codeBuilder, Function, param, paramName, typeArgument, paramBuffer);
 			}
 			else
 			{
-				translator.ExportParamToNative(codeBuilder, Function, param, paramName, "_params.Buffer");
+				translator.ExportParamToNative(codeBuilder, Function, param, paramName, paramBuffer);
 			}
 		});
 
-		codeBuilder.AppendLine($"{InvokeFunction}({InvokeArguments}_params.Buffer);");
+		codeBuilder.AppendLine($"{InvokeFunction}({InvokeArguments}{paramBuffer});");
 
 		ForEachParameter((translator, param) =>
 		{
@@ -734,16 +764,52 @@ public class FunctionExporter
 
 			if (ParamGenericTypeArguments != null && ParamGenericTypeArguments.TryGetValue(param, out var typeArgument))
 			{
-				translator.ExportGenericParamFromNative(codeBuilder, Function, param, paramName, typeArgument, "_params.Buffer", needDeclaration);
+				translator.ExportGenericParamFromNative(codeBuilder, Function, param, paramName, typeArgument, paramBuffer, needDeclaration);
 			}
 			else
 			{
-				translator.ExportParamFromNative(codeBuilder, Function, param, paramName, "_params.Buffer", needDeclaration);
+				translator.ExportParamFromNative(codeBuilder, Function, param, paramName, paramBuffer, needDeclaration);
 			}
 		});
 
 		UhtProperty? returnProp = Function.ReturnProperty;
 		if (returnProp != null)
+		{
+			codeBuilder.AppendLine("return returnValue;");
+		}
+	}
+
+	private void ExportInvokeSingleParam(CodeBuilder codeBuilder)
+	{
+		UhtProperty param = (UhtProperty)Function.Children[0];
+		var translator = ParamTranslators[0];
+		var managedType = translator.GetParamManagedType(param);
+		bool isReturnParam = param.HasAnyFlags(EPropertyFlags.ReturnParm);
+
+		string paramName;
+		if (isReturnParam)
+		{
+			paramName = "returnValue";
+			codeBuilder.AppendLine($"{managedType} {paramName};");
+		}
+		else
+		{
+			paramName = param.GetParameterName();
+		}
+
+		if (!isReturnParam && param.HasAnyFlags(EPropertyFlags.ReferenceParm | EPropertyFlags.OutParm))
+		{
+			codeBuilder.AppendLine($"fixed ({managedType}* _paramsBuffer = &{paramName})");
+			using var codeBlock = new CodeBlock(codeBuilder);
+			codeBuilder.AppendLine($"{InvokeFunction}({InvokeArguments}(IntPtr)_paramsBuffer);");
+		}
+		else
+		{
+			codeBuilder.AppendLine($"byte* _paramsBuffer = (byte*)&{paramName};");
+			codeBuilder.AppendLine($"{InvokeFunction}({InvokeArguments}(IntPtr)_paramsBuffer);");
+		}
+
+		if (isReturnParam)
 		{
 			codeBuilder.AppendLine("return returnValue;");
 		}

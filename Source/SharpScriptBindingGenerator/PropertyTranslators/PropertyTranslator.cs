@@ -33,6 +33,12 @@ public abstract class PropertyTranslator
 	// Is this property nullable?
 	public virtual bool IsNullable => false;
 
+	// Is this property blittable?
+	public virtual bool IsBlittable => false;
+
+	// Does this property need to be initialize/deinitialize when used as a function parameter?
+	public virtual bool ParamNeedInitialize => false;
+
 	// Can we export this property?
 	public abstract bool CanExport(UhtProperty property);
 

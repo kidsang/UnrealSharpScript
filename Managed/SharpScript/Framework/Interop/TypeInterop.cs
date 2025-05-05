@@ -9,10 +9,10 @@ namespace SharpScript.Interop;
 public static unsafe class TypeInterop
 {
 	/// <summary>
-	/// 根据类名查找原生UClass。
+	/// Find native UClass by class name.
 	/// </summary>
-	/// <param name="className">UClass名称</param>
-	/// <returns>UClass指针</returns>
+	/// <param name="className">UClass name</param>
+	/// <returns>UClass pointer</returns>
 	public static IntPtr FindClass(string className)
 	{
 		fixed (char* bytes = className)
@@ -22,10 +22,10 @@ public static unsafe class TypeInterop
 	}
 
 	/// <summary>
-	/// 根据类名查找原生UScriptStruct。
+	/// Find native UScriptStruct by struct name.
 	/// </summary>
-	/// <param name="structName">UScriptStruct名称</param>
-	/// <returns>UScriptStruct指针</returns>
+	/// <param name="structName">UScriptStruct name</param>
+	/// <returns>UScriptStruct pointer</returns>
 	public static IntPtr FindStruct(string structName)
 	{
 		fixed (char* bytes = structName)
@@ -35,31 +35,31 @@ public static unsafe class TypeInterop
 	}
 
 	/// <summary>
-	/// 创建UE结构体C++实例
+	/// Create UE struct C++ instance
 	/// </summary>
-	/// <param name="nativeStruct">UScriptStruct指针</param>
-	/// <returns>新创建的结构体实例指针</returns>
+	/// <param name="nativeStruct">UScriptStruct pointer</param>
+	/// <returns>Pointer to the newly created struct instance</returns>
 	public static IntPtr CreateStructInstance(IntPtr nativeStruct)
 	{
 		return NativeCreateStructInstance(nativeStruct);
 	}
 
 	/// <summary>
-	/// 克隆UE结构体C++实例
+	/// Clone UE struct C++ instance
 	/// </summary>
-	/// <param name="nativeStruct">UScriptStruct指针</param>
-	/// <param name="nativeSrcInstance">要克隆的结构体实例指针</param>
-	/// <returns>新创建的结构体实例指针</returns>
+	/// <param name="nativeStruct">UScriptStruct pointer</param>
+	/// <param name="nativeSrcInstance">Pointer to the struct instance to be cloned</param>
+	/// <returns>Pointer to the newly created struct instance</returns>
 	public static IntPtr CloneStructInstance(IntPtr nativeStruct, IntPtr nativeSrcInstance)
 	{
 		return NativeCloneStructInstance(nativeStruct, nativeSrcInstance);
 	}
 
 	/// <summary>
-	/// 销毁UE结构体C++实例
+	/// Destroy UE struct C++ instance
 	/// </summary>
-	/// <param name="nativeStruct">UScriptStruct指针</param>
-	/// <param name="nativeInstance">要销毁的结构体实例指针</param>
+	/// <param name="nativeStruct">UScriptStruct pointer</param>
+	/// <param name="nativeInstance">Pointer to the struct instance to be destroyed</param>
 	public static void DestroyStructInstance(IntPtr nativeStruct, ref IntPtr nativeInstance)
 	{
 		NativeDestroyStructInstance(nativeStruct, nativeInstance);
@@ -67,49 +67,49 @@ public static unsafe class TypeInterop
 	}
 
 	/// <summary>
-	/// 获取类型或结构体尺寸
+	/// Get the size of a type or struct
 	/// </summary>
 	/// <param name="nativeType"></param>
-	/// <returns>返回类型或结构体实际内存占用</returns>
+	/// <returns>Returns the actual memory usage of the type or struct</returns>
 	public static int GetStructureSize(IntPtr nativeType)
 	{
 		return NativeGetStructureSize(nativeType);
 	}
 
 	/// <summary>
-	/// 使用已分配的内存初始化类、结构体或函数参数内存
+	/// Initialize memory for class, struct, or function parameters using allocated memory
 	/// </summary>
-	/// <param name="nativeType">UClass、UScriptStruct或UFunction指针</param>
-	/// <param name="bufferPtr">要初始化的内存</param>
+	/// <param name="nativeType">UClass, UScriptStruct, or UFunction pointer</param>
+	/// <param name="bufferPtr">Memory to be initialized</param>
 	public static void InitializeStruct(IntPtr nativeType, IntPtr bufferPtr)
 	{
 		NativeInitializeStruct(nativeType, bufferPtr);
 	}
 
 	/// <summary>
-	/// 使用类、结构体或函数参数信息反初始化对应内存
+	/// Deinitialize memory corresponding to class, struct, or function parameter information
 	/// </summary>
-	/// <param name="nativeType">UClass、UScriptStruct或UFunction指针</param>
-	/// <param name="bufferPtr">要反初始化的内存</param>
-	public static void UninitializeStruct(IntPtr nativeType, IntPtr bufferPtr)
+	/// <param name="nativeType">UClass, UScriptStruct, or UFunction pointer</param>
+	/// <param name="bufferPtr">Memory to be deinitialized</param>
+	public static void DeinitializeStruct(IntPtr nativeType, IntPtr bufferPtr)
 	{
-		NativeUninitializeStruct(nativeType, bufferPtr);
+		NativeDeinitializeStruct(nativeType, bufferPtr);
 	}
 
 	/// <summary>
-	/// 获取类、结构体或方法的名称
+	/// Get the name of a class, struct, or method
 	/// </summary>
-	/// <param name="nativeType">类、结构体或方法的指针</param>
+	/// <param name="nativeType">Pointer to the class, struct, or method</param>
 	public static string GetTypeName(IntPtr nativeType)
 	{
 		return NativeGetTypeName(nativeType).ToString();
 	}
 
 	/// <summary>
-	/// 根据类名查找原生UEnum。
+	/// Find native UEnum by enum name.
 	/// </summary>
-	/// <param name="enumName">UEnum名称</param>
-	/// <returns>UEnum指针</returns>
+	/// <param name="enumName">UEnum name</param>
+	/// <returns>UEnum pointer</returns>
 	public static IntPtr FindEnum(string enumName)
 	{
 		fixed (char* bytes = enumName)
@@ -119,160 +119,182 @@ public static unsafe class TypeInterop
 	}
 
 	/// <summary>
-	/// 在UClass中查找指定名称的UFunction。
+	/// Find UFunction with the specified name in UClass.
 	/// </summary>
-	/// <param name="nativeClass">UClass指针</param>
-	/// <param name="funcName">方法名</param>
-	/// <returns>UFunction指针</returns>
+	/// <param name="nativeClass">UClass pointer</param>
+	/// <param name="funcName">Method name</param>
+	/// <returns>UFunction pointer</returns>
 	public static IntPtr FindFunction(IntPtr nativeClass, Name funcName)
 	{
 		return NativeFindFunction(nativeClass, funcName);
 	}
 
 	/// <summary>
-	/// 返回UFunction参数返回值结构体大小。
+	/// Return the size of UFunction parameter return value struct.
 	/// </summary>
-	/// <param name="nativeFunc">UFunction指针</param>
-	/// <returns>参数返回值结构体大小</returns>
+	/// <param name="nativeFunc">UFunction pointer</param>
+	/// <returns>Size of parameter return value struct</returns>
 	public static int GetFunctionParamsSize(IntPtr nativeFunc)
 	{
 		return NativeGetFunctionParamsSize(nativeFunc);
 	}
 
+
 	/// <summary>
-	/// 返回类型的第一个属性。
+	/// Initialize function parameter buffer.
 	/// </summary>
-	/// <param name="nativeStruct">UClass、UScriptStruct或UFunction指针</param>
-	/// <returns>类型的第一个属性，若不存在则返回空。</returns>
+	/// <param name="nativeType">UFunction pointer</param>
+	/// <param name="bufferPtr">Buffer to be initialized</param>
+	/// <remarks>Buffer *must* be zero initialized before calling this function.</remarks>
+	public static void InitializeFunctionParams(IntPtr nativeType, IntPtr bufferPtr)
+	{
+		NativeInitializeFunctionParams(nativeType, bufferPtr);
+	}
+
+	/// <summary>
+	/// Deinitialize function parameter buffer.
+	/// </summary>
+	/// <param name="nativeType">UFunction pointer</param>
+	/// <param name="bufferPtr">Buffer to be deinitialized</param>
+	public static void DeinitializeFunctionParams(IntPtr nativeType, IntPtr bufferPtr)
+	{
+		NativeDeinitializeFunctionParams(nativeType, bufferPtr);
+	}
+
+	/// <summary>
+	/// Return the first property of the type.
+	/// </summary>
+	/// <param name="nativeStruct">UClass, UScriptStruct, or UFunction pointer</param>
+	/// <returns>The first property of the type, or null if it doesn't exist.</returns>
 	public static IntPtr GetFirstProperty(IntPtr nativeStruct)
 	{
 		return NativeGetFirstProperty(nativeStruct);
 	}
 
 	/// <summary>
-	/// 返回属性链表的下一个属性。
+	/// Return the next property in the property chain.
 	/// </summary>
-	/// <param name="nativeProp">FProperty指针</param>
-	/// <returns>下一个属性，若不存在则返回空。</returns>
+	/// <param name="nativeProp">FProperty pointer</param>
+	/// <returns>The next property, or null if it doesn't exist.</returns>
 	public static IntPtr GetNextProperty(IntPtr nativeProp)
 	{
 		return NativeGetNextProperty(nativeProp);
 	}
 
 	/// <summary>
-	/// 查找UClass、UScriptStruct或UFunction中指定名称的属性。
+	/// Find property with the specified name in UClass, UScriptStruct, or UFunction.
 	/// </summary>
-	/// <param name="nativeStruct">UClass、UScriptStruct或UFunction指针</param>
-	/// <param name="propName">属性名</param>
-	/// <returns>FProperty指针</returns>
+	/// <param name="nativeStruct">UClass, UScriptStruct, or UFunction pointer</param>
+	/// <param name="propName">Property name</param>
+	/// <returns>FProperty pointer</returns>
 	public static IntPtr FindProperty(IntPtr nativeStruct, Name propName)
 	{
 		return NativeFindProerty(nativeStruct, propName);
 	}
 
 	/// <summary>
-	/// 获取属性名称。
+	/// Get property name.
 	/// </summary>
-	/// <param name="nativeProp">FProperty指针</param>
-	/// <returns>属性名称</returns>
+	/// <param name="nativeProp">FProperty pointer</param>
+	/// <returns>Property name</returns>
 	public static string GetPropertyName(IntPtr nativeProp)
 	{
 		return NativeGetPropertyName(nativeProp).ToString();
 	}
 
 	/// <summary>
-	/// 获取属性名称。
+	/// Get property name.
 	/// </summary>
-	/// <param name="nativeProp">FProperty指针</param>
-	/// <returns>属性名称</returns>
+	/// <param name="nativeProp">FProperty pointer</param>
+	/// <returns>Property name</returns>
 	public static Name GetPropertyFName(IntPtr nativeProp)
 	{
 		return NativeGetPropertyName(nativeProp);
 	}
 
 	/// <summary>
-	/// 返回属性相对于类型的偏移量。
+	/// Return the offset of the property relative to the type.
 	/// </summary>
-	/// <param name="nativeProp">FProperty指针</param>
-	/// <returns>属性偏移量</returns>
+	/// <param name="nativeProp">FProperty pointer</param>
+	/// <returns>Property offset</returns>
 	public static int GetPropertyOffset(IntPtr nativeProp)
 	{
 		return NativeGetPropertyOffset(nativeProp);
 	}
 
 	/// <summary>
-	/// 根据名字查找属性，并返回属性相对于类型的偏移量。
+	/// Find property by name and return its offset relative to the type.
 	/// </summary>
-	/// <param name="nativeStruct">UClass、UScriptStruct或UFunction指针</param>
-	/// <param name="propName">属性名</param>
-	/// <returns>属性偏移量</returns>
+	/// <param name="nativeStruct">UClass, UScriptStruct, or UFunction pointer</param>
+	/// <param name="propName">Property name</param>
+	/// <returns>Property offset</returns>
 	public static int GetPropertyOffsetFromName(IntPtr nativeStruct, Name propName)
 	{
 		return NativeGetPropertyOffsetFromName(nativeStruct, propName);
 	}
 
 	/// <summary>
-	/// 返回属性的大小。
+	/// Return the size of the property.
 	/// </summary>
-	/// <param name="nativeProp">FProperty指针</param>
-	/// <returns>属性偏移量</returns>
+	/// <param name="nativeProp">FProperty pointer</param>
+	/// <returns>Property size</returns>
 	public static int GetPropertySize(IntPtr nativeProp)
 	{
 		return NativeGetPropertySize(nativeProp);
 	}
 
 	/// <summary>
-	/// 获取布尔型属性的bitfield mask。
+	/// Get the bitfield mask of a boolean property.
 	/// </summary>
-	/// <param name="nativeBoolProp">FBoolProperty指针</param>
-	/// <returns>bitfield mask</returns>
+	/// <param name="nativeBoolProp">FBoolProperty pointer</param>
+	/// <returns>Bitfield mask</returns>
 	public static byte GetBoolPropertyFieldMask(IntPtr nativeBoolProp)
 	{
 		return NativeGetBoolPropertyFieldMask(nativeBoolProp);
 	}
 
 	/// <summary>
-	/// 返回FMapProperty中的KeyProp。
+	/// Return the KeyProp of FMapProperty.
 	/// </summary>
-	/// <param name="nativeMapProp">FMapProperty指针</param>
+	/// <param name="nativeMapProp">FMapProperty pointer</param>
 	public static IntPtr GetMapKeyProperty(IntPtr nativeMapProp)
 	{
 		return NativeGetMapKeyProperty(nativeMapProp);
 	}
 
 	/// <summary>
-	/// 返回FMapProperty中的ValueProp。
+	/// Return the ValueProp of FMapProperty.
 	/// </summary>
-	/// <param name="nativeMapProp">FMapProperty指针</param>
+	/// <param name="nativeMapProp">FMapProperty pointer</param>
 	public static IntPtr GetMapValueProperty(IntPtr nativeMapProp)
 	{
 		return NativeGetMapValueProperty(nativeMapProp);
 	}
 
 	/// <summary>
-	/// 返回FSetProperty中的ElementProp。
+	/// Return the ElementProp of FSetProperty.
 	/// </summary>
-	/// <param name="nativeSetProp">FSetProperty指针</param>
+	/// <param name="nativeSetProp">FSetProperty pointer</param>
 	public static IntPtr GetSetElementProperty(IntPtr nativeSetProp)
 	{
 		return NativeGetSetElementProperty(nativeSetProp);
 	}
 
 	/// <summary>
-	/// 返回FDelegateProp中的UFunction指针
+	/// Return the UFunction pointer of FDelegateProp
 	/// </summary>
-	/// <param name="nativeDelegateProp">FDelegateProp指针</param>
+	/// <param name="nativeDelegateProp">FDelegateProp pointer</param>
 	public static IntPtr GetDelegateSignatureFunction(IntPtr nativeDelegateProp)
 	{
 		return NativeGetDelegateSignatureFunction(nativeDelegateProp);
 	}
 
 	/// <summary>
-	/// 比较两个属性是否相等。
+	/// Compare if two properties are equal.
 	/// </summary>
-	/// <param name="nativeProp">FProperty指针</param>
-	/// <param name="nativeValueA">属性A的指针</param>
-	/// <param name="nativeValueB">属性B的指针</param>
+	/// <param name="nativeProp">FProperty pointer</param>
+	/// <param name="nativeValueA">Pointer to property A</param>
+	/// <param name="nativeValueB">Pointer to property B</param>
 	/// <returns></returns>
 	public static bool PropertyIdentical(IntPtr nativeProp, IntPtr nativeValueA, IntPtr nativeValueB)
 	{
@@ -281,31 +303,31 @@ public static unsafe class TypeInterop
 	}
 
 	/// <summary>
-	/// 初始化C++属性值。
+	/// Initialize C++ property value.
 	/// </summary>
-	/// <param name="nativeProp">FProperty指针</param>
-	/// <param name="value">C++值地址</param>
+	/// <param name="nativeProp">FProperty pointer</param>
+	/// <param name="value">C++ value address</param>
 	public static void InitializePropertyValue(IntPtr nativeProp, IntPtr value)
 	{
 		NativeInitializePropertyValue(nativeProp, value);
 	}
 
 	/// <summary>
-	/// 将属性拷贝到目标位置。
+	/// Copy property to the target location.
 	/// </summary>
-	/// <param name="nativeProp">FProperty指针</param>
-	/// <param name="dest">拷贝目标</param>
-	/// <param name="src">拷贝源</param>
+	/// <param name="nativeProp">FProperty pointer</param>
+	/// <param name="dest">Copy destination</param>
+	/// <param name="src">Copy source</param>
 	public static void CopyPropertyValue(IntPtr nativeProp, IntPtr dest, IntPtr src)
 	{
 		NativeCopyPropertyValue(nativeProp, dest, src);
 	}
 
 	/// <summary>
-	/// 销毁C++属性值。
+	/// Destroy C++ property value.
 	/// </summary>
-	/// <param name="nativeProp">FProperty指针</param>
-	/// <param name="value">C++值地址</param>
+	/// <param name="nativeProp">FProperty pointer</param>
+	/// <param name="value">C++ value address</param>
 	public static void DestroyPropertyValue(IntPtr nativeProp, IntPtr value)
 	{
 		NativeDestroyPropertyValue(nativeProp, value);
@@ -319,11 +341,13 @@ public static unsafe class TypeInterop
 	internal static delegate* unmanaged[Cdecl]<IntPtr, IntPtr, void> NativeDestroyStructInstance;
 	internal static delegate* unmanaged[Cdecl]<IntPtr, int> NativeGetStructureSize;
 	internal static delegate* unmanaged[Cdecl]<IntPtr, IntPtr, void> NativeInitializeStruct;
-	internal static delegate* unmanaged[Cdecl]<IntPtr, IntPtr, void> NativeUninitializeStruct;
+	internal static delegate* unmanaged[Cdecl]<IntPtr, IntPtr, void> NativeDeinitializeStruct;
 	internal static delegate* unmanaged[Cdecl]<IntPtr, Name> NativeGetTypeName;
 	internal static delegate* unmanaged[Cdecl]<char*, IntPtr> NativeFindEnum;
 	internal static delegate* unmanaged[Cdecl]<IntPtr, Name, IntPtr> NativeFindFunction;
 	internal static delegate* unmanaged[Cdecl]<IntPtr, int> NativeGetFunctionParamsSize;
+	internal static delegate* unmanaged[Cdecl]<IntPtr, IntPtr, void> NativeInitializeFunctionParams;
+	internal static delegate* unmanaged[Cdecl]<IntPtr, IntPtr, void> NativeDeinitializeFunctionParams;
 	internal static delegate* unmanaged[Cdecl]<IntPtr, IntPtr> NativeGetFirstProperty;
 	internal static delegate* unmanaged[Cdecl]<IntPtr, IntPtr> NativeGetNextProperty;
 	internal static delegate* unmanaged[Cdecl]<IntPtr, Name, IntPtr> NativeFindProerty;

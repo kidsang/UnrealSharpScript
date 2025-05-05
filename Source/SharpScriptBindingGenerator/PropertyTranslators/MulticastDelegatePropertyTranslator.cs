@@ -9,6 +9,8 @@ public class MulticastDelegatePropertyTranslator : NativeReferencePropertyTransl
 	{
 	}
 
+	public override bool ParamNeedInitialize => true;
+
 	public override bool CanExport(UhtProperty property)
 	{
 		UhtMulticastDelegateProperty delegateProperty = (UhtMulticastDelegateProperty)property;

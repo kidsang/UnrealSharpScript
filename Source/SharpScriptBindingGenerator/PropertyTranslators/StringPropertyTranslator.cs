@@ -8,6 +8,8 @@ public class StringPropertyTranslator : SimpleTypePropertyTranslator
 	{
 	}
 
+	public override bool ParamNeedInitialize => true;
+
 	public override string GetMarshaller(UhtProperty property)
 	{
 		return "StringMarshaller";

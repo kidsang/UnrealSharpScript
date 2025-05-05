@@ -10,6 +10,8 @@ public class FieldPathPropertyTranslator : SimpleTypePropertyTranslator
 
 	public override bool ExportDefaultParameter => false;
 
+	public override bool ParamNeedInitialize => true;
+
 	public override string GetMarshaller(UhtProperty property)
 	{
 		return "FieldPathMarshaller";

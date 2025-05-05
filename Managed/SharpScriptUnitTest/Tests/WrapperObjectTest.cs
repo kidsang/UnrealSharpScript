@@ -19,7 +19,7 @@ public class WrapperObjectTest : IUnitTestInterface
 		SsTestObject objValue = NewObject<SsTestObject>();
 		Class clsValue = SsTestObject.StaticClass!;
 
-		// Test basic Object properties
+		// Test Object base properties
 		Utils.Assert(obj.GetName() == obj.ToString());
 		Utils.Assert(obj.GetClass() == SsTestObject.StaticClass.Class);
 
@@ -34,7 +34,7 @@ public class WrapperObjectTest : IUnitTestInterface
 		Utils.Assert(package.GetName() == "/Engine/Transient");
 		Utils.Assert(package.GetPackageName() == Name.None);
 
-		// Test default values of members
+		// Test member default values
 		Utils.Assert(!obj.Bool);
 		Utils.Assert(!obj.BitfieldBoolA);
 		Utils.Assert(!obj.BitfieldBoolB);
@@ -132,7 +132,7 @@ public class WrapperObjectTest : IUnitTestInterface
 		obj.Interface = null;
 		Utils.Assert(obj.Interface == null);
 
-		// Test default values of struct reference members
+		// Test struct reference default values
 		Utils.Assert(!obj.Struct.Bool);
 		Utils.Assert(obj.Struct.Int == 0);
 		Utils.Assert(obj.Struct.Float == 0);
@@ -154,7 +154,7 @@ public class WrapperObjectTest : IUnitTestInterface
 		Utils.Assert(obj.Struct.SoftClassPtr == null);
 		Utils.Assert(obj.Struct.Interface == null);
 
-		// Test assignment of struct reference members
+		// Test struct reference member assignment
 		obj.Struct.Bool = true;
 		Utils.Assert(obj.Struct.Bool);
 		obj.Struct.Int = 123;
@@ -215,7 +215,7 @@ public class WrapperObjectTest : IUnitTestInterface
 		obj.Struct.Interface = null;
 		Utils.Assert(obj.Struct.Interface == null);
 
-		// Test default values of struct array reference
+		// Test struct array reference default values
 		Utils.Assert(obj.StructArray.Count == 0);
 		obj.StructArray.Add(default);
 		Utils.Assert(obj.StructArray.Count == 1);
@@ -240,7 +240,7 @@ public class WrapperObjectTest : IUnitTestInterface
 		Utils.Assert(obj.StructArray[0].SoftClassPtr == null);
 		Utils.Assert(obj.StructArray[0].Interface == null);
 
-		// test ref struct
+		// Test ref struct
 		Utils.Assert(obj.BlittableStruct.X == 0);
 		Utils.Assert(obj.BlittableStruct.Y == 0);
 		obj.BlittableStruct.X = 10;
@@ -251,7 +251,7 @@ public class WrapperObjectTest : IUnitTestInterface
 		Utils.Assert(obj.BlittableStruct.X == 30);
 		Utils.Assert(obj.BlittableStruct.Y == 30);
 
-		// Test assignment of struct array reference members
+		// Test struct array reference member assignment
 		obj.StructArray[0].Bool = true;
 		Utils.Assert(obj.StructArray[0].Bool);
 		obj.StructArray[0].Int = 123;
@@ -350,6 +350,10 @@ public class WrapperObjectTest : IUnitTestInterface
 
 		FieldPath fieldPath = obj.ReturnFieldPath();
 		Utils.Assert(fieldPath.Path == "/Script/SharpScriptUnitTest.SsTestObject:FieldPath");
+
+		obj.SetInt(42);
+		Utils.Assert(obj.Int == 42);
+		Utils.Assert(obj.GetInt() == 42);
 
 		// Test Delegate property
 		Utils.Assert(!obj.Delegate.IsBound());

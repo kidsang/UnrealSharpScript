@@ -13,6 +13,8 @@ public class StructPropertyTranslator : NativeReferencePropertyTranslator
 
 	public override bool ExportDefaultParameter => false;
 
+	public override bool ParamNeedInitialize => true;
+
 	public override bool CanExport(UhtProperty property)
 	{
 		UhtStructProperty? structProperty = property as UhtStructProperty;

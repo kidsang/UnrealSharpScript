@@ -120,6 +120,12 @@ public class SsTestObject : Object, ISsTestChildInterface, ISsTestOtherInterface
 	internal static readonly IntPtr ReturnFieldPath_NativeFunc;
 	internal static readonly int ReturnFieldPath_ParamsSize;
 	internal static readonly int ReturnFieldPath_ReturnValue_Offset;
+	internal static readonly IntPtr SetInt_NativeFunc;
+	internal static readonly int SetInt_ParamsSize;
+	internal static readonly int SetInt_InValue_Offset;
+	internal static readonly IntPtr GetInt_NativeFunc;
+	internal static readonly int GetInt_ParamsSize;
+	internal static readonly int GetInt_ReturnValue_Offset;
 	internal static readonly IntPtr FuncInterface_NativeFunc;
 	internal static readonly int FuncInterface_ParamsSize;
 	internal static readonly int FuncInterface_InValue_Offset;
@@ -291,6 +297,14 @@ public class SsTestObject : Object, ISsTestChildInterface, ISsTestOtherInterface
 		ReturnFieldPath_NativeFunc = TypeInterop.FindFunction(NativeType, "ReturnFieldPath");
 		ReturnFieldPath_ParamsSize = TypeInterop.GetFunctionParamsSize(ReturnFieldPath_NativeFunc);
 		ReturnFieldPath_ReturnValue_Offset = TypeInterop.GetPropertyOffsetFromName(ReturnFieldPath_NativeFunc, "ReturnValue");
+
+		SetInt_NativeFunc = TypeInterop.FindFunction(NativeType, "SetInt");
+		SetInt_ParamsSize = TypeInterop.GetFunctionParamsSize(SetInt_NativeFunc);
+		SetInt_InValue_Offset = TypeInterop.GetPropertyOffsetFromName(SetInt_NativeFunc, "InValue");
+
+		GetInt_NativeFunc = TypeInterop.FindFunction(NativeType, "GetInt");
+		GetInt_ParamsSize = TypeInterop.GetFunctionParamsSize(GetInt_NativeFunc);
+		GetInt_ReturnValue_Offset = TypeInterop.GetPropertyOffsetFromName(GetInt_NativeFunc, "ReturnValue");
 
 		FuncInterface_NativeFunc = TypeInterop.FindFunction(NativeType, "FuncInterface");
 		FuncInterface_ParamsSize = TypeInterop.GetFunctionParamsSize(FuncInterface_NativeFunc);
@@ -870,6 +884,24 @@ public class SsTestObject : Object, ISsTestChildInterface, ISsTestOtherInterface
 		InvokeFunctionCall(ReturnFieldPath_NativeFunc, _params.Buffer);
 
 		FieldPath returnValue = FieldPathMarshaller.FromNative(_params.Buffer + ReturnFieldPath_ReturnValue_Offset);
+		return returnValue;
+		// ReSharper restore InconsistentNaming
+	}
+
+	public unsafe void SetInt(int InValue)
+	{
+		// ReSharper disable InconsistentNaming
+		byte* _paramsBuffer = (byte*)&InValue;
+		InvokeFunctionCall(SetInt_NativeFunc, (IntPtr)_paramsBuffer);
+		// ReSharper restore InconsistentNaming
+	}
+
+	public unsafe int GetInt()
+	{
+		// ReSharper disable InconsistentNaming
+		int returnValue;
+		byte* _paramsBuffer = (byte*)&returnValue;
+		InvokeFunctionCall(GetInt_NativeFunc, (IntPtr)_paramsBuffer);
 		return returnValue;
 		// ReSharper restore InconsistentNaming
 	}
