@@ -3,7 +3,7 @@
 #include "SsBindingTestBlittableStruct.generated.h"
 
 /**
- * 测试Blittable类型结构体直接导出为C# ref struct。
+ * Test exporting Blittable type struct directly as C# ref struct.
  */
 USTRUCT(BlueprintType)
 struct FSsBindingTestBlittableStruct

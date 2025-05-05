@@ -18,7 +18,7 @@ DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FSsBindingTestMulticastDelegate, FSt
 DECLARE_DYNAMIC_DELEGATE_OneParam(FSsBindingTestSlateTickDelegate, float, InDeltaTime);
 
 
-/** 此结构体仅用于触发UBT生成代码，无实际用途。 */
+/** This struct is only used to trigger UBT code generation and has no practical use. */
 USTRUCT()
 struct FSsBindingTestDelegateDummy
 {

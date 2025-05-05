@@ -30,6 +30,7 @@ public static class StructExporter
 
 		using var codeBuilder = new CodeBuilder();
 		codeBuilder.AddUsing("#nullable enable");
+		codeBuilder.AddUsing("#pragma warning disable CS0618"); // CS0618: 'member' is obsolete: 'text'
 		codeBuilder.AddUsing("#pragma warning disable CS9113"); // CS9113: Parameter is unread.
 		codeBuilder.AddUsing("using System.Runtime.InteropServices;");
 		codeBuilder.AddUsing("using UnrealEngine.Intrinsic;");
@@ -223,7 +224,7 @@ public static class StructExporter
 			codeBuilder.AppendLine();
 			using var withEditorBlock = new WithEditorBlock(codeBuilder, property);
 			PropertyTranslator translator = PropertyTranslatorManager.GetTranslator(property);
-			translator.ExportProperty(codeBuilder, property, forClass: false);
+			translator.ExportProperty(codeBuilder, property, forClass: false, getSetPair: null);
 		}
 	}
 

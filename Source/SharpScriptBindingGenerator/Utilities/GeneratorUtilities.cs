@@ -5,6 +5,13 @@ using SharpScriptBindingGenerator.PropertyTranslators;
 
 namespace SharpScriptBindingGenerator.Utilities;
 
+public class GetSetPair
+{
+	public UhtProperty Property = null!;
+	public UhtFunction GetterFunc = null!;
+	public UhtFunction? SetterFunc;
+}
+
 public static class GeneratorUtilities
 {
 	public static void GetExportedProperties(UhtStruct typeObj, List<UhtProperty> properties)
@@ -15,6 +22,53 @@ public static class GeneratorUtilities
 		}
 	}
 
+	public static Dictionary<UhtProperty, GetSetPair>? GetPropertyGetSetPairs(UhtClass classObj, List<UhtProperty> properties)
+	{
+		Dictionary<UhtProperty, GetSetPair>? getSetPairs = null;
+		foreach (UhtProperty property in classObj.Properties)
+		{
+			if (!property.MetaData.TryGetValue("BlueprintGetter", out var getterFuncName))
+			{
+				continue;
+			}
+
+			UhtFunction? getterFunc = classObj.FindFunctionByName(getterFuncName);
+			if (getterFunc == null
+				|| getterFunc.Children.Count != 1
+				|| getterFunc.Children[0] is not UhtProperty returnParam
+				|| !returnParam.HasAnyFlags(EPropertyFlags.ReturnParm)
+				|| !returnParam.IsSameType(property))
+			{
+				continue;
+			}
+
+			UhtFunction? setterFunc = null;
+			if (property.MetaData.TryGetValue("BlueprintSetter", out var setterFuncName))
+			{
+				setterFunc = classObj.FindFunctionByName(setterFuncName);
+				if (setterFunc == null
+					|| setterFunc.Children.Count != 1
+					|| setterFunc.Children[0] is not UhtProperty inputParam
+					|| inputParam.HasAnyFlags(EPropertyFlags.ReturnParm)
+					|| inputParam.HasAnyFlags(EPropertyFlags.OutParm) && !inputParam.HasAnyFlags(EPropertyFlags.ReferenceParm)
+					|| !inputParam.IsSameType(property))
+				{
+					setterFunc = null;
+				}
+			}
+
+			getSetPairs ??= new();
+			getSetPairs[property] = new GetSetPair
+			{
+				Property = property,
+				GetterFunc = getterFunc,
+				SetterFunc = setterFunc
+			};
+		}
+
+		return getSetPairs;
+	}
+
 	public static bool CanExportFunction(UhtFunction function)
 	{
 		if (function.HasAnyFlags(EFunctionFlags.Delegate | EFunctionFlags.MulticastDelegate))
@@ -23,8 +77,7 @@ public static class GeneratorUtilities
 		}
 
 		if (!function.HasAnyFlags(EFunctionFlags.BlueprintCallable | EFunctionFlags.BlueprintEvent)
-			|| function.HasMetadata("ScriptNoExport")
-			|| function.HasMetadata("BlueprintInternalUseOnly"))
+			|| function.HasMetadata("ScriptNoExport"))
 		{
 			return false;
 		}

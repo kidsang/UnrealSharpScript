@@ -3,7 +3,7 @@
 #include "SsTestBlittableStruct.h"
 #include "SsSetTest.generated.h"
 
-/** 用于测试各种类型集合的结构体 */
+/** A struct for testing various types of sets */
 USTRUCT(BlueprintType)
 struct FSsSetTestStruct
 {

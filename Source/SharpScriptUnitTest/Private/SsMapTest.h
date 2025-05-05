@@ -7,7 +7,7 @@
 #include "SsTestDelegate.h"
 #include "SsMapTest.generated.h"
 
-/** 用于测试字典嵌套访问的结构体 */
+/** Structure for testing nested dictionary access */
 USTRUCT(BlueprintType)
 struct FSsMapTestInnerStruct
 {
@@ -18,7 +18,7 @@ public:
 	TMap<int, int> IntIntMap;
 };
 
-/** 用于测试各种类型字典的结构体 */
+/** Structure for testing various types of dictionaries */
 USTRUCT(BlueprintType)
 struct FSsMapTestStruct
 {

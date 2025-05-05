@@ -72,7 +72,7 @@ public class UnsupportedPropertyTranslator : PropertyTranslator
 		// Generate nothing.
 	}
 
-	public override void ExportProperty(CodeBuilder codeBuilder, UhtProperty property, bool forClass)
+	public override void ExportProperty(CodeBuilder codeBuilder, UhtProperty property, bool forClass, GetSetPair? getSetPair)
 	{
 		using var unsupportedBlock = new UnsupportedBlock(codeBuilder);
 		string protection = property.GetProtection();

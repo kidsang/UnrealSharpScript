@@ -20,6 +20,8 @@ public static class ClassExporter
 		List<UhtProperty> exportedProperties = new List<UhtProperty>();
 		GeneratorUtilities.GetExportedProperties(classObj, exportedProperties);
 
+		Dictionary<UhtProperty, GetSetPair>? getSetPairs = GeneratorUtilities.GetPropertyGetSetPairs(classObj, exportedProperties);
+
 		using var codeBuilder = new CodeBuilder();
 
 		codeBuilder.AddUsing("#nullable enable");
@@ -60,7 +62,7 @@ public static class ClassExporter
 					exportedOverrides,
 					unsupportedFunctions);
 
-				ExportProterties(codeBuilder, exportedProperties);
+				ExportProterties(codeBuilder, exportedProperties, getSetPairs);
 				ExportClassFunctions(codeBuilder, exportedFunctions, unsupportedFunctions);
 			}
 		}
@@ -71,14 +73,22 @@ public static class ClassExporter
 		FileExporter.SaveGeneratedToDisk(classObj, codeBuilder);
 	}
 
-	private static void ExportProterties(CodeBuilder codeBuilder, List<UhtProperty> exportedProperties)
+	private static void ExportProterties(CodeBuilder codeBuilder, List<UhtProperty> exportedProperties, Dictionary<UhtProperty, GetSetPair>? getSetPairs)
 	{
 		foreach (UhtProperty property in exportedProperties)
 		{
 			codeBuilder.AppendLine();
 			using var withEditorBlock = new WithEditorBlock(codeBuilder, property);
 			PropertyTranslator translator = PropertyTranslatorManager.GetTranslator(property);
-			translator.ExportProperty(codeBuilder, property, forClass: true);
+			if (getSetPairs != null)
+			{
+				getSetPairs.TryGetValue(property, out var getSetPair);
+				translator.ExportProperty(codeBuilder, property, forClass: true, getSetPair: getSetPair);
+			}
+			else
+			{
+				translator.ExportProperty(codeBuilder, property, forClass: true, getSetPair: null);
+			}
 		}
 	}
 

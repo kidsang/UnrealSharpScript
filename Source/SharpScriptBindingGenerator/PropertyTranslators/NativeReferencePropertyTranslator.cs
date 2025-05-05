@@ -14,8 +14,14 @@ public abstract class NativeReferencePropertyTranslator : PropertyTranslator
 
 	public override bool SupportsSetter => false;
 
-	public override void ExportProperty(CodeBuilder codeBuilder, UhtProperty property, bool forClass)
+	public override void ExportProperty(CodeBuilder codeBuilder, UhtProperty property, bool forClass, GetSetPair? getSetPair)
 	{
+		if (getSetPair != null)
+		{
+			base.ExportProperty(codeBuilder, property, forClass, getSetPair);
+			return;
+		}
+
 		string protection = property.GetProtection();
 		string managedType = GetPropManagedType(property);
 		string propertyName = property.GetPropertyName();
@@ -33,6 +39,7 @@ public abstract class NativeReferencePropertyTranslator : PropertyTranslator
 		codeBuilder.AppendLine();
 
 		codeBuilder.AppendTooltip(property);
+		ExportDeprecation(codeBuilder, property);
 		codeBuilder.AppendLine($"{protection}{managedType} {propertyName}");
 		using (new CodeBlock(codeBuilder)) // property body
 		{
@@ -67,6 +74,7 @@ public abstract class NativeReferencePropertyTranslator : PropertyTranslator
 		string propertyName = property.GetPropertyName();
 
 		codeBuilder.AppendTooltip(property);
+		ExportDeprecation(codeBuilder, property);
 		codeBuilder.AppendLine($"{protection}{managedType} {propertyName};");
 	}
 }

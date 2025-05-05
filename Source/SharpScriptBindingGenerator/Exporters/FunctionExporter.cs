@@ -242,12 +242,22 @@ public class FunctionExporter
 		switch (ProtectionMode)
 		{
 			case EFunctionProtectionMode.UseUFunctionProtection:
-				if (Function.HasAnyFlags(EFunctionFlags.Public))
+				if (Function.HasMetadata("BlueprintInternalUseOnly"))
 				{
-					return "public ";
+					return "internal ";
 				}
 
-				if (Function.HasAnyFlags(EFunctionFlags.Protected) || Function.HasMetadata("BlueprintProtected"))
+				if (Function.HasMetadata("BlueprintProtected"))
+				{
+					return "protected ";
+				}
+
+				if (Function.HasAnyFlags(EFunctionFlags.Private))
+				{
+					return "internal ";
+				}
+
+				if (Function.HasAnyFlags(EFunctionFlags.Protected))
 				{
 					return "protected ";
 				}
@@ -509,7 +519,7 @@ public class FunctionExporter
 			deprecationMessage = deprecationMessage.Length == 0
 				? "This function is deprecated."
 				: deprecationMessage.Replace("\"", ""); // Remove nested quotes
-			codeBuilder.AppendLine($"[Obsolete(\"{Function.EngineName} is deprecated: {deprecationMessage}\")]");
+			codeBuilder.AppendLine($"[Obsolete(\"{FunctionName} is deprecated: {deprecationMessage}\")]");
 		}
 	}
 

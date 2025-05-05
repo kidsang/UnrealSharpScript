@@ -90,54 +90,93 @@ public abstract class PropertyTranslator
 		codeBuilder.AppendLine($"{propEngineName}_Offset = TypeInterop.GetPropertyOffset({propEngineName}_NativeProp);");
 	}
 
+	protected void ExportDeprecation(CodeBuilder codeBuilder, UhtProperty property)
+	{
+		if (property.HasMetadata("DeprecatedProperty") || property.SourceName.EndsWith("_DEPRECATED"))
+		{
+			string deprecationMessage = property.GetMetadata("DeprecationMessage");
+			deprecationMessage = deprecationMessage.Length == 0
+				? "This property is deprecated."
+				: deprecationMessage.Replace("\"", ""); // Remove nested quotes
+			codeBuilder.AppendLine($"[Obsolete(\"{property.EngineName} is deprecated: {deprecationMessage}\")]");
+		}
+	}
+
 	/// <summary>
 	/// Export property Getter/Setter.
 	/// </summary>
-	public virtual void ExportProperty(CodeBuilder codeBuilder, UhtProperty property, bool forClass)
+	public virtual void ExportProperty(CodeBuilder codeBuilder, UhtProperty property, bool forClass, GetSetPair? getSetPair)
 	{
 		string protection = property.GetProtection();
-		string managedType = GetPropManagedType(property);
+		string managedType = getSetPair == null ? GetPropManagedType(property) : GetParamManagedType(property);
 		string propertyName = property.GetPropertyName();
 
 		bool isReadWrite = property.IsReadWrite() || !forClass;
 		bool isEditDefaultsOnly = property.IsEditDefaultsOnly();
-		bool hasSetter = SupportsSetter && (isReadWrite || isEditDefaultsOnly);
+		bool hasGetterFunc = getSetPair != null;
+		bool hasSetterFunc = getSetPair is { SetterFunc: not null };
+		bool hasSetter = (SupportsSetter || hasSetterFunc) && (isReadWrite || isEditDefaultsOnly);
 		string setterOperation = isEditDefaultsOnly && !isReadWrite ? "init" : "set";
 
+		void ExportGetter()
+		{
+			if (getSetPair != null)
+			{
+				codeBuilder.Append($"{getSetPair.GetterFunc.GetScriptName()}();");
+			}
+			else
+			{
+				ExportPropertyGetter(codeBuilder, property, propertyName, forClass);
+			}
+		}
+
+		void ExportSetter()
+		{
+			if (getSetPair?.SetterFunc != null)
+			{
+				codeBuilder.Append($"{getSetPair.SetterFunc.GetScriptName()}(value);");
+			}
+			else
+			{
+				ExportPropertySetter(codeBuilder, property, propertyName, forClass);
+			}
+		}
+
 		codeBuilder.AppendTooltip(property);
+		ExportDeprecation(codeBuilder, property);
 		codeBuilder.AppendLine($"{protection}{managedType} {propertyName}");
 		using (new CodeBlock(codeBuilder)) // property body
 		{
 			codeBuilder.AppendLine("get");
-			if (forClass)
+			if (forClass && !hasGetterFunc)
 			{
 				using (new CodeBlock(codeBuilder)) // getter body
 				{
 					codeBuilder.AppendLine("ThrowIfNotValid();");
 					codeBuilder.AppendLine("return ");
-					ExportPropertyGetter(codeBuilder, property, propertyName, forClass);
+					ExportGetter();
 				}
 			}
 			else
 			{
-				codeBuilder.Append($" => ");
-				ExportPropertyGetter(codeBuilder, property, propertyName, forClass);
+				codeBuilder.Append(" => ");
+				ExportGetter();
 			}
 
 			if (hasSetter)
 			{
 				codeBuilder.AppendLine(setterOperation);
-				if (forClass)
+				if (forClass && !hasSetterFunc)
 				{
 					using var setterBody = new CodeBlock(codeBuilder);
 					codeBuilder.AppendLine("ThrowIfNotValid();");
 					codeBuilder.AppendLineAndIndent();
-					ExportPropertySetter(codeBuilder, property, propertyName, forClass);
+					ExportSetter();
 				}
 				else
 				{
-					codeBuilder.Append($" => ");
-					ExportPropertySetter(codeBuilder, property, propertyName, forClass);
+					codeBuilder.Append(" => ");
+					ExportSetter();
 				}
 			}
 		}
@@ -194,6 +233,7 @@ public abstract class PropertyTranslator
 		string propertyName = property.GetPropertyName();
 
 		codeBuilder.AppendTooltip(property);
+		ExportDeprecation(codeBuilder, property);
 		codeBuilder.AppendLine($"{protection}unsafe {managedType} {propertyName}");
 		using (new CodeBlock(codeBuilder)) // property body
 		{
@@ -212,6 +252,7 @@ public abstract class PropertyTranslator
 		string propertyName = property.GetPropertyName();
 
 		codeBuilder.AppendTooltip(property);
+		ExportDeprecation(codeBuilder, property);
 		codeBuilder.AppendLine($"{protection}{managedType} {propertyName};");
 	}
 

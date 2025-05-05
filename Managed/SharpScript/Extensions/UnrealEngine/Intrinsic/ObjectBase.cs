@@ -39,6 +39,8 @@ public unsafe class ObjectBase : IComparable<ObjectBase>
 	/// <param name="paramsPtr">Pointer to the structure of parameters and return values</param>
 	protected void InvokeFunctionCall(IntPtr nativeFunc, IntPtr paramsPtr)
 	{
+		ThrowIfNotValid();
+
 		int result = ObjectInterop.InvokeFunctionCall(NativeObject, nativeFunc, paramsPtr);
 		if (result == 0)
 		{

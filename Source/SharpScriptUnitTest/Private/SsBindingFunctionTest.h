@@ -9,7 +9,7 @@
 #include "SsBindingTestDelegate.h"
 #include "SsBindingFunctionTest.generated.h"
 
-/** 用于验证UFunction静态导出。 */
+/** Used to verify UFunction static export. */
 UCLASS(BlueprintType)
 class USsBindingFunctionTest : public UBlueprintFunctionLibrary
 {

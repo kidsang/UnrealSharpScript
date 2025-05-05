@@ -7,7 +7,7 @@
 #include "SsBindingTestDelegate.h"
 #include "SsBindingArrayTest.generated.h"
 
-/** 用于测试数组嵌套访问的结构体 */
+/** Structure for testing nested array access */
 USTRUCT(BlueprintType)
 struct FSsBindingArrayTestInnerStruct
 {
@@ -18,7 +18,7 @@ public:
 	TArray<int> IntArray;
 };
 
-/** 用于测试各种类型数组的结构体 */
+/** Structure for testing arrays of various types */
 USTRUCT(BlueprintType)
 struct FSsBindingArrayTestStruct
 {

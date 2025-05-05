@@ -23,8 +23,14 @@ public class BlittableStructPropertyTranslator : StructPropertyTranslator
 		return $"BlittableMarshaller<{structManagedType}>";
 	}
 
-	public override void ExportProperty(CodeBuilder codeBuilder, UhtProperty property, bool forClass)
+	public override void ExportProperty(CodeBuilder codeBuilder, UhtProperty property, bool forClass, GetSetPair? getSetPair)
 	{
+		if (getSetPair != null)
+		{
+			base.ExportProperty(codeBuilder, property, forClass, getSetPair);
+			return;
+		}
+
 		string protection = property.GetProtection();
 		string managedType = GetParamManagedType(property);
 		string propertyName = property.GetPropertyName();
@@ -33,6 +39,7 @@ public class BlittableStructPropertyTranslator : StructPropertyTranslator
 		string getter = $"ref *({managedType}*)({nativePtr} + {property.EngineName}_Offset);";
 
 		codeBuilder.AppendTooltip(property);
+		ExportDeprecation(codeBuilder, property);
 		codeBuilder.AppendLine($"{protection}unsafe ref {managedType} {propertyName}");
 		using (new CodeBlock(codeBuilder)) // property body
 		{
@@ -59,6 +66,7 @@ public class BlittableStructPropertyTranslator : StructPropertyTranslator
 		string propertyName = property.GetPropertyName();
 
 		codeBuilder.AppendTooltip(property);
+		ExportDeprecation(codeBuilder, property);
 		codeBuilder.AppendLine($"{protection}unsafe ref {managedType} {propertyName}");
 		using (new CodeBlock(codeBuilder)) // property body
 		{

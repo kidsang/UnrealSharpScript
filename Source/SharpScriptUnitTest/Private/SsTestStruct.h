@@ -8,7 +8,7 @@
 #include "SsTestStruct.generated.h"
 
 /**
- * 用于测试导出到C#包装类的各种UStruct功能的结构体。
+ * A struct used to test various UStruct features exported to C# wrapper classes.
  */
 USTRUCT(BlueprintType)
 struct FSsTestStruct

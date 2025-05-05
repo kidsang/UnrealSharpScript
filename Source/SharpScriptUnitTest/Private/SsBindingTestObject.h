@@ -1,4 +1,6 @@
 #pragma once
+// ReSharper disable CppUEBlueprintCallableFunctionUnused
+// ReSharper disable CppUEBlueprintImplementableEventNotImplemented
 #include "CoreMinimal.h"
 #include "Templates/SubclassOf.h"
 #include "SsBindingTestEnum.h"
@@ -8,8 +10,6 @@
 #include "SsBindingTestInterface.h"
 #include "SsBindingTestObject.generated.h"
 
-// ReSharper disable CppUEBlueprintCallableFunctionUnused
-// ReSharper disable CppUEBlueprintImplementableEventNotImplemented
 UCLASS(BlueprintType)
 class USsBindingTestObject : public UObject, public ISsBindingTestChildInterface, public ISsBindingTestOtherInterface
 {
