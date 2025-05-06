@@ -129,11 +129,6 @@ public static class GeneratorUtilities
 				continue;
 			}
 
-			// if (function.IsAnyGetter() || function.IsAnySetter())
-			// {
-			// 	continue;
-			// }
-
 			if (!CanExportParameters(function))
 			{
 				unsupportedFunctions.Add(function);
@@ -143,21 +138,6 @@ public static class GeneratorUtilities
 			{
 				overridableFunctions.Add(function);
 			}
-			// else if (function.IsAutocast())
-			// {
-			// 	functions.Add(function);
-			//
-			// 	if (function.Properties.First() is not UhtStructProperty structToConvertProperty)
-			// 	{
-			// 		continue;
-			// 	}
-			//
-			// 	AutocastExporter.AddAutocastFunction(structToConvertProperty.ScriptStruct, function);
-			// }
-			// else if (TryMakeGetterSetterPair(function, classObj, getterSetterPairs))
-			// {
-			// 	// pass
-			// }
 			else
 			{
 				functions.Add(function);

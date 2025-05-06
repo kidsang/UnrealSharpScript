@@ -122,7 +122,7 @@ public abstract class PropertyTranslator
 		{
 			if (getSetPair != null)
 			{
-				codeBuilder.Append($"{getSetPair.GetterFunc.GetScriptName()}();");
+				codeBuilder.Append($"{getSetPair.GetterFunc.GetManagedName()}();");
 			}
 			else
 			{
@@ -134,7 +134,7 @@ public abstract class PropertyTranslator
 		{
 			if (getSetPair?.SetterFunc != null)
 			{
-				codeBuilder.Append($"{getSetPair.SetterFunc.GetScriptName()}(value);");
+				codeBuilder.Append($"{getSetPair.SetterFunc.GetManagedName()}(value);");
 			}
 			else
 			{

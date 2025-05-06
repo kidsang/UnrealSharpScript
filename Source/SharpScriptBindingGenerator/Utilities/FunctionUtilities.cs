@@ -1,7 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using EpicGames.Core;
+﻿using EpicGames.Core;
 using EpicGames.UHT.Types;
 using SharpScriptBindingGenerator.PropertyTranslators;
 
@@ -103,112 +100,29 @@ public static class FunctionUtilities
 		return true;
 	}
 
-	// private static bool IsBlueprintAccessor(this UhtFunction function, string accessorType, Func<UhtProperty, UhtFunction?> getBlueprintAccessor)
+	// public static bool HasCustomStructParamSupport(this UhtFunction function)
 	// {
-	// 	if (function.Properties.Count() != 1)
-	// 	{
-	// 		return false;
-	// 	}
+	// 	if (!function.HasMetadata("CustomStructureParam")) return false;
 	//
-	// 	if (function.HasMetadata(accessorType))
-	// 	{
-	// 		return true;
-	// 	}
-	//
-	// 	if (function.Outer is not UhtClass classObj)
-	// 	{
-	// 		return false;
-	// 	}
-	//
-	// 	foreach (UhtProperty property in classObj.Properties)
-	// 	{
-	// 		if (function != getBlueprintAccessor(property)! || !function.VerifyBlueprintAccessor(property))
-	// 		{
-	// 			continue;
-	// 		}
-	//
-	// 		return true;
-	// 	}
-	//
-	// 	return false;
+	// 	var customStructParams = function.GetCustomStructParams();
+	// 	return customStructParams.All(customParamName =>
+	// 		function.Properties.Count(param => param.EngineName == customParamName) == 1);
 	// }
 	//
-	// public static bool VerifyBlueprintAccessor(this UhtFunction function, UhtProperty property)
+	// public static List<string> GetCustomStructParams(this UhtFunction function)
 	// {
-	// 	if (!function.Properties.Any() || function.Properties.Count() != 1)
-	// 	{
-	// 		return false;
-	// 	}
+	// 	if (!function.HasMetadata("CustomStructureParam")) return new List<string>();
 	//
-	// 	UhtProperty firstProperty = function.Properties.First();
-	// 	return firstProperty.IsSameType(property);
+	// 	return function.GetMetadata("CustomStructureParam").Split(",").ToList();
 	// }
 	//
-	// public static bool IsNativeAccessor(this UhtFunction function, GetterSetterMode accessorType)
+	// public static int GetCustomStructParamCount(this UhtFunction function) => function.GetCustomStructParams().Count;
+	//
+	// public static List<string> GetCustomStructParamTypes(this UhtFunction function)
 	// {
-	// 	UhtClass classObj = (function.Outer as UhtClass)!;
-	// 	foreach (UhtProperty property in classObj.Properties)
-	// 	{
-	// 		if (accessorType + property.EngineName == function.SourceName)
-	// 		{
-	// 			switch (accessorType)
-	// 			{
-	// 				case GetterSetterMode.Get:
-	// 					return property.HasNativeGetter();
-	// 				case GetterSetterMode.Set:
-	// 					return property.HasNativeSetter();
-	// 			}
-	// 		}
-	// 	}
-	//
-	// 	return false;
+	// 	if (!function.HasMetadata("CustomStructureParam")) return new List<string>();
+	// 	int paramCount = function.GetCustomStructParamCount();
+	// 	if (paramCount == 1) return new List<string> { "CSP" };
+	// 	return Enumerable.Range(0, paramCount).ToList().ConvertAll(i => $"CSP{i}");
 	// }
-	//
-	// public static bool IsAnyGetter(this UhtFunction function)
-	// {
-	// 	if (function.Properties.Count() != 1)
-	// 	{
-	// 		return false;
-	// 	}
-	//
-	// 	return function.IsBlueprintAccessor("BlueprintGetter", property => property.GetBlueprintGetter())
-	// 			|| function.IsNativeAccessor(GetterSetterMode.Get);
-	// }
-	//
-	// public static bool IsAnySetter(this UhtFunction function)
-	// {
-	// 	if (function.Properties.Count() != 1)
-	// 	{
-	// 		return false;
-	// 	}
-	//
-	// 	return function.IsBlueprintAccessor("BlueprintSetter", property => property.GetBlueprintSetter())
-	// 			|| function.IsNativeAccessor(GetterSetterMode.Set);
-	// }
-
-	public static bool HasCustomStructParamSupport(this UhtFunction function)
-	{
-		if (!function.HasMetadata("CustomStructureParam")) return false;
-
-		var customStructParams = function.GetCustomStructParams();
-		return customStructParams.All(customParamName =>
-			function.Properties.Count(param => param.EngineName == customParamName) == 1);
-	}
-
-	public static List<string> GetCustomStructParams(this UhtFunction function)
-	{
-		if (!function.HasMetadata("CustomStructureParam")) return new List<string>();
-
-		return function.GetMetadata("CustomStructureParam").Split(",").ToList();
-	}
-
-	public static int GetCustomStructParamCount(this UhtFunction function) => function.GetCustomStructParams().Count;
-
-	public static List<string> GetCustomStructParamTypes(this UhtFunction function)
-	{
-		if (!function.HasMetadata("CustomStructureParam")) return new List<string>();
-		int paramCount = function.GetCustomStructParamCount();
-		if (paramCount == 1) return new List<string> { "CSP" };
-		return Enumerable.Range(0, paramCount).ToList().ConvertAll(i => $"CSP{i}");
-	}
 }

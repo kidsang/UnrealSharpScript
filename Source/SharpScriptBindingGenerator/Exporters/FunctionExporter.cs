@@ -90,7 +90,7 @@ public class FunctionExporter
 		BlueprintVisibility = blueprintVisibility;
 		SuppressGeneric = suppressGeneric;
 
-		FunctionName = function.GetScriptName();
+		FunctionName = function.GetManagedName();
 		Protection = CalculateProtection();
 
 		Modifiers = "";
@@ -381,7 +381,7 @@ public class FunctionExporter
 
 		FunctionExporter exporter = new FunctionExporter(function, protectionMode, overloadMode, blueprintVisibility, suppressGeneric)
 		{
-			FunctionName = $"F{function.GetScriptName()}",
+			FunctionName = $"F{function.GetManagedName()}",
 			InvokeArguments = "",
 			InvokeFunction = function.HasAnyFlags(EFunctionFlags.MulticastDelegate)
 				? "instance.ProcessMulticastDelegate"

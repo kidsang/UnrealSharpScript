@@ -57,7 +57,7 @@ public static class StructExporter
 
 	private static void ExportStructNativeRef(CodeBuilder codeBuilder, UhtScriptStruct structObj, List<UhtProperty> exportedProperties)
 	{
-		string structName = structObj.GetScriptName();
+		string structName = structObj.GetManagedName();
 		string nativeRefName = $"{structName}NativeRef";
 		string baseTypeName = $"IStructNativeRef<{structName}>";
 		string primaryConstructor = "(IntPtr nativePtr)";
@@ -125,7 +125,7 @@ public static class StructExporter
 
 	private static void ExportBlittableStructNativeRef(CodeBuilder codeBuilder, UhtScriptStruct structObj, List<UhtProperty> exportedProperties)
 	{
-		string structName = structObj.GetScriptName();
+		string structName = structObj.GetManagedName();
 		string nativeRefName = $"{structName}NativeRef";
 		string primaryConstructor = "(IntPtr nativePtr)";
 		string baseTypeName = $"IStructNativeRef<{structName}>";
@@ -189,7 +189,7 @@ public static class StructExporter
 			codeBuilder.AppendLine("[StructLayout(LayoutKind.Sequential)]");
 		}
 
-		string structName = structObj.GetScriptName();
+		string structName = structObj.GetManagedName();
 		string nativeRefName = $"{structName}NativeRef";
 		string baseTypeName = $"IStructMarshallerHelper<{structName}>";
 		codeBuilder.AppendTypeDeclare("struct", structName, baseTypeName: baseTypeName);

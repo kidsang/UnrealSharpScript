@@ -10,8 +10,8 @@ namespace UnrealEngine.Intrinsic;
 /// <param name="arrayProp">FArrayProperty pointer</param>
 /// <param name="itemMarshaller">Container internal element wrapper</param>
 /// <typeparam name="T">Array element type</typeparam>
-public abstract unsafe class DelegateArrayBase<T, U>(IntPtr nativeBuffer, IntPtr arrayProp, DelegateMarshaller<T> itemMarshaller) : IEnumerable<T>
-	where U : Delegate<T> where T : Delegate
+public abstract unsafe class DelegateArrayBase<T, TRef>(IntPtr nativeBuffer, IntPtr arrayProp, DelegateMarshaller<T> itemMarshaller) : IEnumerable<T>
+	where TRef : Delegate<T> where T : Delegate
 {
 	/// <summary>
 	/// C++ array pointer.
@@ -41,14 +41,14 @@ public abstract unsafe class DelegateArrayBase<T, U>(IntPtr nativeBuffer, IntPtr
 	/// <summary>
 	/// Return element at given index.
 	/// </summary>
-	public U Get(int index)
+	public TRef Get(int index)
 	{
 		if (index < 0 || index >= Count)
 		{
 			throw new IndexOutOfRangeException($"Index {index} out of bounds. Array is size {Count}");
 		}
 
-		return (U)ItemMarshaller.MarshallToNativeRef(NativeBuffer->Data, index);
+		return (TRef)ItemMarshaller.MarshallToNativeRef(NativeBuffer->Data, index);
 	}
 
 	/// <summary>
@@ -59,7 +59,7 @@ public abstract unsafe class DelegateArrayBase<T, U>(IntPtr nativeBuffer, IntPtr
 		int max = Count;
 		for (int index = 0; index < max; ++index)
 		{
-			U elem = Get(index);
+			TRef elem = Get(index);
 			if (elem.ToManaged().Equals(item))
 			{
 				return index;
@@ -80,7 +80,7 @@ public abstract unsafe class DelegateArrayBase<T, U>(IntPtr nativeBuffer, IntPtr
 
 	public bool SequenceEqual(IEnumerable<T> other)
 	{
-		if (other is DelegateArrayBase<T, U> otherArray)
+		if (other is DelegateArrayBase<T, TRef> otherArray)
 		{
 			if (NativeBuffer == otherArray.NativeBuffer)
 			{
@@ -102,9 +102,9 @@ public abstract unsafe class DelegateArrayBase<T, U>(IntPtr nativeBuffer, IntPtr
 	}
 
 	/// <summary>
-	/// Implicit converter from <see cref="DelegateArrayBase{T,U}"/> to <see cref="List{T}"/>
+	/// Implicit converter from <see cref="DelegateArrayBase{T,TRef}"/> to <see cref="List{T}"/>
 	/// </summary>
-	public static implicit operator List<T>(DelegateArrayBase<T, U> array)
+	public static implicit operator List<T>(DelegateArrayBase<T, TRef> array)
 	{
 		return array.ToList();
 	}
@@ -112,7 +112,7 @@ public abstract unsafe class DelegateArrayBase<T, U>(IntPtr nativeBuffer, IntPtr
 	/// <summary>
 	/// Array enumerator.
 	/// </summary>
-	public struct Enumerator(DelegateArrayBase<T, U> array) : IEnumerator<T>
+	public struct Enumerator(DelegateArrayBase<T, TRef> array) : IEnumerator<T>
 	{
 		private int _index = -1;
 
@@ -150,21 +150,21 @@ public abstract unsafe class DelegateArrayBase<T, U>(IntPtr nativeBuffer, IntPtr
 /// <summary>
 /// Read-only wrapper for TArray.
 /// </summary>
-/// <inheritdoc cref="DelegateArrayBase{T,U}"/>
-public class DelegateArrayReadOnly<T, U>(IntPtr nativeBuffer, IntPtr arrayProp, DelegateMarshaller<T> itemMarshaller)
-	: DelegateArrayBase<T, U>(nativeBuffer, arrayProp, itemMarshaller)
-	where U : Delegate<T> where T : Delegate
+/// <inheritdoc cref="DelegateArrayBase{T,TRef}"/>
+public class DelegateArrayReadOnly<T, TRef>(IntPtr nativeBuffer, IntPtr arrayProp, DelegateMarshaller<T> itemMarshaller)
+	: DelegateArrayBase<T, TRef>(nativeBuffer, arrayProp, itemMarshaller)
+	where TRef : Delegate<T> where T : Delegate
 {
-	public U this[int index] => Get(index);
+	public TRef this[int index] => Get(index);
 }
 
 /// <summary>
 /// Wrapper for TArray.
 /// </summary>
-/// <inheritdoc cref="DelegateArrayBase{T,U}"/>
-public unsafe class DelegateArray<T, U>(IntPtr nativeBuffer, IntPtr arrayProp, DelegateMarshaller<T> itemMarshaller)
-	: DelegateArrayBase<T, U>(nativeBuffer, arrayProp, itemMarshaller), ICollection<T>
-	where U : Delegate<T> where T : Delegate
+/// <inheritdoc cref="DelegateArrayBase{T,TRef}"/>
+public unsafe class DelegateArray<T, TRef>(IntPtr nativeBuffer, IntPtr arrayProp, DelegateMarshaller<T> itemMarshaller)
+	: DelegateArrayBase<T, TRef>(nativeBuffer, arrayProp, itemMarshaller), ICollection<T>
+	where TRef : Delegate<T> where T : Delegate
 {
 	public bool IsReadOnly => false;
 
@@ -218,7 +218,7 @@ public unsafe class DelegateArray<T, U>(IntPtr nativeBuffer, IntPtr arrayProp, D
 		Get(index).FromManaged(item);
 	}
 
-	public U this[int index] => Get(index);
+	public TRef this[int index] => Get(index);
 
 	/// <summary>
 	/// Fill in TArray from C# list.
@@ -232,7 +232,7 @@ public unsafe class DelegateArray<T, U>(IntPtr nativeBuffer, IntPtr arrayProp, D
 			return;
 		}
 
-		if (other is DelegateArrayBase<T, U> otherArray)
+		if (other is DelegateArrayBase<T, TRef> otherArray)
 		{
 			if (!SequenceEqual(otherArray))
 			{

@@ -32,11 +32,11 @@ public static class ClassExporter
 		codeBuilder.AppendLine($"namespace {classObj.GetNamespace()}");
 		using (new CodeBlock(codeBuilder)) // namespace
 		{
-			string className = classObj.GetScriptName();
+			string className = classObj.GetManagedName();
 			string superClassName;
 			if (classObj.SuperClass != null)
 			{
-				superClassName = classObj.Package == classObj.SuperClass.Package ? classObj.SuperClass.GetScriptName() : classObj.SuperClass.GetFullManagedName();
+				superClassName = classObj.Package == classObj.SuperClass.Package ? classObj.SuperClass.GetManagedName() : classObj.SuperClass.GetFullManagedName();
 			}
 			else
 			{
@@ -116,7 +116,7 @@ public static class ClassExporter
 			}
 		}
 
-		return methodName.Length > 0 ? methodName : function.GetScriptName();
+		return methodName.Length > 0 ? methodName : function.GetManagedName();
 	}
 
 	private static EExtensionMethodType GetExtensionMethodTypeAndName(UhtFunction function, out string methodName)
@@ -354,7 +354,7 @@ public static class ClassExporter
 		using var namespaceBlock = new CodeBlock(codeBuilder);
 
 		string typeDecl = typeObj is UhtClass ? "class" : "struct";
-		string typeName = typeObj.GetScriptName();
+		string typeName = typeObj.GetManagedName();
 		codeBuilder.AppendLine($"public partial {typeDecl} {typeName}");
 
 		if (hasEqualsOperator)

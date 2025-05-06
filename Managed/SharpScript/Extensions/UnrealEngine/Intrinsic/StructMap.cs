@@ -12,10 +12,10 @@ namespace UnrealEngine.Intrinsic;
 /// <param name="keyMarshaller">Dictionary key marshaller</param>
 /// <typeparam name="TKey">Dictionary key type</typeparam>
 /// <typeparam name="TValue">Dictionary value type</typeparam>
-/// <typeparam name="UValue">Dictionary value reference type</typeparam>
-public abstract unsafe class MapBase<TKey, TValue, UValue>(IntPtr mapPtr, IntPtr mapProp, IMarshaller<TKey> keyMarshaller)
+/// <typeparam name="TValueRef">Dictionary value reference type</typeparam>
+public abstract unsafe class MapBase<TKey, TValue, TValueRef>(IntPtr mapPtr, IntPtr mapProp, IMarshaller<TKey> keyMarshaller)
 	: IEnumerable<KeyValuePair<TKey, TValue>>
-	where TKey : notnull where UValue : IStructNativeRef<TValue> where TValue : struct
+	where TKey : notnull where TValueRef : IStructNativeRef<TValue> where TValue : struct
 {
 	/// <summary>
 	/// C++ dictionary pointer.
@@ -71,7 +71,7 @@ public abstract unsafe class MapBase<TKey, TValue, UValue>(IntPtr mapPtr, IntPtr
 		return MapInterop.GetPairPtr(MapProp, MapPtr, index, out keyPtr, out valuePtr) != 0;
 	}
 
-	protected KeyValuePair<TKey, UValue> GetAt(int index)
+	protected KeyValuePair<TKey, TValueRef> GetAt(int index)
 	{
 		if (!IsValidIndex(index))
 		{
@@ -83,7 +83,7 @@ public abstract unsafe class MapBase<TKey, TValue, UValue>(IntPtr mapPtr, IntPtr
 			throw new InvalidOperationException($"Failed to get pair at index {index}.");
 		}
 
-		return new KeyValuePair<TKey, UValue>(KeyMarshaller.MarshallFromNative(keyPtr), (UValue)UValue.CreateInstance(valuePtr));
+		return new KeyValuePair<TKey, TValueRef>(KeyMarshaller.MarshallFromNative(keyPtr), (TValueRef)TValueRef.CreateInstance(valuePtr));
 	}
 
 	protected TKey GetKeyAt(int index)
@@ -101,7 +101,7 @@ public abstract unsafe class MapBase<TKey, TValue, UValue>(IntPtr mapPtr, IntPtr
 		return KeyMarshaller.MarshallFromNative(keyPtr);
 	}
 
-	protected UValue GetValueAt(int index)
+	protected TValueRef GetValueAt(int index)
 	{
 		if (!IsValidIndex(index))
 		{
@@ -113,7 +113,7 @@ public abstract unsafe class MapBase<TKey, TValue, UValue>(IntPtr mapPtr, IntPtr
 			throw new InvalidOperationException($"Failed to get pair at index {index}.");
 		}
 
-		return (UValue)UValue.CreateInstance(valuePtr);
+		return (TValueRef)TValueRef.CreateInstance(valuePtr);
 	}
 
 	protected int IndexOf(TKey value)
@@ -134,7 +134,7 @@ public abstract unsafe class MapBase<TKey, TValue, UValue>(IntPtr mapPtr, IntPtr
 	/// <summary>
 	///  Get the value associated with a specified key
 	/// </summary>
-	public UValue? Get(TKey key)
+	public TValueRef? Get(TKey key)
 	{
 		int index = IndexOf(key);
 		return index >= 0 ? GetValueAt(index) : default;
@@ -175,14 +175,14 @@ public abstract unsafe class MapBase<TKey, TValue, UValue>(IntPtr mapPtr, IntPtr
 	}
 
 	/// <summary>
-	/// Implicit converter from <see cref="MapBase{TKey,TValue,UValue}"/> to <see cref="Dictionary{TKey,TValue}"/>
+	/// Implicit converter from <see cref="MapBase{TKey,TValue,TValueRef}"/> to <see cref="Dictionary{TKey,TValue}"/>
 	/// </summary>
-	public static implicit operator Dictionary<TKey, TValue>(MapBase<TKey, TValue, UValue> map)
+	public static implicit operator Dictionary<TKey, TValue>(MapBase<TKey, TValue, TValueRef> map)
 	{
 		return map.ToDictionary();
 	}
 
-	public struct Enumerator(MapBase<TKey, TValue, UValue> map) : IEnumerator<KeyValuePair<TKey, TValue>>
+	public struct Enumerator(MapBase<TKey, TValue, TValueRef> map) : IEnumerator<KeyValuePair<TKey, TValue>>
 	{
 		private int _index = -1;
 
@@ -227,9 +227,9 @@ public abstract unsafe class MapBase<TKey, TValue, UValue>(IntPtr mapPtr, IntPtr
 		return GetEnumerator();
 	}
 
-	public readonly struct KeyCollection(MapBase<TKey, TValue, UValue> map) : ICollection<TKey>
+	public readonly struct KeyCollection(MapBase<TKey, TValue, TValueRef> map) : ICollection<TKey>
 	{
-		public struct KeyEnumerator(MapBase<TKey, TValue, UValue> map) : IEnumerator<TKey>
+		public struct KeyEnumerator(MapBase<TKey, TValue, TValueRef> map) : IEnumerator<TKey>
 		{
 			private int _index = -1;
 
@@ -305,9 +305,9 @@ public abstract unsafe class MapBase<TKey, TValue, UValue>(IntPtr mapPtr, IntPtr
 		public bool IsReadOnly => true;
 	}
 
-	public readonly struct ValueCollection(MapBase<TKey, TValue, UValue> map) : ICollection<TValue>
+	public readonly struct ValueCollection(MapBase<TKey, TValue, TValueRef> map) : ICollection<TValue>
 	{
-		public struct ValueEnumerator(MapBase<TKey, TValue, UValue> map) : IEnumerator<TValue>
+		public struct ValueEnumerator(MapBase<TKey, TValue, TValueRef> map) : IEnumerator<TValue>
 		{
 			private int _index = -1;
 
@@ -387,12 +387,12 @@ public abstract unsafe class MapBase<TKey, TValue, UValue>(IntPtr mapPtr, IntPtr
 /// <summary>
 /// Read-only wrapper for TMap.
 /// </summary>
-/// <inheritdoc cref="MapBase{TKey,TValue,UValue}"/>
-public class MapReadOnly<TKey, TValue, UValue>(IntPtr mapPtr, IntPtr mapProp, IMarshaller<TKey> keyMarshaller)
-	: MapBase<TKey, TValue, UValue>(mapPtr, mapProp, keyMarshaller)
-	where TKey : notnull where UValue : IStructNativeRef<TValue> where TValue : struct
+/// <inheritdoc cref="MapBase{TKey,TValue,TValueRef}"/>
+public class MapReadOnly<TKey, TValue, TValueRef>(IntPtr mapPtr, IntPtr mapProp, IMarshaller<TKey> keyMarshaller)
+	: MapBase<TKey, TValue, TValueRef>(mapPtr, mapProp, keyMarshaller)
+	where TKey : notnull where TValueRef : IStructNativeRef<TValue> where TValue : struct
 {
-	public bool TryGetValue(TKey key, out UValue value)
+	public bool TryGetValue(TKey key, out TValueRef value)
 	{
 		int index = IndexOf(key);
 		if (index >= 0)
@@ -405,7 +405,7 @@ public class MapReadOnly<TKey, TValue, UValue>(IntPtr mapPtr, IntPtr mapProp, IM
 		return false;
 	}
 
-	public UValue this[TKey key] => Get(key)!;
+	public TValueRef this[TKey key] => Get(key)!;
 
 	public KeyCollection Keys => new(this);
 
@@ -415,10 +415,10 @@ public class MapReadOnly<TKey, TValue, UValue>(IntPtr mapPtr, IntPtr mapProp, IM
 /// <summary>
 /// Wrapper for TMap.
 /// </summary>
-/// <inheritdoc cref="MapBase{TKey,TValue,UValue}"/>
-public unsafe class Map<TKey, TValue, UValue>(IntPtr mapPtr, IntPtr mapProp, IMarshaller<TKey> keyMarshaller)
-	: MapBase<TKey, TValue, UValue>(mapPtr, mapProp, keyMarshaller)
-	where TKey : notnull where UValue : IStructNativeRef<TValue> where TValue : struct
+/// <inheritdoc cref="MapBase{TKey,TValue,TValueRef}"/>
+public unsafe class Map<TKey, TValue, TValueRef>(IntPtr mapPtr, IntPtr mapProp, IMarshaller<TKey> keyMarshaller)
+	: MapBase<TKey, TValue, TValueRef>(mapPtr, mapProp, keyMarshaller)
+	where TKey : notnull where TValueRef : IStructNativeRef<TValue> where TValue : struct
 {
 	public void Add(KeyValuePair<TKey, TValue> item)
 	{
@@ -469,7 +469,7 @@ public unsafe class Map<TKey, TValue, UValue>(IntPtr mapPtr, IntPtr mapProp, IMa
 		TypeInterop.InitializePropertyValue(ValueProp, valuePtr);
 
 		KeyMarshaller.MarshallToNative(keyPtr, key);
-		UValue.CreateInstance(valuePtr).FromManaged(value);
+		TValueRef.CreateInstance(valuePtr).FromManaged(value);
 
 		MapInterop.AddPair(MapProp, MapPtr, keyPtr, valuePtr);
 
@@ -489,7 +489,7 @@ public unsafe class Map<TKey, TValue, UValue>(IntPtr mapPtr, IntPtr mapProp, IMa
 		return true;
 	}
 
-	public bool TryGetValue(TKey key, out UValue value)
+	public bool TryGetValue(TKey key, out TValueRef value)
 	{
 		int index = IndexOf(key);
 		if (index >= 0)
@@ -502,7 +502,7 @@ public unsafe class Map<TKey, TValue, UValue>(IntPtr mapPtr, IntPtr mapProp, IMa
 		return false;
 	}
 
-	public UValue this[TKey key] => Get(key)!;
+	public TValueRef this[TKey key] => Get(key)!;
 
 	public KeyCollection Keys => new(this);
 
@@ -520,7 +520,7 @@ public unsafe class Map<TKey, TValue, UValue>(IntPtr mapPtr, IntPtr mapProp, IMa
 			return;
 		}
 
-		if (other is MapBase<TKey, TValue, UValue> otherMap)
+		if (other is MapBase<TKey, TValue, TValueRef> otherMap)
 		{
 			if (MapPtr != otherMap.MapPtr)
 			{
@@ -540,7 +540,7 @@ public unsafe class Map<TKey, TValue, UValue>(IntPtr mapPtr, IntPtr mapProp, IMa
 			{
 				MapInterop.AddDefaultValueAndGetPair(MapProp, MapPtr, out var keyPtr, out var valuePtr);
 				KeyMarshaller.MarshallToNative(keyPtr, pair.Key);
-				UValue.CreateInstance(valuePtr).FromManaged(pair.Value);
+				TValueRef.CreateInstance(valuePtr).FromManaged(pair.Value);
 			}
 
 			MapInterop.Rehash(MapProp, MapPtr);

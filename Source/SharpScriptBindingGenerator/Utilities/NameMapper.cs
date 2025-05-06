@@ -58,7 +58,7 @@ public static class NameMapper
 		return $"{type.GetNamespace()}.I{type.GetScriptName()}";
 	}
 
-	public static string GetScriptName(this UhtType type)
+	private static string GetScriptName(this UhtType type)
 	{
 		if (type is UhtEnum)
 		{

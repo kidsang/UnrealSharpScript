@@ -10,9 +10,9 @@ namespace UnrealEngine.Intrinsic;
 /// <param name="nativeBuffer">C++ array pointer</param>
 /// <param name="arrayProp">FArrayProperty pointer</param>
 /// <typeparam name="T">Array element type</typeparam>
-/// <typeparam name="U">Array element reference type</typeparam>
-public abstract unsafe class ArrayBase<T, U>(IntPtr nativeBuffer, IntPtr arrayProp) : IEnumerable<T>
-	where U : IStructNativeRef<T> where T : struct
+/// <typeparam name="TRef">Array element reference type</typeparam>
+public abstract unsafe class ArrayBase<T, TRef>(IntPtr nativeBuffer, IntPtr arrayProp) : IEnumerable<T>
+	where TRef : IStructNativeRef<T> where T : struct
 {
 	/// <summary>
 	/// C++ array pointer.
@@ -37,16 +37,16 @@ public abstract unsafe class ArrayBase<T, U>(IntPtr nativeBuffer, IntPtr arrayPr
 	/// <summary>
 	/// Return element at given index.
 	/// </summary>
-	public U Get(int index)
+	public TRef Get(int index)
 	{
 		if (index < 0 || index >= Count)
 		{
 			throw new IndexOutOfRangeException($"Index {index} out of bounds. Array is size {Count}");
 		}
 
-		int dataSize = U.GetNativeDataSize();
+		int dataSize = TRef.GetNativeDataSize();
 		IntPtr valuePtr = NativeBuffer->Data + index * dataSize;
-		return (U)U.CreateInstance(valuePtr);
+		return (TRef)TRef.CreateInstance(valuePtr);
 	}
 
 	/// <summary>
@@ -57,7 +57,7 @@ public abstract unsafe class ArrayBase<T, U>(IntPtr nativeBuffer, IntPtr arrayPr
 		int max = Count;
 		for (int index = 0; index < max; ++index)
 		{
-			U elem = Get(index);
+			TRef elem = Get(index);
 			if (elem.ToManaged().Equals(item))
 			{
 				return index;
@@ -78,7 +78,7 @@ public abstract unsafe class ArrayBase<T, U>(IntPtr nativeBuffer, IntPtr arrayPr
 
 	public bool SequenceEqual(IEnumerable<T> other)
 	{
-		if (other is ArrayBase<T, U> otherArray)
+		if (other is ArrayBase<T, TRef> otherArray)
 		{
 			if (NativeBuffer == otherArray.NativeBuffer)
 			{
@@ -100,9 +100,9 @@ public abstract unsafe class ArrayBase<T, U>(IntPtr nativeBuffer, IntPtr arrayPr
 	}
 
 	/// <summary>
-	/// Implicit converter from <see cref="ArrayBase{T,U}"/> to <see cref="List{T}"/>
+	/// Implicit converter from <see cref="ArrayBase{T,TRef}"/> to <see cref="List{T}"/>
 	/// </summary>
-	public static implicit operator List<T>(ArrayBase<T, U> array)
+	public static implicit operator List<T>(ArrayBase<T, TRef> array)
 	{
 		return array.ToList();
 	}
@@ -110,7 +110,7 @@ public abstract unsafe class ArrayBase<T, U>(IntPtr nativeBuffer, IntPtr arrayPr
 	/// <summary>
 	/// List enumerator.
 	/// </summary>
-	public struct Enumerator(ArrayBase<T, U> array) : IEnumerator<T>
+	public struct Enumerator(ArrayBase<T, TRef> array) : IEnumerator<T>
 	{
 		private int _index = -1;
 
@@ -148,21 +148,21 @@ public abstract unsafe class ArrayBase<T, U>(IntPtr nativeBuffer, IntPtr arrayPr
 /// <summary>
 /// Read-only wrapper for TArray.
 /// </summary>
-/// <inheritdoc cref="ArrayBase{T,U}"/>
-public class ArrayReadOnly<T, U>(IntPtr nativeBuffer, IntPtr arrayProp)
-	: ArrayBase<T, U>(nativeBuffer, arrayProp)
-	where U : IStructNativeRef<T> where T : struct
+/// <inheritdoc cref="ArrayBase{T,TRef}"/>
+public class ArrayReadOnly<T, TRef>(IntPtr nativeBuffer, IntPtr arrayProp)
+	: ArrayBase<T, TRef>(nativeBuffer, arrayProp)
+	where TRef : IStructNativeRef<T> where T : struct
 {
-	public U this[int index] => Get(index);
+	public TRef this[int index] => Get(index);
 }
 
 /// <summary>
 /// Wrapper for TArray.
 /// </summary>
-/// <inheritdoc cref="ArrayBase{T,U}"/>
-public unsafe class Array<T, U>(IntPtr nativeBuffer, IntPtr arrayProp)
-	: ArrayBase<T, U>(nativeBuffer, arrayProp), ICollection<T>
-	where U : IStructNativeRef<T> where T : struct
+/// <inheritdoc cref="ArrayBase{T,TRef}"/>
+public unsafe class Array<T, TRef>(IntPtr nativeBuffer, IntPtr arrayProp)
+	: ArrayBase<T, TRef>(nativeBuffer, arrayProp), ICollection<T>
+	where TRef : IStructNativeRef<T> where T : struct
 {
 	public bool IsReadOnly => false;
 
@@ -216,7 +216,7 @@ public unsafe class Array<T, U>(IntPtr nativeBuffer, IntPtr arrayProp)
 		Get(index).FromManaged(item);
 	}
 
-	public U this[int index] => Get(index);
+	public TRef this[int index] => Get(index);
 
 	/// <summary>
 	/// Fill in TArray from C# list.
@@ -230,7 +230,7 @@ public unsafe class Array<T, U>(IntPtr nativeBuffer, IntPtr arrayProp)
 			return;
 		}
 
-		if (other is ArrayBase<T, U> otherArray)
+		if (other is ArrayBase<T, TRef> otherArray)
 		{
 			if (!SequenceEqual(otherArray))
 			{

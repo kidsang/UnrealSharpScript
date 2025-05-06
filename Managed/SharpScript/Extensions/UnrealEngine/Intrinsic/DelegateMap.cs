@@ -12,10 +12,10 @@ namespace UnrealEngine.Intrinsic;
 /// <param name="valueMarshaller">Dictionary value marshaller</param>
 /// <typeparam name="TKey">Dictionary key type</typeparam>
 /// <typeparam name="TValue">Dictionary value type</typeparam>
-/// <typeparam name="UValue">Dictionary value reference type</typeparam>
-public abstract unsafe class DelegateMapBase<TKey, TValue, UValue>(IntPtr mapPtr, IntPtr mapProp, IMarshaller<TKey> keyMarshaller, DelegateMarshaller<TValue> valueMarshaller)
+/// <typeparam name="TValueRef">Dictionary value reference type</typeparam>
+public abstract unsafe class DelegateMapBase<TKey, TValue, TValueRef>(IntPtr mapPtr, IntPtr mapProp, IMarshaller<TKey> keyMarshaller, DelegateMarshaller<TValue> valueMarshaller)
 	: IEnumerable<KeyValuePair<TKey, TValue>>
-	where TKey : notnull where UValue : Delegate<TValue> where TValue : Delegate
+	where TKey : notnull where TValueRef : Delegate<TValue> where TValue : Delegate
 {
 	/// <summary>
 	/// C++ dictionary pointer.
@@ -76,7 +76,7 @@ public abstract unsafe class DelegateMapBase<TKey, TValue, UValue>(IntPtr mapPtr
 		return MapInterop.GetPairPtr(MapProp, MapPtr, index, out keyPtr, out valuePtr) != 0;
 	}
 
-	protected KeyValuePair<TKey, UValue> GetAt(int index)
+	protected KeyValuePair<TKey, TValueRef> GetAt(int index)
 	{
 		if (!IsValidIndex(index))
 		{
@@ -88,7 +88,7 @@ public abstract unsafe class DelegateMapBase<TKey, TValue, UValue>(IntPtr mapPtr
 			throw new InvalidOperationException($"Failed to get pair at index {index}.");
 		}
 
-		return new KeyValuePair<TKey, UValue>(KeyMarshaller.MarshallFromNative(keyPtr), (UValue)ValueMarshaller.MarshallToNativeRef(valuePtr));
+		return new KeyValuePair<TKey, TValueRef>(KeyMarshaller.MarshallFromNative(keyPtr), (TValueRef)ValueMarshaller.MarshallToNativeRef(valuePtr));
 	}
 
 	protected TKey GetKeyAt(int index)
@@ -106,7 +106,7 @@ public abstract unsafe class DelegateMapBase<TKey, TValue, UValue>(IntPtr mapPtr
 		return KeyMarshaller.MarshallFromNative(keyPtr);
 	}
 
-	protected UValue GetValueAt(int index)
+	protected TValueRef GetValueAt(int index)
 	{
 		if (!IsValidIndex(index))
 		{
@@ -118,7 +118,7 @@ public abstract unsafe class DelegateMapBase<TKey, TValue, UValue>(IntPtr mapPtr
 			throw new InvalidOperationException($"Failed to get pair at index {index}.");
 		}
 
-		return (UValue)ValueMarshaller.MarshallToNativeRef(valuePtr);
+		return (TValueRef)ValueMarshaller.MarshallToNativeRef(valuePtr);
 	}
 
 	protected int IndexOf(TKey value)
@@ -139,7 +139,7 @@ public abstract unsafe class DelegateMapBase<TKey, TValue, UValue>(IntPtr mapPtr
 	/// <summary>
 	///  Get the value associated with a specified key
 	/// </summary>
-	public UValue? Get(TKey key)
+	public TValueRef? Get(TKey key)
 	{
 		int index = IndexOf(key);
 		return index >= 0 ? GetValueAt(index) : null;
@@ -180,14 +180,14 @@ public abstract unsafe class DelegateMapBase<TKey, TValue, UValue>(IntPtr mapPtr
 	}
 
 	/// <summary>
-	/// Implicit converter from <see cref="DelegateMapBase{TKey,TValue,UValue}"/> to <see cref="Dictionary{TKey,TValue}"/>
+	/// Implicit converter from <see cref="DelegateMapBase{TKey,TValue,TValueRef}"/> to <see cref="Dictionary{TKey,TValue}"/>
 	/// </summary>
-	public static implicit operator Dictionary<TKey, TValue>(DelegateMapBase<TKey, TValue, UValue> map)
+	public static implicit operator Dictionary<TKey, TValue>(DelegateMapBase<TKey, TValue, TValueRef> map)
 	{
 		return map.ToDictionary();
 	}
 
-	public struct Enumerator(DelegateMapBase<TKey, TValue, UValue> map) : IEnumerator<KeyValuePair<TKey, TValue>>
+	public struct Enumerator(DelegateMapBase<TKey, TValue, TValueRef> map) : IEnumerator<KeyValuePair<TKey, TValue>>
 	{
 		private int _index = -1;
 
@@ -232,9 +232,9 @@ public abstract unsafe class DelegateMapBase<TKey, TValue, UValue>(IntPtr mapPtr
 		return GetEnumerator();
 	}
 
-	public readonly struct KeyCollection(DelegateMapBase<TKey, TValue, UValue> map) : ICollection<TKey>
+	public readonly struct KeyCollection(DelegateMapBase<TKey, TValue, TValueRef> map) : ICollection<TKey>
 	{
-		public struct KeyEnumerator(DelegateMapBase<TKey, TValue, UValue> map) : IEnumerator<TKey>
+		public struct KeyEnumerator(DelegateMapBase<TKey, TValue, TValueRef> map) : IEnumerator<TKey>
 		{
 			private int _index = -1;
 
@@ -310,9 +310,9 @@ public abstract unsafe class DelegateMapBase<TKey, TValue, UValue>(IntPtr mapPtr
 		public bool IsReadOnly => true;
 	}
 
-	public readonly struct ValueCollection(DelegateMapBase<TKey, TValue, UValue> map) : ICollection<TValue>
+	public readonly struct ValueCollection(DelegateMapBase<TKey, TValue, TValueRef> map) : ICollection<TValue>
 	{
-		public struct ValueEnumerator(DelegateMapBase<TKey, TValue, UValue> map) : IEnumerator<TValue>
+		public struct ValueEnumerator(DelegateMapBase<TKey, TValue, TValueRef> map) : IEnumerator<TValue>
 		{
 			private int _index = -1;
 
@@ -392,12 +392,12 @@ public abstract unsafe class DelegateMapBase<TKey, TValue, UValue>(IntPtr mapPtr
 /// <summary>
 /// Read-only wrapper for TMap.
 /// </summary>
-/// <inheritdoc cref="DelegateMapBase{TKey,TValue,UValue}"/>
-public class DelegateMapReadOnly<TKey, TValue, UValue>(IntPtr mapPtr, IntPtr mapProp, IMarshaller<TKey> keyMarshaller, DelegateMarshaller<TValue> valueMarshaller)
-	: DelegateMapBase<TKey, TValue, UValue>(mapPtr, mapProp, keyMarshaller, valueMarshaller)
-	where TKey : notnull where UValue : Delegate<TValue> where TValue : Delegate
+/// <inheritdoc cref="DelegateMapBase{TKey,TValue,TValueRef}"/>
+public class DelegateMapReadOnly<TKey, TValue, TValueRef>(IntPtr mapPtr, IntPtr mapProp, IMarshaller<TKey> keyMarshaller, DelegateMarshaller<TValue> valueMarshaller)
+	: DelegateMapBase<TKey, TValue, TValueRef>(mapPtr, mapProp, keyMarshaller, valueMarshaller)
+	where TKey : notnull where TValueRef : Delegate<TValue> where TValue : Delegate
 {
-	public bool TryGetValue(TKey key, out UValue value)
+	public bool TryGetValue(TKey key, out TValueRef value)
 	{
 		int index = IndexOf(key);
 		if (index >= 0)
@@ -410,7 +410,7 @@ public class DelegateMapReadOnly<TKey, TValue, UValue>(IntPtr mapPtr, IntPtr map
 		return false;
 	}
 
-	public UValue this[TKey key] => Get(key)!;
+	public TValueRef this[TKey key] => Get(key)!;
 
 	public KeyCollection Keys => new(this);
 
@@ -420,10 +420,10 @@ public class DelegateMapReadOnly<TKey, TValue, UValue>(IntPtr mapPtr, IntPtr map
 /// <summary>
 /// Wrapper for TMap.
 /// </summary>
-/// <inheritdoc cref="DelegateMapBase{TKey,TValue,UValue}"/>
-public unsafe class DelegateMap<TKey, TValue, UValue>(IntPtr mapPtr, IntPtr mapProp, IMarshaller<TKey> keyMarshaller, DelegateMarshaller<TValue> valueMarshaller)
-	: DelegateMapBase<TKey, TValue, UValue>(mapPtr, mapProp, keyMarshaller, valueMarshaller)
-	where TKey : notnull where UValue : Delegate<TValue> where TValue : Delegate
+/// <inheritdoc cref="DelegateMapBase{TKey,TValue,TValueRef}"/>
+public unsafe class DelegateMap<TKey, TValue, TValueRef>(IntPtr mapPtr, IntPtr mapProp, IMarshaller<TKey> keyMarshaller, DelegateMarshaller<TValue> valueMarshaller)
+	: DelegateMapBase<TKey, TValue, TValueRef>(mapPtr, mapProp, keyMarshaller, valueMarshaller)
+	where TKey : notnull where TValueRef : Delegate<TValue> where TValue : Delegate
 {
 	public void Add(KeyValuePair<TKey, TValue> item)
 	{
@@ -494,7 +494,7 @@ public unsafe class DelegateMap<TKey, TValue, UValue>(IntPtr mapPtr, IntPtr mapP
 		return true;
 	}
 
-	public bool TryGetValue(TKey key, out UValue? value)
+	public bool TryGetValue(TKey key, out TValueRef? value)
 	{
 		int index = IndexOf(key);
 		if (index >= 0)
@@ -507,7 +507,7 @@ public unsafe class DelegateMap<TKey, TValue, UValue>(IntPtr mapPtr, IntPtr mapP
 		return false;
 	}
 
-	public UValue this[TKey key] => Get(key)!;
+	public TValueRef this[TKey key] => Get(key)!;
 
 	public KeyCollection Keys => new(this);
 
@@ -525,7 +525,7 @@ public unsafe class DelegateMap<TKey, TValue, UValue>(IntPtr mapPtr, IntPtr mapP
 			return;
 		}
 
-		if (other is DelegateMapBase<TKey, TValue, UValue> otherMap)
+		if (other is DelegateMapBase<TKey, TValue, TValueRef> otherMap)
 		{
 			if (MapPtr != otherMap.MapPtr)
 			{
