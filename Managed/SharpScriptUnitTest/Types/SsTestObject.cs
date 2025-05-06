@@ -5,13 +5,13 @@ using Object = UnrealEngine.CoreUObject.Object;
 
 namespace SharpScriptUnitTest.Types;
 
-public class SsTestObject : Object, ISsTestChildInterface, ISsTestOtherInterface
+public class SsTestObject : Object, IStaticClass<SsTestObject>, ISsTestChildInterface, ISsTestOtherInterface
 {
+	public new static SubclassOf<SsTestObject> StaticClass { get; }
 	public static Class InterfaceClass => null!;
 
 	// ReSharper disable InconsistentNaming
 	public new static readonly IntPtr NativeType;
-	public new static readonly SubclassOf<SsTestObject> StaticClass;
 	internal static readonly IntPtr Bool_NativeProp;
 	internal static readonly int Bool_Offset;
 	internal static readonly IntPtr BitfieldBoolA_NativeProp;

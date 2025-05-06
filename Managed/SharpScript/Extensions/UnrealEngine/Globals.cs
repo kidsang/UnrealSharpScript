@@ -28,11 +28,12 @@ public static unsafe partial class Globals
 	/// <param name="name">the name for the new object.  If not specified, the object will be given a transient name via MakeUniqueObjectName</param>
 	/// <typeparam name="T">subclass of Object</typeparam>
 	/// <returns>a pointer of type T to a new object of the specified class</returns>
-	public static T NewObject<T>(SubclassOf<T> cls = default, Name name = default) where T : Object
+	public static T NewObject<T>(SubclassOf<T> cls = default, Name name = default)
+		where T : Object, IStaticClass<T>
 	{
 		if (!cls.IsValid())
 		{
-			cls = new SubclassOf<T>();
+			cls = T.StaticClass;
 		}
 
 		IntPtr handle = NativeNewObjectSimple(cls.NativeClass, name);
@@ -48,11 +49,12 @@ public static unsafe partial class Globals
 	/// <param name="flags">the object flags to apply to the new object</param>
 	/// <typeparam name="T">subclass of Object</typeparam>
 	/// <returns>a pointer of type T to a new object of the specified class</returns>
-	public static T NewObject<T>(Object outer, SubclassOf<T> cls = default, Name name = default, UInt32 flags = 0) where T : Object
+	public static T NewObject<T>(Object outer, SubclassOf<T> cls = default, Name name = default, UInt32 flags = 0)
+		where T : Object, IStaticClass<T>
 	{
 		if (!cls.IsValid())
 		{
-			cls = new SubclassOf<T>();
+			cls = T.StaticClass;
 		}
 
 		IntPtr handle = NativeNewObject(outer.NativeObject, cls.NativeClass, name, flags, IntPtr.Zero);
