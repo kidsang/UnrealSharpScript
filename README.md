@@ -13,7 +13,7 @@ Clone this repository, place UnrealSharpScript into your project's Plugins direc
 
 # Run Unit Test
 Launch the editor, navigate to the menu bar and select **Tools -> Test Automation**. In the pop-up window, switch to the **Automation** tab, search for **SharpScript**, and execute the unit tests:
-![image](https://github.com/user-attachments/assets/8d1509e2-1aa4-4e86-a23e-56b04c08b3d8)
+![image](https://github.com/user-attachments/assets/a080aa6b-e813-44ac-a850-cbab114d9991)
 
 # 简介
 SharpScript是个全新的UE5插件，能让你使用C#进行游戏开发。
@@ -30,4 +30,4 @@ SharpScript当前基于**UE5.3**进行开发和测试。
 
 # 执行单元测试
 运行编辑器，在菜单栏点击 **Tools -> Test Automation**。在弹出的窗口中选择**Automation**标签页，搜索**SharpScript**，即可执行单元测试：
-![image](https://github.com/user-attachments/assets/8d1509e2-1aa4-4e86-a23e-56b04c08b3d8)
+![image](https://github.com/user-attachments/assets/a080aa6b-e813-44ac-a850-cbab114d9991)
