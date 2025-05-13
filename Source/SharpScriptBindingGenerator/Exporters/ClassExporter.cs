@@ -116,7 +116,7 @@ public static class ClassExporter
 			}
 		}
 
-		return methodName.Length > 0 ? methodName : function.GetManagedName();
+		return methodName.Length > 0 ? methodName : function.GetFunctionName();
 	}
 
 	private static EExtensionMethodType GetExtensionMethodTypeAndName(UhtFunction function, out string methodName)

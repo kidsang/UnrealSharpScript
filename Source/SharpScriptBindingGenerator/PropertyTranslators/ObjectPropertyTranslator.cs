@@ -56,9 +56,9 @@ public class ObjectPropertyTranslator : SimpleTypePropertyTranslator
 	public override void ExportGenericParamFromNative(CodeBuilder codeBuilder, UhtFunction function, UhtProperty property, string paramName, string typeArgument, string nativeBufferName, bool needDeclaration)
 	{
 		string funcEngineName = function.StrippedFunctionName;
-		string paramEngineName = property.EngineName;
+		string paramSourceName = property.SourceName;
 		string marshaller = $"ObjectMarshaller<{typeArgument}>";
 		string declaration = needDeclaration ? $"{typeArgument}? " : "";
-		codeBuilder.AppendLine($"{declaration}{paramName} = {marshaller}.FromNative({nativeBufferName} + {funcEngineName}_{paramEngineName}_Offset);");
+		codeBuilder.AppendLine($"{declaration}{paramName} = {marshaller}.FromNative({nativeBufferName} + {funcEngineName}_{paramSourceName}_Offset);");
 	}
 }

@@ -39,10 +39,10 @@ public class SetPropertyTranslator : ContainerPropertyTranslator
 	{
 		PropertyTranslator valueTranslator = GetValueTranslator(property);
 		string nativePtr = forClass ? "NativeObject" : "nativePtr";
-		string propEngineName = property.EngineName;
+		string propSourceName = property.SourceName;
 		UhtProperty valueProperty = GetValueProperty(property);
 		string valueMarshaller = valueTranslator.GetMarshaller(valueProperty);
-		codeBuilder.Append($"new({nativePtr} + {propEngineName}_Offset, {propEngineName}_NativeProp, {valueMarshaller}.Instance);");
+		codeBuilder.Append($"new({nativePtr} + {propSourceName}_Offset, {propSourceName}_NativeProp, {valueMarshaller}.Instance);");
 	}
 
 	public override void ExportParamToNative(CodeBuilder codeBuilder, UhtFunction function, UhtProperty property, string paramName, string nativeBufferName)
@@ -52,8 +52,8 @@ public class SetPropertyTranslator : ContainerPropertyTranslator
 		PropertyTranslator valueTranslator = GetValueTranslator(property);
 		string valueMarshaller = valueTranslator.GetMarshaller(valueProperty);
 		string funcEngineName = function.StrippedFunctionName;
-		string paramEngineName = property.EngineName;
-		codeBuilder.AppendLine($"new {propManagedType}({nativeBufferName} + {funcEngineName}_{paramEngineName}_Offset, {funcEngineName}_{paramEngineName}_NativeProp, {valueMarshaller}.Instance).CopyFrom({paramName});");
+		string paramSourceName = property.SourceName;
+		codeBuilder.AppendLine($"new {propManagedType}({nativeBufferName} + {funcEngineName}_{paramSourceName}_Offset, {funcEngineName}_{paramSourceName}_NativeProp, {valueMarshaller}.Instance).CopyFrom({paramName});");
 	}
 
 	public override void ExportParamFromNative(CodeBuilder codeBuilder, UhtFunction function, UhtProperty property, string paramName, string nativeBufferName, bool needDeclaration)
@@ -63,9 +63,9 @@ public class SetPropertyTranslator : ContainerPropertyTranslator
 		PropertyTranslator valueTranslator = GetValueTranslator(property);
 		string valueMarshaller = valueTranslator.GetMarshaller(valueProperty);
 		string funcEngineName = function.StrippedFunctionName;
-		string paramEngineName = property.EngineName;
+		string paramSourceName = property.SourceName;
 		string declaration = needDeclaration ? $"{GetParamManagedType(property)} " : "";
-		codeBuilder.AppendLine($"{declaration}{paramName} = new {propManagedType}({nativeBufferName} + {funcEngineName}_{paramEngineName}_Offset, {funcEngineName}_{paramEngineName}_NativeProp, {valueMarshaller}.Instance);");
+		codeBuilder.AppendLine($"{declaration}{paramName} = new {propManagedType}({nativeBufferName} + {funcEngineName}_{paramSourceName}_Offset, {funcEngineName}_{paramSourceName}_NativeProp, {valueMarshaller}.Instance);");
 	}
 
 	public override void ExportGenericParamFromNative(CodeBuilder codeBuilder, UhtFunction function, UhtProperty property, string paramName, string typeArgument, string nativeBufferName, bool needDeclaration)
@@ -80,8 +80,8 @@ public class SetPropertyTranslator : ContainerPropertyTranslator
 		string propManagedType = $"Set<{typeArgument}?>";
 		string valueMarshaller = $"ObjectMarshaller<{typeArgument}>";
 		string funcEngineName = function.StrippedFunctionName;
-		string paramEngineName = property.EngineName;
+		string paramSourceName = property.SourceName;
 		string declaration = needDeclaration ? $"{GetGenericParamManagedType(property, typeArgument)} " : "";
-		codeBuilder.AppendLine($"{declaration}{paramName} = new {propManagedType}({nativeBufferName} + {funcEngineName}_{paramEngineName}_Offset, {funcEngineName}_{paramEngineName}_NativeProp, {valueMarshaller}.Instance);");
+		codeBuilder.AppendLine($"{declaration}{paramName} = new {propManagedType}({nativeBufferName} + {funcEngineName}_{paramSourceName}_Offset, {funcEngineName}_{paramSourceName}_NativeProp, {valueMarshaller}.Instance);");
 	}
 }

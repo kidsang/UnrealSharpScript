@@ -89,17 +89,24 @@ public static class DotNetUtilities
 		throw new Exception(errorDetails);
 	}
 
-	public static void BuildGeneratedProject(string projectPath, string outputPath)
+	public static void BuildCSharpProject(string projectPath, string outputPath)
 	{
 		List<string> arguments = new List<string>()
 		{
 			"build",
-			"-c",
-			"Release",
 			projectPath,
 			"--output",
 			outputPath,
 		};
+
+		string buildConfig = Program.IsDebugBuild ? "Debug" : "Release";
+		if (Program.BuildingEditor)
+		{
+			buildConfig += "_Editor";
+		}
+
+		arguments.Add("-c");
+		arguments.Add(buildConfig);
 
 		InvokeDotNet(arguments);
 	}

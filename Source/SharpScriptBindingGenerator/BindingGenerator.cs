@@ -18,17 +18,6 @@ namespace SharpScriptBindingGenerator;
 public static class BindingGenerator
 {
 	/// <summary>
-	/// Records the last modification time of module directories.
-	/// </summary>
-	private class ModuleFolders
-	{
-		/// <summary>
-		/// Key: Module directory path Value: Modification time of the corresponding module source code when generating C# binding code
-		/// </summary>
-		public readonly Dictionary<string, DateTime> DirectoriesModifyTime = new();
-	}
-
-	/// <summary>
 	/// Cache file name for module last modification time.
 	/// </summary>
 	private const string ModuleModifyTimeFileName = "SharpScriptModuleModifyTime.json";
@@ -36,8 +25,10 @@ public static class BindingGenerator
 	/// <summary>
 	/// Module directory modification time.
 	/// Key: Module name
+	/// Value-Key: Module directory path
+	/// Value-Value: Modification time of the corresponding module source code when generating C# binding code
 	/// </summary>
-	private static Dictionary<string, ModuleFolders> _modulesModifyInfo = new();
+	private static Dictionary<string, Dictionary<string, DateTime>> _modulesModifyInfo = new();
 
 	/// <summary>
 	/// Cache the modification time of each directory.
@@ -101,10 +92,10 @@ public static class BindingGenerator
 		}
 
 		using FileStream fileStream = new FileStream(cachePath, FileMode.Open, FileAccess.Read, FileShare.Read);
-		Dictionary<string, ModuleFolders>? jsonValue = JsonSerializer.Deserialize<Dictionary<string, ModuleFolders>>(fileStream);
+		Dictionary<string, Dictionary<string, DateTime>>? jsonValue = JsonSerializer.Deserialize<Dictionary<string, Dictionary<string, DateTime>>>(fileStream);
 		if (jsonValue != null)
 		{
-			_modulesModifyInfo = new Dictionary<string, ModuleFolders>(jsonValue);
+			_modulesModifyInfo = jsonValue;
 		}
 	}
 
@@ -140,9 +131,9 @@ public static class BindingGenerator
 
 	public static bool HasBeenExported(string directory)
 	{
-		if (_modulesModifyInfo.TryGetValue(directory, out ModuleFolders? moduleFolders))
+		if (_modulesModifyInfo.TryGetValue(directory, out Dictionary<string, DateTime>? moduleFolders))
 		{
-			return moduleFolders.DirectoriesModifyTime.Count > 0;
+			return moduleFolders.Count > 0;
 		}
 
 		return false;
@@ -151,7 +142,7 @@ public static class BindingGenerator
 	/// <summary>
 	/// Determine whether the C# binding code for the module needs to be regenerated.
 	/// </summary>
-	private static bool ShouldExportDirectory(string directoryPath, ModuleFolders moduleFolders)
+	private static bool ShouldExportDirectory(string directoryPath, Dictionary<string, DateTime> moduleFolders)
 	{
 		if (!CachedDirectoriesModifyTime.TryGetValue(directoryPath, out DateTime cachedTime))
 		{
@@ -160,13 +151,13 @@ public static class BindingGenerator
 			cachedTime = currentWriteTime;
 		}
 
-		return !moduleFolders.DirectoriesModifyTime.TryGetValue(directoryPath, out DateTime lastEditTimeValue) || lastEditTimeValue != cachedTime;
+		return !moduleFolders.TryGetValue(directoryPath, out DateTime lastEditTimeValue) || lastEditTimeValue != cachedTime;
 	}
 
 	/// <summary>
 	/// Update the incremental generation information for modules.
 	/// </summary>
-	private static void UpdateDirectoriesLastExportTime(HashSet<string> directories, ModuleFolders moduleFolders)
+	private static void UpdateDirectoriesLastExportTime(HashSet<string> directories, Dictionary<string, DateTime> moduleFolders)
 	{
 		foreach (string directory in directories)
 		{
@@ -175,7 +166,7 @@ public static class BindingGenerator
 				continue;
 			}
 
-			moduleFolders.DirectoriesModifyTime[directory] = cachedTime;
+			moduleFolders[directory] = cachedTime;
 		}
 	}
 
@@ -216,9 +207,9 @@ public static class BindingGenerator
 		}
 
 		string packageName = package.GetShortName();
-		if (!_modulesModifyInfo.TryGetValue(packageName, out ModuleFolders? moduleFolders))
+		if (!_modulesModifyInfo.TryGetValue(packageName, out Dictionary<string, DateTime>? moduleFolders))
 		{
-			moduleFolders = new ModuleFolders();
+			moduleFolders = new();
 			_modulesModifyInfo.Add(packageName, moduleFolders);
 		}
 

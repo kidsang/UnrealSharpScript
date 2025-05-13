@@ -1,12 +1,12 @@
 ﻿using UnrealEngine.Intrinsic;
 using UnrealEngine.SharpScriptUnitTest;
-using static UnrealEngine.Globals;
 
 namespace SharpScriptUnitTest.Tests;
 
 /// <summary>
 /// Test auto generated code for blueprint getter & setter.
 /// </summary>
+[RecordFilePath]
 public class BindingGetSetTest : IUnitTestInterface
 {
 	public bool RunTest()

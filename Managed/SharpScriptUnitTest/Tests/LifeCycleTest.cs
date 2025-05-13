@@ -1,4 +1,3 @@
-using static UnrealEngine.Globals;
 using SharpScriptUnitTest.Types;
 
 namespace SharpScriptUnitTest.Tests;

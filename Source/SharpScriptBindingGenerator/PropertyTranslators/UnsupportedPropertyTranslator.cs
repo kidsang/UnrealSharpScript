@@ -26,7 +26,7 @@ public class UnsupportedPropertyTranslator : PropertyTranslator
 
 		if (property is UhtObjectPropertyBase objectProperty)
 		{
-			return $"{property.EngineName}({objectProperty.Class.EngineName})";
+			return $"{property.SourceName}({objectProperty.Class.EngineName})";
 		}
 
 		if (property is UhtStructProperty structProperty)

@@ -12,7 +12,8 @@ public class SharpScript : ModuleRules
 		PCHUsage = PCHUsageMode.NoPCHs;
 		OptimizeCode = CodeOptimization.Never;
 
-		PublicDefinitions.Add("BUILDING_EDITOR=" + (Target.bBuildEditor ? "1" : "0"));
+		PublicDefinitions.Add("SHARP_SCRIPT_BUILD_DEBUG=" + (Target.Configuration == UnrealTargetConfiguration.Debug ? "1" : "0"));
+		PublicDefinitions.Add("SHARP_SCRIPT_BUILD_EDITOR=" + (Target.bBuildEditor ? "1" : "0"));
 
 		PublicDependencyModuleNames.AddRange(
 			new string[]

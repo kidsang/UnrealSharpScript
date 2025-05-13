@@ -29,7 +29,9 @@ public static class NameMapper
 
 	public static string GetPropertyName(this UhtProperty property)
 	{
-		string propertyName = property.EngineName;
+		string propertyName = property.Deprecated ? property.SourceName : property.EngineName;
+
+		// todo: twx Export outer type by SourceName, and remove this.
 		if (property.Outer!.EngineName == propertyName)
 		{
 			propertyName = char.ToLowerInvariant(propertyName[0]) + propertyName.Substring(1);
@@ -41,6 +43,33 @@ public static class NameMapper
 		}
 
 		return propertyName;
+	}
+
+	public static string GetFunctionName(this UhtFunction function)
+	{
+		string functionName = function.StrippedFunctionName;
+		if (function.MetaData.TryGetValue("ScriptName", out string? scriptName))
+		{
+			scriptName = scriptName.Trim();
+			if (scriptName.Length > 0)
+			{
+				functionName = scriptName;
+			}
+		}
+
+		if (functionName == "GetType")
+		{
+			// never override System.Object.GetType()
+			return "K2_GetType";
+		}
+
+		// todo: twx Export outer type by SourceName, and remove this.
+		if (function.Outer!.EngineName == functionName)
+		{
+			functionName = "K2_" + functionName;
+		}
+
+		return functionName;
 	}
 
 	public static string GetManagedName(this UhtType type)
@@ -72,17 +101,6 @@ public static class NameMapper
 			{
 				return scriptName;
 			}
-		}
-
-		if (type is UhtFunction functionType)
-		{
-			if (functionType.StrippedFunctionName == "GetType")
-			{
-				// never override System.Object.GetType()
-				return "K2_GetType";
-			}
-
-			return functionType.StrippedFunctionName;
 		}
 
 		return type.EngineName;

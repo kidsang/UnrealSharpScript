@@ -27,6 +27,11 @@ public static class Program
 	public static string ManagedBinariesPath = "";
 
 	/// <summary>
+	/// Whether is debug build.
+	/// </summary>
+	public static bool IsDebugBuild;
+
+	/// <summary>
 	/// Whether is building unreal editor.
 	/// </summary>
 	public static bool BuildingEditor;
@@ -62,12 +67,12 @@ public static class Program
 			Console.WriteLine($"Export process completed successfully in {stopwatch.Elapsed.TotalSeconds:F2} seconds.");
 			stopwatch.Stop();
 
-			if (BindingGenerator.HasGeneratedChanged && BuildingEditor)
+			if (BindingGenerator.HasGeneratedChanged)
 			{
 				Console.WriteLine("Detected modified generated code. Starting the build process...");
 				string projectPath = Path.Combine(PluginDirectory, "Managed", "SharpScript");
 				string outputPath = Path.Combine(PluginDirectory, "Managed", "Assemblies");
-				DotNetUtilities.BuildGeneratedProject(projectPath, outputPath);
+				DotNetUtilities.BuildCSharpProject(projectPath, outputPath);
 			}
 
 			TryCreateCSharpProjects();
@@ -89,10 +94,10 @@ public static class Program
 		PluginDirectory = Directory.GetParent(PluginDirectory)!.Parent!.ToString();
 
 		EngineGeneratedPath = Path.Combine(PluginDirectory, "Managed", "SharpScript", "Generated");
-
 		ManagedBinariesPath = Path.Combine(PluginDirectory, "Binaries", "Managed");
 
-		BuildingEditor = GetPluginDefine("BUILDING_EDITOR") == "1";
+		IsDebugBuild = GetPluginDefine("SHARP_SCRIPT_BUILD_DEBUG") == "1";
+		BuildingEditor = GetPluginDefine("SHARP_SCRIPT_BUILD_EDITOR") == "1";
 	}
 
 	private static string GetPluginDefine(string key)

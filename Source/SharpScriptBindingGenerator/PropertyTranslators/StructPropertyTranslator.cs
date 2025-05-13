@@ -53,25 +53,25 @@ public class StructPropertyTranslator : NativeReferencePropertyTranslator
 	public override void ExportPropertyGetter(CodeBuilder codeBuilder, UhtProperty property, string propertyManagedName, bool forClass)
 	{
 		string nativePtr = forClass ? "NativeObject" : "nativePtr";
-		string propEngineName = property.EngineName;
-		codeBuilder.Append($"new({nativePtr} + {propEngineName}_Offset);");
+		string propSourceName = property.SourceName;
+		codeBuilder.Append($"new({nativePtr} + {propSourceName}_Offset);");
 	}
 
 	public override void ExportParamToNative(CodeBuilder codeBuilder, UhtFunction function, UhtProperty property, string paramName, string nativeBufferName)
 	{
 		string propManagedType = GetPropManagedType(property);
 		string funcEngineName = function.StrippedFunctionName;
-		string paramEngineName = property.EngineName;
-		codeBuilder.AppendLine($"new {propManagedType}({nativeBufferName} + {funcEngineName}_{paramEngineName}_Offset).FromManaged({paramName});");
+		string paramSourceName = property.SourceName;
+		codeBuilder.AppendLine($"new {propManagedType}({nativeBufferName} + {funcEngineName}_{paramSourceName}_Offset).FromManaged({paramName});");
 	}
 
 	public override void ExportParamFromNative(CodeBuilder codeBuilder, UhtFunction function, UhtProperty property, string paramName, string nativeBufferName, bool needDeclaration)
 	{
 		string propManagedType = GetPropManagedType(property);
 		string funcEngineName = function.StrippedFunctionName;
-		string paramEngineName = property.EngineName;
+		string paramSourceName = property.SourceName;
 		string declaration = needDeclaration ? $"{GetParamManagedType(property)} " : "";
-		codeBuilder.AppendLine($"{declaration}{paramName} = new {propManagedType}({nativeBufferName} + {funcEngineName}_{paramEngineName}_Offset);");
+		codeBuilder.AppendLine($"{declaration}{paramName} = new {propManagedType}({nativeBufferName} + {funcEngineName}_{paramSourceName}_Offset);");
 	}
 
 	public override void ExportCppDefaultParameterAsLocalVariable(CodeBuilder codeBuilder, UhtProperty property, string paramName, string defaultValue)
@@ -112,7 +112,7 @@ public class StructPropertyTranslator : NativeReferencePropertyTranslator
 			{
 				UhtProperty childProperty = (UhtProperty)structProperty.ScriptStruct.Children[i];
 				bool isFloat = childProperty is UhtFloatProperty;
-				string fieldName = childProperty.EngineName;
+				string fieldName = childProperty.GetPropertyName();
 				string fieldInitializer = fieldInitializers[i];
 
 				int pos = fieldInitializer.IndexOf("=", StringComparison.Ordinal);

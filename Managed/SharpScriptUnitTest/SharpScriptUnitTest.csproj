@@ -1,14 +1,32 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
-  <PropertyGroup>
-    <TargetFramework>net9.0</TargetFramework>
-    <ImplicitUsings>enable</ImplicitUsings>
-    <Nullable>enable</Nullable>
-    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
-  </PropertyGroup>
+	<PropertyGroup>
+		<TargetFramework>net9.0</TargetFramework>
+		<ImplicitUsings>enable</ImplicitUsings>
+		<Nullable>enable</Nullable>
+		<AllowUnsafeBlocks>True</AllowUnsafeBlocks>
+		<IsTrimmable>False</IsTrimmable>
+		<IsAotCompatible>True</IsAotCompatible>
+		<Configurations>Debug;Release;Debug_Editor;Release_Editor</Configurations>
+	</PropertyGroup>
 
-  <ItemGroup>
-    <ProjectReference Include="../SharpScript/SharpScript.csproj" />
-  </ItemGroup>
+	<PropertyGroup Condition="'$(Configuration)'=='Debug_Editor'">
+		<DefineConstants>$(DefineConstants);WITH_EDITOR</DefineConstants>
+	</PropertyGroup>
+
+	<PropertyGroup Condition="'$(Configuration)'=='Release_Editor'">
+	  	<Optimize>True</Optimize>
+		<DefineConstants>$(DefineConstants);WITH_EDITOR</DefineConstants>
+	</PropertyGroup>
+
+	<ItemGroup>
+		<Using Include="UnrealEngine.Globals">
+			<Static>True</Static>
+		</Using>
+	</ItemGroup>
+
+	<ItemGroup>
+		<ProjectReference Include="../SharpScript/SharpScript.csproj" />
+	</ItemGroup>
 
 </Project>

@@ -64,12 +64,12 @@ public static class StaticConstructorUtilities
 		{
 			if (classObj != null)
 			{
-				codeBuilder.AppendLine($"NativeType = TypeInterop.FindClass(\"{typeName}\");");
+				codeBuilder.AppendLine($"NativeType = TypeInterop.FindClass(\"{typeObj.EngineName}\");");
 				codeBuilder.AppendLine($"StaticClass = new SubclassOf<{typeName}>(NativeType);");
 			}
 			else if (structObj != null)
 			{
-				codeBuilder.AppendLine($"NativeType = TypeInterop.FindStruct(\"{typeName}\");");
+				codeBuilder.AppendLine($"NativeType = TypeInterop.FindStruct(\"{typeObj.EngineName}\");");
 				codeBuilder.AppendLine("NativeDataSize = TypeInterop.GetStructureSize(NativeType);");
 			}
 
@@ -123,8 +123,8 @@ public static class StaticConstructorUtilities
 
 			using var withEditorBlock = new WithEditorBlock(codeBuilder, function);
 
-			string funcName = function.StrippedFunctionName;
-			string nativeFuncName = $"{funcName}_NativeFunc";
+			string funcEngineName = function.StrippedFunctionName;
+			string nativeFuncName = $"{funcEngineName}_NativeFunc";
 			string modifier = forDelegate ? "private static" : "internal static readonly";
 
 			codeBuilder.AppendLine($"{modifier} IntPtr {nativeFuncName};");
@@ -134,7 +134,7 @@ public static class StaticConstructorUtilities
 				continue;
 			}
 
-			codeBuilder.AppendLine($"{modifier} int {funcName}_ParamsSize;");
+			codeBuilder.AppendLine($"{modifier} int {funcEngineName}_ParamsSize;");
 
 			foreach (UhtType parameter in function.Children)
 			{

@@ -36,7 +36,7 @@ public class BlittableStructPropertyTranslator : StructPropertyTranslator
 		string propertyName = property.GetPropertyName();
 
 		string nativePtr = forClass ? "NativeObject" : "nativePtr";
-		string getter = $"ref *({managedType}*)({nativePtr} + {property.EngineName}_Offset);";
+		string getter = $"ref *({managedType}*)({nativePtr} + {property.SourceName}_Offset);";
 
 		codeBuilder.AppendTooltip(property);
 		ExportDeprecation(codeBuilder, property);
@@ -77,18 +77,18 @@ public class BlittableStructPropertyTranslator : StructPropertyTranslator
 	public override void ExportParamToNative(CodeBuilder codeBuilder, UhtFunction function, UhtProperty property, string paramName, string nativeBufferName)
 	{
 		string funcEngineName = function.StrippedFunctionName;
-		string paramEngineName = property.EngineName;
+		string paramSourceName = property.SourceName;
 		string marshaller = GetMarshaller(property);
-		codeBuilder.AppendLine($"{marshaller}.ToNative({nativeBufferName} + {funcEngineName}_{paramEngineName}_Offset, {paramName});");
+		codeBuilder.AppendLine($"{marshaller}.ToNative({nativeBufferName} + {funcEngineName}_{paramSourceName}_Offset, {paramName});");
 	}
 
 	public override void ExportParamFromNative(CodeBuilder codeBuilder, UhtFunction function, UhtProperty property, string paramName, string nativeBufferName, bool needDeclaration)
 	{
 		string funcEngineName = function.StrippedFunctionName;
-		string paramEngineName = property.EngineName;
+		string paramSourceName = property.SourceName;
 		string marshaller = GetMarshaller(property);
 		string declaration = needDeclaration ? $"{GetParamManagedType(property)} " : "";
-		codeBuilder.AppendLine($"{declaration}{paramName} = {marshaller}.FromNative({nativeBufferName} + {funcEngineName}_{paramEngineName}_Offset);");
+		codeBuilder.AppendLine($"{declaration}{paramName} = {marshaller}.FromNative({nativeBufferName} + {funcEngineName}_{paramSourceName}_Offset);");
 	}
 
 	public override void ExportStructPropertyFromManaged(CodeBuilder codeBuilder, UhtProperty property)

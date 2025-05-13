@@ -6,12 +6,9 @@ namespace UnrealEngine.Intrinsic;
 [StructLayout(LayoutKind.Sequential)]
 public struct Name : IEquatable<Name>, IComparable<Name>
 {
-#if PACKAGE
     private uint ComparisonIndex;
     private uint Number;
-#else
-	private uint ComparisonIndex;
-	private uint Number;
+#if WITH_EDITOR
 	// ReSharper disable once PrivateFieldCanBeConvertedToLocalVariable
 	private uint DisplayIndex;
 #endif

@@ -43,33 +43,33 @@ public abstract class SimpleTypePropertyTranslator : PropertyTranslator
 	{
 		string marshaller = GetMarshaller(property);
 		string nativePtr = forClass ? "NativeObject" : "nativePtr";
-		string propEngineName = property.EngineName;
-		codeBuilder.Append($"{marshaller}.FromNative({nativePtr} + {propEngineName}_Offset);");
+		string propSourceName = property.SourceName;
+		codeBuilder.Append($"{marshaller}.FromNative({nativePtr} + {propSourceName}_Offset);");
 	}
 
 	public override void ExportPropertySetter(CodeBuilder codeBuilder, UhtProperty property, string propertyManagedName, bool forClass)
 	{
 		string marshaller = GetMarshaller(property);
 		string nativePtr = forClass ? "NativeObject" : "nativePtr";
-		string propEngineName = property.EngineName;
-		codeBuilder.Append($"{marshaller}.ToNative({nativePtr} + {propEngineName}_Offset, value);");
+		string propSourceName = property.SourceName;
+		codeBuilder.Append($"{marshaller}.ToNative({nativePtr} + {propSourceName}_Offset, value);");
 	}
 
 	public override void ExportParamToNative(CodeBuilder codeBuilder, UhtFunction function, UhtProperty property, string paramName, string nativeBufferName)
 	{
 		string funcEngineName = function.StrippedFunctionName;
-		string paramEngineName = property.EngineName;
+		string paramSourceName = property.SourceName;
 		string marshaller = GetMarshaller(property);
-		codeBuilder.AppendLine($"{marshaller}.ToNative({nativeBufferName} + {funcEngineName}_{paramEngineName}_Offset, {paramName});");
+		codeBuilder.AppendLine($"{marshaller}.ToNative({nativeBufferName} + {funcEngineName}_{paramSourceName}_Offset, {paramName});");
 	}
 
 	public override void ExportParamFromNative(CodeBuilder codeBuilder, UhtFunction function, UhtProperty property, string paramName, string nativeBufferName, bool needDeclaration)
 	{
 		string funcEngineName = function.StrippedFunctionName;
-		string paramEngineName = property.EngineName;
+		string paramSourceName = property.SourceName;
 		string marshaller = GetMarshaller(property);
 		string declaration = needDeclaration ? $"{GetParamManagedType(property)} " : "";
-		codeBuilder.AppendLine($"{declaration}{paramName} = {marshaller}.FromNative({nativeBufferName} + {funcEngineName}_{paramEngineName}_Offset);");
+		codeBuilder.AppendLine($"{declaration}{paramName} = {marshaller}.FromNative({nativeBufferName} + {funcEngineName}_{paramSourceName}_Offset);");
 	}
 
 	public override void ExportCppDefaultParameterAsLocalVariable(CodeBuilder codeBuilder, UhtProperty property, string paramName, string defaultValue)

@@ -1,4 +1,3 @@
-using static UnrealEngine.Globals;
 using static SharpScriptUnitTest.Tests.MapTest;
 using SharpScriptUnitTest.Types;
 using UnrealEngine.CoreUObject;

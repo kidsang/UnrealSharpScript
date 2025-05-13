@@ -75,9 +75,9 @@ public abstract class PropertyTranslator
 	/// </summary>
 	public virtual void ExportStaticField(CodeBuilder codeBuilder, UhtProperty property)
 	{
-		string propEngineName = property.EngineName;
-		codeBuilder.AppendLine($"internal static readonly IntPtr {propEngineName}_NativeProp;");
-		codeBuilder.AppendLine($"internal static readonly int {propEngineName}_Offset;");
+		string propSourceName = property.SourceName;
+		codeBuilder.AppendLine($"internal static readonly IntPtr {propSourceName}_NativeProp;");
+		codeBuilder.AppendLine($"internal static readonly int {propSourceName}_Offset;");
 	}
 
 	/// <summary>
@@ -85,20 +85,20 @@ public abstract class PropertyTranslator
 	/// </summary>
 	public virtual void ExportStaticConstructor(CodeBuilder codeBuilder, UhtProperty property)
 	{
-		string propEngineName = property.EngineName;
-		codeBuilder.AppendLine($"{propEngineName}_NativeProp = propIter.FindNext(\"{propEngineName}\");");
-		codeBuilder.AppendLine($"{propEngineName}_Offset = TypeInterop.GetPropertyOffset({propEngineName}_NativeProp);");
+		string propSourceName = property.SourceName;
+		codeBuilder.AppendLine($"{propSourceName}_NativeProp = propIter.FindNext(\"{property.EngineName}\");");
+		codeBuilder.AppendLine($"{propSourceName}_Offset = TypeInterop.GetPropertyOffset({propSourceName}_NativeProp);");
 	}
 
 	protected void ExportDeprecation(CodeBuilder codeBuilder, UhtProperty property)
 	{
-		if (property.HasMetadata("DeprecatedProperty") || property.SourceName.EndsWith("_DEPRECATED"))
+		if (property.HasMetadata("DeprecatedProperty") || property.Deprecated)
 		{
 			string deprecationMessage = property.GetMetadata("DeprecationMessage");
 			deprecationMessage = deprecationMessage.Length == 0
 				? "This property is deprecated."
 				: deprecationMessage.Replace("\"", ""); // Remove nested quotes
-			codeBuilder.AppendLine($"[Obsolete(\"{property.EngineName} is deprecated: {deprecationMessage}\")]");
+			codeBuilder.AppendLine($"[Obsolete(\"{property.SourceName} is deprecated: {deprecationMessage}\")]");
 		}
 	}
 
@@ -122,7 +122,7 @@ public abstract class PropertyTranslator
 		{
 			if (getSetPair != null)
 			{
-				codeBuilder.Append($"{getSetPair.GetterFunc.GetManagedName()}();");
+				codeBuilder.Append($"{getSetPair.GetterFunc.GetFunctionName()}();");
 			}
 			else
 			{
@@ -134,7 +134,7 @@ public abstract class PropertyTranslator
 		{
 			if (getSetPair?.SetterFunc != null)
 			{
-				codeBuilder.Append($"{getSetPair.SetterFunc.GetManagedName()}(value);");
+				codeBuilder.Append($"{getSetPair.SetterFunc.GetFunctionName()}(value);");
 			}
 			else
 			{
@@ -280,7 +280,7 @@ public abstract class PropertyTranslator
 	public virtual void ExportParamsStaticField(CodeBuilder codeBuilder, UhtProperty property, UhtFunction function, string modifier)
 	{
 		string funcName = function.StrippedFunctionName;
-		string propName = property.EngineName;
+		string propName = property.SourceName;
 		codeBuilder.AppendLine($"{modifier} int {funcName}_{propName}_Offset;");
 	}
 
@@ -290,7 +290,7 @@ public abstract class PropertyTranslator
 	public virtual void ExportParamsStaticConstructor(CodeBuilder codeBuilder, UhtProperty property, UhtFunction function)
 	{
 		string funcName = function.StrippedFunctionName;
-		string propName = property.EngineName;
+		string propName = property.SourceName;
 		codeBuilder.AppendLine($"{funcName}_{propName}_Offset = {funcName}_PropIter.FindNextAndGetOffset(\"{propName}\");");
 	}
 

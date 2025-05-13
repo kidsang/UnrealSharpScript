@@ -112,16 +112,16 @@ public class MapPropertyTranslator : ContainerPropertyTranslator
 
 		PropertyTranslator valueTranslator = GetValueTranslator(property);
 		string nativePtr = forClass ? "NativeObject" : "nativePtr";
-		string propEngineName = property.EngineName;
+		string propSourceName = property.SourceName;
 		if (valueTranslator is StructPropertyTranslator)
 		{
-			codeBuilder.Append($"new({nativePtr} + {propEngineName}_Offset, {propEngineName}_NativeProp, {keyMarshaller});");
+			codeBuilder.Append($"new({nativePtr} + {propSourceName}_Offset, {propSourceName}_NativeProp, {keyMarshaller});");
 		}
 		else
 		{
 			UhtProperty valueProperty = GetValueProperty(property);
 			string valueMarshaller = valueTranslator.GetMarshaller(valueProperty);
-			codeBuilder.Append($"new({nativePtr} + {propEngineName}_Offset, {propEngineName}_NativeProp, {keyMarshaller}, {valueMarshaller}.Instance);");
+			codeBuilder.Append($"new({nativePtr} + {propSourceName}_Offset, {propSourceName}_NativeProp, {keyMarshaller}, {valueMarshaller}.Instance);");
 		}
 	}
 
@@ -141,14 +141,14 @@ public class MapPropertyTranslator : ContainerPropertyTranslator
 
 		string propManagedType = GetPropManagedType(property);
 		string funcEngineName = function.StrippedFunctionName;
-		string paramEngineName = property.EngineName;
+		string paramSourceName = property.SourceName;
 		switch (valueTranslator)
 		{
 			case StructPropertyTranslator:
-				codeBuilder.AppendLine($"new {propManagedType}({nativeBufferName} + {funcEngineName}_{paramEngineName}_Offset, {funcEngineName}_{paramEngineName}_NativeProp, {keyMarshaller}).CopyFrom({paramName});");
+				codeBuilder.AppendLine($"new {propManagedType}({nativeBufferName} + {funcEngineName}_{paramSourceName}_Offset, {funcEngineName}_{paramSourceName}_NativeProp, {keyMarshaller}).CopyFrom({paramName});");
 				break;
 			default:
-				codeBuilder.AppendLine($"new {propManagedType}({nativeBufferName} + {funcEngineName}_{paramEngineName}_Offset, {funcEngineName}_{paramEngineName}_NativeProp, {keyMarshaller}, {valueMarshaller}.Instance).CopyFrom({paramName});");
+				codeBuilder.AppendLine($"new {propManagedType}({nativeBufferName} + {funcEngineName}_{paramSourceName}_Offset, {funcEngineName}_{paramSourceName}_NativeProp, {keyMarshaller}, {valueMarshaller}.Instance).CopyFrom({paramName});");
 				break;
 		}
 	}
@@ -169,15 +169,15 @@ public class MapPropertyTranslator : ContainerPropertyTranslator
 
 		string propManagedType = GetPropManagedType(property);
 		string funcEngineName = function.StrippedFunctionName;
-		string paramEngineName = property.EngineName;
+		string paramSourceName = property.SourceName;
 		string declaration = needDeclaration ? $"{GetParamManagedType(property)} " : "";
 		switch (valueTranslator)
 		{
 			case StructPropertyTranslator:
-				codeBuilder.AppendLine($"{declaration}{paramName} = new {propManagedType}({nativeBufferName} + {funcEngineName}_{paramEngineName}_Offset, {funcEngineName}_{paramEngineName}_NativeProp, {keyMarshaller});");
+				codeBuilder.AppendLine($"{declaration}{paramName} = new {propManagedType}({nativeBufferName} + {funcEngineName}_{paramSourceName}_Offset, {funcEngineName}_{paramSourceName}_NativeProp, {keyMarshaller});");
 				break;
 			default:
-				codeBuilder.AppendLine($"{declaration}{paramName} = new {propManagedType}({nativeBufferName} + {funcEngineName}_{paramEngineName}_Offset, {funcEngineName}_{paramEngineName}_NativeProp, {keyMarshaller}, {valueMarshaller}.Instance);");
+				codeBuilder.AppendLine($"{declaration}{paramName} = new {propManagedType}({nativeBufferName} + {funcEngineName}_{paramSourceName}_Offset, {funcEngineName}_{paramSourceName}_NativeProp, {keyMarshaller}, {valueMarshaller}.Instance);");
 				break;
 		}
 	}
@@ -199,15 +199,15 @@ public class MapPropertyTranslator : ContainerPropertyTranslator
 
 		string propManagedType = GetGenericPropManagedType(property, typeArgument);
 		string funcEngineName = function.StrippedFunctionName;
-		string paramEngineName = property.EngineName;
+		string paramSourceName = property.SourceName;
 		string declaration = needDeclaration ? $"{GetGenericParamManagedType(property, typeArgument)} " : "";
 		switch (valueTranslator)
 		{
 			case StructPropertyTranslator:
-				codeBuilder.AppendLine($"{declaration}{paramName} = new {propManagedType}({nativeBufferName} + {funcEngineName}_{paramEngineName}_Offset, {funcEngineName}_{paramEngineName}_NativeProp, {keyMarshaller});");
+				codeBuilder.AppendLine($"{declaration}{paramName} = new {propManagedType}({nativeBufferName} + {funcEngineName}_{paramSourceName}_Offset, {funcEngineName}_{paramSourceName}_NativeProp, {keyMarshaller});");
 				break;
 			default:
-				codeBuilder.AppendLine($"{declaration}{paramName} = new {propManagedType}({nativeBufferName} + {funcEngineName}_{paramEngineName}_Offset, {funcEngineName}_{paramEngineName}_NativeProp, {keyMarshaller}, {valueMarshaller}.Instance);");
+				codeBuilder.AppendLine($"{declaration}{paramName} = new {propManagedType}({nativeBufferName} + {funcEngineName}_{paramSourceName}_Offset, {funcEngineName}_{paramSourceName}_NativeProp, {keyMarshaller}, {valueMarshaller}.Instance);");
 				break;
 		}
 	}

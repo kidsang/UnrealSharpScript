@@ -28,10 +28,27 @@ public static class FileExporter
 		return Path.Combine(directory, $"{typeName}.generated.cs");
 	}
 
+	private static string GetFunctionTypeName(UhtFunction function)
+	{
+		string typeName = function.EngineName;
+		if (function.HasAnyFlags(EFunctionFlags.Delegate) && function.Outer is UhtClass outerClass)
+		{
+			typeName = $"{outerClass.EngineName}_{typeName}";
+		}
+
+		return typeName;
+	}
+
 	public static void AddUnchangedType(UhtType type)
 	{
+		string typeName = type.EngineName;
+		if (type is UhtFunction function)
+		{
+			typeName = GetFunctionTypeName(function);
+		}
+
 		string directory = GetGeneratedDirectory(type.Package);
-		string filePath = GetGeneratedFilePath(type.EngineName, directory);
+		string filePath = GetGeneratedFilePath(typeName, directory);
 		UnchangedFiles.Add(filePath);
 	}
 
@@ -44,12 +61,7 @@ public static class FileExporter
 	public static void SaveGeneratedToDisk(UhtFunction function, CodeBuilder codeBuilder)
 	{
 		string directory = GetGeneratedDirectory(function.Package);
-		string typeName = function.EngineName;
-		if (function.HasAnyFlags(EFunctionFlags.Delegate) && function.Outer is UhtClass outerClass)
-		{
-			typeName = $"{outerClass.EngineName}_{typeName}";
-		}
-
+		string typeName = GetFunctionTypeName(function);
 		SaveGeneratedToDisk(function.Package, directory, typeName, codeBuilder.ToString());
 	}
 

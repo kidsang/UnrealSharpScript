@@ -37,7 +37,7 @@ public static class Main
 			return (int)StartupError.VersionNotMatched;
 		}
 
-		int startupConfigSize = Marshal.SizeOf(typeof(FrameworkStartupConfig));
+		int startupConfigSize = sizeof(FrameworkStartupConfig);
 		if (startupConfigSize != startupConfig.ConfigSize)
 		{
 			return (int)StartupError.StarupConfigSizeNotMatched;

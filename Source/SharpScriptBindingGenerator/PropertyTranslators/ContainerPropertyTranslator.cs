@@ -64,7 +64,7 @@ public abstract class ContainerPropertyTranslator : NativeReferencePropertyTrans
 	public override void ExportParamsStaticField(CodeBuilder codeBuilder, UhtProperty property, UhtFunction function, string modifier)
 	{
 		string funcName = function.StrippedFunctionName;
-		string propName = property.EngineName;
+		string propName = property.SourceName;
 		codeBuilder.AppendLine($"{modifier} IntPtr {funcName}_{propName}_NativeProp;");
 		codeBuilder.AppendLine($"{modifier} int {funcName}_{propName}_Offset;");
 	}
@@ -72,7 +72,7 @@ public abstract class ContainerPropertyTranslator : NativeReferencePropertyTrans
 	public override void ExportParamsStaticConstructor(CodeBuilder codeBuilder, UhtProperty property, UhtFunction function)
 	{
 		string funcName = function.StrippedFunctionName;
-		string propName = property.EngineName;
+		string propName = property.SourceName;
 		codeBuilder.AppendLine($"{funcName}_{propName}_NativeProp = {funcName}_PropIter.FindNext(\"{propName}\");");
 		codeBuilder.AppendLine($"{funcName}_{propName}_Offset = TypeInterop.GetPropertyOffset({funcName}_{propName}_NativeProp);");
 	}

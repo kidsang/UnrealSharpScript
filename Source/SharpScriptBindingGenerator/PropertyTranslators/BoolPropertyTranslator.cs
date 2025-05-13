@@ -18,8 +18,8 @@ public class BoolPropertyTranslator : SimpleTypePropertyTranslator
 		base.ExportStaticField(codeBuilder, property);
 		if (property.IsBitfield)
 		{
-			string propEngineName = property.EngineName;
-			codeBuilder.AppendLine($"internal static readonly byte {propEngineName}_FieldMask;");
+			string propSourceName = property.SourceName;
+			codeBuilder.AppendLine($"internal static readonly byte {propSourceName}_FieldMask;");
 		}
 	}
 
@@ -28,8 +28,8 @@ public class BoolPropertyTranslator : SimpleTypePropertyTranslator
 		base.ExportStaticConstructor(codeBuilder, property);
 		if (property.IsBitfield)
 		{
-			string propEngineName = property.EngineName;
-			codeBuilder.AppendLine($"{propEngineName}_FieldMask = TypeInterop.GetBoolPropertyFieldMask({propEngineName}_NativeProp);");
+			string propSourceName = property.SourceName;
+			codeBuilder.AppendLine($"{propSourceName}_FieldMask = TypeInterop.GetBoolPropertyFieldMask({propSourceName}_NativeProp);");
 		}
 	}
 
@@ -37,19 +37,19 @@ public class BoolPropertyTranslator : SimpleTypePropertyTranslator
 	{
 		string marshaller = GetMarshaller(property);
 		string nativePtr = forClass ? "NativeObject" : "nativePtr";
-		string propEngineName = property.EngineName;
+		string propSourceName = property.SourceName;
 		codeBuilder.Append(property.IsBitfield
-			? $"{marshaller}.FromNative({nativePtr} + {propEngineName}_Offset, {propEngineName}_FieldMask);"
-			: $"{marshaller}.FromNative({nativePtr} + {propEngineName}_Offset);");
+			? $"{marshaller}.FromNative({nativePtr} + {propSourceName}_Offset, {propSourceName}_FieldMask);"
+			: $"{marshaller}.FromNative({nativePtr} + {propSourceName}_Offset);");
 	}
 
 	public override void ExportPropertySetter(CodeBuilder codeBuilder, UhtProperty property, string propertyManagedName, bool forClass)
 	{
 		string marshaller = GetMarshaller(property);
 		string nativePtr = forClass ? "NativeObject" : "nativePtr";
-		string propEngineName = property.EngineName;
+		string propSourceName = property.SourceName;
 		codeBuilder.Append(property.IsBitfield
-			? $"{marshaller}.ToNative({nativePtr} + {propEngineName}_Offset, {propEngineName}_FieldMask, value);"
-			: $"{marshaller}.ToNative({nativePtr} + {propEngineName}_Offset, value);");
+			? $"{marshaller}.ToNative({nativePtr} + {propSourceName}_Offset, {propSourceName}_FieldMask, value);"
+			: $"{marshaller}.ToNative({nativePtr} + {propSourceName}_Offset, value);");
 	}
 }

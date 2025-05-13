@@ -112,7 +112,19 @@ bool FSharpScriptUnitTestContext::BuildUnitTestAssemblies()
 	const FString DotnetExe = FSharpScriptModule::GetDotnetExePath();
 	const FString ProjectPath = PluginDir / "Managed" / "SharpScriptUnitTest";
 	const FString OutputPath = PluginDir / "Managed" / "Assemblies";
-	const FString Params = FString("build -c Release --no-dependencies ") + ProjectPath + " --output " + OutputPath;
+
+#if UE_BUILD_DEBUG
+	FString BuildConfig = "Debug";
+#else
+	FString BuildConfig = "Release";
+#endif
+
+#if WITH_EDITOR
+	BuildConfig += "_Editor";
+#endif
+
+	FString Params = FString("build --no-dependencies ") + ProjectPath + " --output " + OutputPath + " -c " + BuildConfig;
+
 	UE_LOG(LogSharpScript, Log, TEXT("building unit test assembly ..."));
 	UE_LOG(LogSharpScript, Log, TEXT("%s %s"), *DotnetExe, *Params);
 

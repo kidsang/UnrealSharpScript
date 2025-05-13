@@ -1,4 +1,3 @@
-using static UnrealEngine.Globals;
 using UnrealEngine.CoreUObject;
 using UnrealEngine.Engine;
 using UnrealEngine.Intrinsic;
