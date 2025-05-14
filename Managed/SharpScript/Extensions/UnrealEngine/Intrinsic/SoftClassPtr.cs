@@ -1,32 +1,31 @@
 ﻿using UnrealEngine.CoreUObject;
-using Object = UnrealEngine.CoreUObject.Object;
 
 namespace UnrealEngine.Intrinsic;
 
 /// <summary>
 /// TSoftClassPtr is a templatized wrapper around FSoftObjectPtr that works like a TSubclassOf, it can be used in UProperties for blueprint subclasses
 /// </summary>
-public struct SoftClassPtr<T> : IEquatable<Class?>, IComparable<SoftClassPtr<T>>
-	where T : Object, IStaticClass<T>
+public struct TSoftClassPtr<T> : IEquatable<UClass?>, IComparable<TSoftClassPtr<T>>
+	where T : UObject, IStaticClass<T>
 {
 	internal SoftObjectPtrData Data;
 
-	public SoftClassPtr(Class? cls)
+	public TSoftClassPtr(UClass? cls)
 	{
 		Data = new(cls);
 	}
 
-	public SoftClassPtr(SubclassOf<T> cls)
+	public TSoftClassPtr(TSubclassOf<T> cls)
 	{
 		Data = new(cls.Class);
 	}
 
-	public static implicit operator SoftClassPtr<T>(Class? cls)
+	public static implicit operator TSoftClassPtr<T>(UClass? cls)
 	{
-		return new SoftClassPtr<T>(cls);
+		return new TSoftClassPtr<T>(cls);
 	}
 
-	public static implicit operator Class?(SoftClassPtr<T> value)
+	public static implicit operator UClass?(TSoftClassPtr<T> value)
 	{
 		return value.Get();
 	}
@@ -51,27 +50,27 @@ public struct SoftClassPtr<T> : IEquatable<Class?>, IComparable<SoftClassPtr<T>>
 	/// Dereference the soft pointer.
 	/// </summary>
 	/// <returns>nullptr if this object is gone or the lazy pointer was null, otherwise a valid UObject pointer</returns>
-	public SubclassOf<T> Get()
+	public TSubclassOf<T> Get()
 	{
-		if (Data.Get() is Class cls && cls.IsChildOf(T.StaticClass!))
+		if (Data.Get() is UClass cls && cls.IsChildOf(T.StaticClass!))
 		{
 			return cls;
 		}
 
-		return new(null as Class);
+		return new(null);
 	}
 
 	/// <summary>
 	/// Synchronously load (if necessary) and return the asset object represented by this asset ptr
 	/// </summary>
-	public SubclassOf<T> LoadSynchronous()
+	public TSubclassOf<T> LoadSynchronous()
 	{
-		if (Data.LoadSynchronous() is Class cls && cls.IsChildOf(T.StaticClass!))
+		if (Data.LoadSynchronous() is UClass cls && cls.IsChildOf(T.StaticClass!))
 		{
 			return cls;
 		}
 
-		return new(null as Class);
+		return new(null);
 	}
 
 	/// <summary>
@@ -102,17 +101,17 @@ public struct SoftClassPtr<T> : IEquatable<Class?>, IComparable<SoftClassPtr<T>>
 	}
 
 	/// <summary>
-	/// Returns the StringObjectPath that is wrapped by this SoftClassPtr
+	/// Returns the StringObjectPath that is wrapped by this TSoftClassPtr
 	/// </summary>
-	public SoftObjectPath GetUniqueId()
+	public FSoftObjectPath GetUniqueId()
 	{
 		return Data.ObjectId;
 	}
 
 	/// <summary>
-	/// Returns the StringObjectPath that is wrapped by this SoftClassPtr
+	/// Returns the StringObjectPath that is wrapped by this TSoftClassPtr
 	/// </summary>
-	public SoftObjectPath ToSoftClassPath()
+	public FSoftObjectPath ToSoftClassPath()
 	{
 		return Data.ObjectId;
 	}
@@ -138,24 +137,24 @@ public struct SoftClassPtr<T> : IEquatable<Class?>, IComparable<SoftClassPtr<T>>
 		return Data.ObjectId.ToString();
 	}
 
-	public bool Equals(Class? other)
+	public bool Equals(UClass? other)
 	{
 		return Get().Class == other;
 	}
 
-	public int CompareTo(SoftClassPtr<T> other)
+	public int CompareTo(TSoftClassPtr<T> other)
 	{
 		return Data.ObjectId.CompareTo(other.Data.ObjectId);
 	}
 
 	public override bool Equals(object? obj)
 	{
-		if (obj is SoftClassPtr<T> other)
+		if (obj is TSoftClassPtr<T> other)
 		{
 			return other.Data.ObjectId == Data.ObjectId;
 		}
 
-		if (obj is Class otherPtr)
+		if (obj is UClass otherPtr)
 		{
 			return Equals(otherPtr);
 		}
@@ -173,12 +172,12 @@ public struct SoftClassPtr<T> : IEquatable<Class?>, IComparable<SoftClassPtr<T>>
 		return Data.ObjectId.GetHashCode();
 	}
 
-	public static bool operator ==(SoftClassPtr<T> lhs, Class? rhs)
+	public static bool operator ==(TSoftClassPtr<T> lhs, UClass? rhs)
 	{
 		return lhs.Equals(rhs);
 	}
 
-	public static bool operator !=(SoftClassPtr<T> lhs, Class? rhs)
+	public static bool operator !=(TSoftClassPtr<T> lhs, UClass? rhs)
 	{
 		return !(lhs == rhs);
 	}

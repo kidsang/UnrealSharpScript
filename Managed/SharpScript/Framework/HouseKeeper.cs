@@ -1,6 +1,7 @@
 ﻿using System.Reflection;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
+using SharpScript.Interop;
 using UnrealEngine.Intrinsic;
 
 namespace SharpScript;
@@ -23,7 +24,7 @@ public static unsafe class HouseKeeper
 	/// <param name="nativeObject">C++ pointer of the UObject.</param>
 	/// <typeparam name="T">`UnrealEngine.CoreUObject.Object` or its subclass.</typeparam>
 	/// <returns>C# wrapper object.</returns>
-	public static T GetManagedObject<T>(IntPtr nativeObject) where T : ObjectBase
+	public static T GetManagedObject<T>(IntPtr nativeObject) where T : UObjectBase
 	{
 		return (T)GetManagedObject(nativeObject);
 	}
@@ -33,11 +34,11 @@ public static unsafe class HouseKeeper
 	/// </summary>
 	/// <param name="nativeObject">C++ pointer of the UObject.</param>
 	/// <returns>C# wrapper object.</returns>
-	private static ObjectBase GetManagedObject(IntPtr nativeObject)
+	private static UObjectBase GetManagedObject(IntPtr nativeObject)
 	{
 		IntPtr managedHandlePtr = NativeGetManagedObject(nativeObject);
 		GCHandle managedHandle = GCHandle.FromIntPtr(managedHandlePtr);
-		return (managedHandle.Target as ObjectBase)!;
+		return (managedHandle.Target as UObjectBase)!;
 	}
 
 	/// <summary>
@@ -53,7 +54,7 @@ public static unsafe class HouseKeeper
 		Type type = Type.GetTypeFromHandle(typeHandle)!;
 
 		// Call the constructor of the C# type through reflection to properly construct the C# object.
-		ObjectBase managedObject = (ObjectBase)RuntimeHelpers.GetUninitializedObject(type);
+		UObjectBase managedObject = (UObjectBase)RuntimeHelpers.GetUninitializedObject(type);
 		const BindingFlags bindingFlags = BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance;
 		var foundConstructor = (delegate*<object, void>) type.GetConstructor(bindingFlags, Type.EmptyTypes)!.MethodHandle.GetFunctionPointer();
 		managedObject.NativeObject = nativeObject;
@@ -71,7 +72,7 @@ public static unsafe class HouseKeeper
 	private static void FreeManagedObject(IntPtr managedHandlePtr)
 	{
 		GCHandle managedHandle = GCHandle.FromIntPtr(managedHandlePtr);
-		if (managedHandle.Target is ObjectBase objectBase)
+		if (managedHandle.Target is UObjectBase objectBase)
 		{
 			objectBase.NativeObject = IntPtr.Zero;
 		}
@@ -85,15 +86,18 @@ public static unsafe class HouseKeeper
 	/// <param name="assembly">Assembly</param>
 	internal static void FreeAllManagedObjectsInAssembly(Assembly assembly)
 	{
-		Type objectBaseType = typeof(ObjectBase);
+		Type objectBaseType = typeof(UObjectBase);
 		Type[] types = assembly.GetTypes();
 		foreach (Type type in types)
 		{
 			if (type.IsSubclassOf(objectBaseType))
 			{
-				fixed (char* typeName = type.Name)
+				if (type.GetCustomAttribute(typeof(UnrealTypeNameAttribute), false) is UnrealTypeNameAttribute attribute)
 				{
-					NativeFreeManagedObjectsByClassName(typeName);
+					fixed (char* typeName = attribute.TypeName)
+					{
+						NativeFreeManagedObjectsByClassName(typeName);
+					}
 				}
 			}
 		}

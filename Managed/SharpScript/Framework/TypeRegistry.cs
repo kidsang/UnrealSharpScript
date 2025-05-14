@@ -1,4 +1,5 @@
 using System.Reflection;
+using SharpScript.Interop;
 using UnrealEngine.Intrinsic;
 
 namespace SharpScript;
@@ -15,16 +16,19 @@ public static unsafe class TypeRegistry
 	/// </summary>
 	public static void RegisterClassTypesInAssembly(Assembly assembly)
 	{
-		Type objectBaseType = typeof(ObjectBase);
+		Type objectBaseType = typeof(UObjectBase);
 		Type[] types = assembly.GetTypes();
 		foreach (Type type in types)
 		{
 			if (type.IsSubclassOf(objectBaseType))
 			{
-				RuntimeTypeHandle typeHandle = type.TypeHandle;
-				fixed (char* typeName = type.Name)
+				if (type.GetCustomAttribute(typeof(UnrealTypeNameAttribute), false) is UnrealTypeNameAttribute attribute)
 				{
-					NativeRegisterClassTypeByName(typeName, RuntimeTypeHandle.ToIntPtr(typeHandle));
+					RuntimeTypeHandle typeHandle = type.TypeHandle;
+					fixed (char* typeName = attribute.TypeName)
+					{
+						NativeRegisterClassTypeByName(typeName, RuntimeTypeHandle.ToIntPtr(typeHandle));
+					}
 				}
 			}
 		}
@@ -35,15 +39,18 @@ public static unsafe class TypeRegistry
 	/// </summary>
 	public static void UnregisterClassTypesInAssembly(Assembly assembly)
 	{
-		Type objectBaseType = typeof(ObjectBase);
+		Type objectBaseType = typeof(UObjectBase);
 		Type[] types = assembly.GetTypes();
 		foreach (Type type in types)
 		{
 			if (type.IsSubclassOf(objectBaseType))
 			{
-				fixed (char* typeName = type.Name)
+				if (type.GetCustomAttribute(typeof(UnrealTypeNameAttribute), false) is UnrealTypeNameAttribute attribute)
 				{
-					NativeUnegisterClassTypeByName(typeName);
+					fixed (char* typeName = attribute.TypeName)
+					{
+						NativeUnegisterClassTypeByName(typeName);
+					}
 				}
 			}
 		}

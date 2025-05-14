@@ -6,22 +6,22 @@ namespace UnrealEngine.CoreUObject;
 
 public struct NativeSoftObjectPath
 {
-	public TopLevelAssetPath AssetPath;
+	public FTopLevelAssetPath AssetPath;
 	public NativeString SubPathString;
 }
 
-public partial struct SoftObjectPath : IEquatable<SoftObjectPath>, IComparable<SoftObjectPath>
+public partial struct FSoftObjectPath : IEquatable<FSoftObjectPath>, IComparable<FSoftObjectPath>
 {
 	// ReSharper disable once ConvertToPrimaryConstructor
-	public SoftObjectPath()
+	public FSoftObjectPath()
 	{
 		AssetPath = default;
 		SubPathString = string.Empty;
 	}
 
-	public static implicit operator SoftObjectPath(in NativeSoftObjectPath value)
+	public static implicit operator FSoftObjectPath(in NativeSoftObjectPath value)
 	{
-		return new SoftObjectPath
+		return new FSoftObjectPath
 		{
 			AssetPath = value.AssetPath,
 			SubPathString = value.SubPathString.ToString(),
@@ -33,8 +33,8 @@ public partial struct SoftObjectPath : IEquatable<SoftObjectPath>, IComparable<S
 	/// </summary>
 	public string GetLongPackageName()
 	{
-		Name packageName = AssetPath.PackageName;
-		return packageName == Name.None ? string.Empty : packageName.ToString();
+		FName packageName = AssetPath.PackageName;
+		return packageName == FName.None ? string.Empty : packageName.ToString();
 	}
 
 	/// <summary>
@@ -42,15 +42,15 @@ public partial struct SoftObjectPath : IEquatable<SoftObjectPath>, IComparable<S
 	/// </summary>
 	public string GetAssetName()
 	{
-		Name assetName = AssetPath.AssetName;
-		return assetName == Name.None ? string.Empty : assetName.ToString();
+		FName assetName = AssetPath.AssetName;
+		return assetName == FName.None ? string.Empty : assetName.ToString();
 	}
 
 	/// <summary>
 	/// Attempts to load the asset, this will call LoadObject which can be very slow
 	/// </summary>
 	/// <returns>Loaded UObject, or nullptr if the reference is null or the asset fails to load</returns>
-	public unsafe Object? TryLoad()
+	public unsafe UObject? TryLoad()
 	{
 		fixed (char* subPathString = SubPathString)
 		{
@@ -61,7 +61,7 @@ public partial struct SoftObjectPath : IEquatable<SoftObjectPath>, IComparable<S
 			}
 
 			GCHandle managedHandle = GCHandle.FromIntPtr(managedHandlePtr);
-			return managedHandle.Target as Object;
+			return managedHandle.Target as UObject;
 		}
 	}
 
@@ -69,7 +69,7 @@ public partial struct SoftObjectPath : IEquatable<SoftObjectPath>, IComparable<S
 	/// Attempts to find a currently loaded object that matches this path
 	/// </summary>
 	/// <returns>Found UObject, or nullptr if not currently in memory</returns>
-	public unsafe Object? ResolveObject()
+	public unsafe UObject? ResolveObject()
 	{
 		fixed (char* subPathString = SubPathString ?? string.Empty)
 		{
@@ -80,7 +80,7 @@ public partial struct SoftObjectPath : IEquatable<SoftObjectPath>, IComparable<S
 			}
 
 			GCHandle managedHandle = GCHandle.FromIntPtr(managedHandlePtr);
-			return managedHandle.Target as Object;
+			return managedHandle.Target as UObject;
 		}
 	}
 
@@ -125,12 +125,12 @@ public partial struct SoftObjectPath : IEquatable<SoftObjectPath>, IComparable<S
 		return !AssetPath.IsNull() && !String.IsNullOrEmpty(SubPathString);
 	}
 
-	public bool Equals(SoftObjectPath other)
+	public bool Equals(FSoftObjectPath other)
 	{
 		return AssetPath == other.AssetPath && SubPathString == other.SubPathString;
 	}
 
-	public int CompareTo(SoftObjectPath other)
+	public int CompareTo(FSoftObjectPath other)
 	{
 		int result = AssetPath.CompareTo(other.AssetPath);
 		if (result == 0)
@@ -143,7 +143,7 @@ public partial struct SoftObjectPath : IEquatable<SoftObjectPath>, IComparable<S
 
 	public override bool Equals(object? obj)
 	{
-		return obj is SoftObjectPath other && Equals(other);
+		return obj is FSoftObjectPath other && Equals(other);
 	}
 
 	public override int GetHashCode()
@@ -151,12 +151,12 @@ public partial struct SoftObjectPath : IEquatable<SoftObjectPath>, IComparable<S
 		return HashCode.Combine(AssetPath, SubPathString ?? string.Empty);
 	}
 
-	public static bool operator ==(SoftObjectPath lhs, SoftObjectPath rhs)
+	public static bool operator ==(FSoftObjectPath lhs, FSoftObjectPath rhs)
 	{
 		return lhs.Equals(rhs);
 	}
 
-	public static bool operator !=(SoftObjectPath lhs, SoftObjectPath rhs)
+	public static bool operator !=(FSoftObjectPath lhs, FSoftObjectPath rhs)
 	{
 		return !(lhs == rhs);
 	}

@@ -1,6 +1,6 @@
 ﻿using System.Runtime.InteropServices;
 using SharpScript.Interop;
-using Object = UnrealEngine.CoreUObject.Object;
+using UnrealEngine.CoreUObject;
 
 namespace UnrealEngine.Intrinsic;
 
@@ -8,18 +8,18 @@ namespace UnrealEngine.Intrinsic;
 /// Wrapper for FScriptDelegate.
 /// </summary>
 [StructLayout(LayoutKind.Sequential)]
-public unsafe struct ScriptDelegate : IEquatable<ScriptDelegate>
+public unsafe struct FScriptDelegate : IEquatable<FScriptDelegate>
 {
 	internal ulong _accessDetector;
-	internal WeakObjectData _object;
-	internal Name _functionName;
+	internal FWeakObjectPtr _object;
+	internal FName _functionName;
 
 	/// <summary>
 	/// Binds a UFunction to this delegate.
 	/// </summary>
 	/// <param name="obj">The object to call the function on.</param>
 	/// <param name="functionName">The name of the function to call.</param>
-	public void BindUFunction(Object obj, Name functionName)
+	public void BindUFunction(UObject obj, FName functionName)
 	{
 		DelegateInterop.BindUFunction(ref this, obj.NativeObject, functionName);
 	}
@@ -37,7 +37,7 @@ public unsafe struct ScriptDelegate : IEquatable<ScriptDelegate>
 	/// Checks to see if this delegate is bound to the given user object.
 	/// </summary>
 	/// <returns>True if this delegate is bound to InUserObject, false otherwise.</returns>
-	public bool IsBoundToObject(Object obj)
+	public bool IsBoundToObject(UObject obj)
 	{
 		return DelegateInterop.IsBoundToObject(ref this, obj.NativeObject) != 0;
 	}
@@ -53,17 +53,17 @@ public unsafe struct ScriptDelegate : IEquatable<ScriptDelegate>
 	/// <summary>
 	///  Gets the object bound to this delegate
 	/// </summary>
-	public Object? GetUObject()
+	public UObject? GetUObject()
 	{
 		IntPtr managedHandlePtr = DelegateInterop.GetUObject(ref this);
 		GCHandle managedHandle = GCHandle.FromIntPtr(managedHandlePtr);
-		return managedHandle.Target as Object;
+		return managedHandle.Target as UObject;
 	}
 
 	/// <summary>
 	/// Gets the name of the function to call on the bound object
 	/// </summary>
-	public Name GetFunctionName()
+	public FName GetFunctionName()
 	{
 		return DelegateInterop.GetFunctionName(ref this);
 	}
@@ -79,14 +79,14 @@ public unsafe struct ScriptDelegate : IEquatable<ScriptDelegate>
 		DelegateInterop.ProcessDelegate(ref this, paramsBuffer);
 	}
 
-	public bool Equals(ScriptDelegate other)
+	public bool Equals(FScriptDelegate other)
 	{
 		return DelegateInterop.DelegateEquals(ref this, ref other) != 0;
 	}
 
 	public override bool Equals(object? obj)
 	{
-		return obj is ScriptDelegate other && Equals(other);
+		return obj is FScriptDelegate other && Equals(other);
 	}
 
 	public override int GetHashCode()

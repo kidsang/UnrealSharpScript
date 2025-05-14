@@ -4,48 +4,48 @@ using SharpScript.Interop;
 
 namespace SharpScriptUnitTest.Types;
 
-public class SsTestBlittableStructNativeRef(IntPtr nativePtr) : IStructNativeRef<SsTestBlittableStruct>
+public class FSsTestBlittableStructNativeRef(IntPtr nativePtr) : IStructNativeRef<FSsTestBlittableStruct>
 {
 	public unsafe int X
 	{
-		get => (*(SsTestBlittableStruct*)nativePtr).X;
-		set => (*(SsTestBlittableStruct*)nativePtr).X = value;
+		get => (*(FSsTestBlittableStruct*)nativePtr).X;
+		set => (*(FSsTestBlittableStruct*)nativePtr).X = value;
 	}
 
 	public unsafe int Y
 	{
-		get => (*(SsTestBlittableStruct*)nativePtr).Y;
-		set => (*(SsTestBlittableStruct*)nativePtr).Y = value;
+		get => (*(FSsTestBlittableStruct*)nativePtr).Y;
+		set => (*(FSsTestBlittableStruct*)nativePtr).Y = value;
 	}
 
-	public SsTestBlittableStruct ToManaged()
+	public FSsTestBlittableStruct ToManaged()
 	{
-		return BlittableMarshaller<SsTestBlittableStruct>.FromNative(nativePtr);
+		return BlittableMarshaller<FSsTestBlittableStruct>.FromNative(nativePtr);
 	}
 
-	public void FromManaged(in SsTestBlittableStruct value)
+	public void FromManaged(in FSsTestBlittableStruct value)
 	{
-		BlittableMarshaller<SsTestBlittableStruct>.ToNative(nativePtr, value);
+		BlittableMarshaller<FSsTestBlittableStruct>.ToNative(nativePtr, value);
 	}
 
-	public static IStructNativeRef<SsTestBlittableStruct> CreateInstance(IntPtr valuePtr)
+	public static IStructNativeRef<FSsTestBlittableStruct> CreateInstance(IntPtr valuePtr)
 	{
-		return new SsTestBlittableStructNativeRef(valuePtr);
+		return new FSsTestBlittableStructNativeRef(valuePtr);
 	}
 
 	public static unsafe int GetNativeDataSize()
 	{
-		return sizeof(SsTestBlittableStruct);
+		return sizeof(FSsTestBlittableStruct);
 	}
 
-	public static implicit operator SsTestBlittableStruct(SsTestBlittableStructNativeRef nativeRef)
+	public static implicit operator FSsTestBlittableStruct(FSsTestBlittableStructNativeRef nativeRef)
 	{
 		return nativeRef.ToManaged();
 	}
 }
 
 [StructLayout(LayoutKind.Sequential)]
-public struct SsTestBlittableStruct : IStructMarshallerHelper<SsTestBlittableStruct>, IEquatable<SsTestBlittableStruct>
+public struct FSsTestBlittableStruct : IStructMarshallerHelper<FSsTestBlittableStruct>, IEquatable<FSsTestBlittableStruct>
 {
 	public int X;
 
@@ -53,22 +53,22 @@ public struct SsTestBlittableStruct : IStructMarshallerHelper<SsTestBlittableStr
 
 	public static int GetNativeDataSize()
 	{
-		return SsTestBlittableStructNativeRef.GetNativeDataSize();
+		return FSsTestBlittableStructNativeRef.GetNativeDataSize();
 	}
 
-	public static IStructNativeRef<SsTestBlittableStruct> CreateStructNativeRef(IntPtr valuePtr)
+	public static IStructNativeRef<FSsTestBlittableStruct> CreateStructNativeRef(IntPtr valuePtr)
 	{
-		return new SsTestBlittableStructNativeRef(valuePtr);
+		return new FSsTestBlittableStructNativeRef(valuePtr);
 	}
 
-	public bool Equals(SsTestBlittableStruct other)
+	public bool Equals(FSsTestBlittableStruct other)
 	{
 		return X == other.X && Y == other.Y;
 	}
 
 	public override bool Equals(object? obj)
 	{
-		return obj is SsTestBlittableStruct other && Equals(other);
+		return obj is FSsTestBlittableStruct other && Equals(other);
 	}
 
 	public override int GetHashCode()

@@ -9,7 +9,7 @@ namespace SharpScript.Interop;
 static unsafe class NameInterop
 {
 #pragma warning disable CS0649
-	internal static delegate* unmanaged<Name, ref NativeString, void> NameToString;
-	internal static delegate* unmanaged<ref Name, IntPtr, void> StringToName;
+	internal static delegate* unmanaged<FName, ref NativeString, void> NameToString;
+	internal static delegate* unmanaged<ref FName, IntPtr, void> StringToName;
 #pragma warning restore CS0649
 }

@@ -19,15 +19,15 @@ public static class StaticConstructorUtilities
 
 		if (classObj != null)
 		{
-			codeBuilder.AppendLine(typeName == "Object"
-				? $"public static SubclassOf<{typeName}> StaticClass {{ get; }}"
-				: $"public new static SubclassOf<{typeName}> StaticClass {{ get; }}");
+			codeBuilder.AppendLine(typeName == "UObject"
+				? $"public static TSubclassOf<{typeName}> StaticClass {{ get; }}"
+				: $"public new static TSubclassOf<{typeName}> StaticClass {{ get; }}");
 
 			if (classObj.GetInterfaces().Count > 0)
 			{
 				// When facing multiple interfaces inheritance, implement a dummy InterfaceClass getter to avoid error CS8705.
 				// CS8705: Interface member does not have a most specific implementation.
-				codeBuilder.AppendLine("public static UnrealEngine.CoreUObject.Class InterfaceClass => null!;");
+				codeBuilder.AppendLine("public static UnrealEngine.CoreUObject.UClass InterfaceClass => null!;");
 			}
 
 			codeBuilder.AppendLine();
@@ -40,7 +40,7 @@ public static class StaticConstructorUtilities
 		}
 		else if (classObj != null)
 		{
-			codeBuilder.AppendLine(typeName == "Object"
+			codeBuilder.AppendLine(typeName == "UObject"
 				? "internal static readonly IntPtr NativeType;"
 				: "internal new static readonly IntPtr NativeType;");
 		}
@@ -65,7 +65,7 @@ public static class StaticConstructorUtilities
 			if (classObj != null)
 			{
 				codeBuilder.AppendLine($"NativeType = TypeInterop.FindClass(\"{typeObj.EngineName}\");");
-				codeBuilder.AppendLine($"StaticClass = new SubclassOf<{typeName}>(NativeType);");
+				codeBuilder.AppendLine($"StaticClass = new TSubclassOf<{typeName}>(NativeType);");
 			}
 			else if (structObj != null)
 			{

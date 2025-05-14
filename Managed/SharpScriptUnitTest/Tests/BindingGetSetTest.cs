@@ -11,8 +11,8 @@ public class BindingGetSetTest : IUnitTestInterface
 {
 	public bool RunTest()
 	{
-		SsBindingGetSetTest obj = NewObject<SsBindingGetSetTest>();
-		SsBindingTestObject objValue = NewObject<SsBindingTestObject>();
+		USsBindingGetSetTest obj = NewObject<USsBindingGetSetTest>();
+		USsBindingTestObject objValue = NewObject<USsBindingTestObject>();
 
 		Utils.Assert(obj.Bool == false);
 		obj.Bool = true;
@@ -39,16 +39,16 @@ public class BindingGetSetTest : IUnitTestInterface
 		obj.String = "String";
 		Utils.Assert(obj.String == "String");
 
-		Utils.Assert(obj.Name == Name.None);
+		Utils.Assert(obj.Name == FName.None);
 		obj.Name = "Name";
 		Utils.Assert(obj.Name == "Name");
 
-		Utils.Assert(obj.Text == Text.None);
-		obj.Text = new Text("Text");
-		Utils.Assert(obj.Text == new Text("Text"));
+		Utils.Assert(obj.Text == FText.None);
+		obj.Text = new FText("Text");
+		Utils.Assert(obj.Text == new FText("Text"));
 
 		Utils.Assert(obj.FieldPath.Path == String.Empty);
-		obj.FieldPath = new FieldPath("/Script/SharpScriptUnitTest.SsTestStruct:StringArray");
+		obj.FieldPath = new FFieldPath("/Script/SharpScriptUnitTest.SsTestStruct:StringArray");
 		Utils.Assert(obj.FieldPath.Path == "/Script/SharpScriptUnitTest.SsTestStruct:StringArray");
 
 		Utils.Assert(obj.StringArray.Count == 0);
@@ -66,7 +66,7 @@ public class BindingGetSetTest : IUnitTestInterface
 
 		Utils.Assert(obj.Struct.Int == 0);
 		Utils.Assert(obj.Struct.String == String.Empty);
-		obj.Struct = new SsBindingTestStruct
+		obj.Struct = new FSsBindingTestStruct
 		{
 			Int = 1,
 			String = "String",

@@ -1,11 +1,11 @@
 ﻿using System.Runtime.InteropServices;
 using SharpScript.Interop;
-using Object = UnrealEngine.CoreUObject.Object;
+using UnrealEngine.CoreUObject;
 
 namespace UnrealEngine.Intrinsic;
 
 [StructLayout(LayoutKind.Sequential)]
-public struct WeakObjectData
+public struct FWeakObjectPtr
 {
 	internal int ObjectIndex;
 	internal int ObjectSerialNumber;
@@ -23,9 +23,9 @@ public struct WeakObjectData
 /// Most often it is used when you explicitly do NOT want to prevent something from being garbage collected.
 /// </remarks>
 [StructLayout(LayoutKind.Sequential)]
-public unsafe struct WeakObjectPtr<T> : IEquatable<WeakObjectPtr<T>> where T : Object
+public unsafe struct TWeakObjectPtr<T> : IEquatable<TWeakObjectPtr<T>> where T : UObject
 {
-	internal WeakObjectData Data;
+	internal FWeakObjectPtr Data;
 
 	/// <summary>
 	/// Dereference the weak pointer.
@@ -36,20 +36,20 @@ public unsafe struct WeakObjectPtr<T> : IEquatable<WeakObjectPtr<T>> where T : O
 	/// Copy from an object pointer
 	/// </summary>
 	/// <param name="obj">object to create a weak pointer to</param>
-	public WeakObjectPtr(T? obj)
+	public TWeakObjectPtr(T? obj)
 	{
 		WeakObjectPtrInterop.SetObject(ref Data, obj?.NativeObject ?? IntPtr.Zero);
 	}
 
-	public WeakObjectPtr(int objectIndex, int objectSerialNumber)
+	public TWeakObjectPtr(int objectIndex, int objectSerialNumber)
 	{
 		Data.ObjectIndex = objectIndex;
 		Data.ObjectSerialNumber = objectSerialNumber;
 	}
 
-	public static implicit operator WeakObjectPtr<T>(T? value) => new(value);
+	public static implicit operator TWeakObjectPtr<T>(T? value) => new(value);
 
-	public static implicit operator T?(WeakObjectPtr<T> value) => value.Get();
+	public static implicit operator T?(TWeakObjectPtr<T> value) => value.Get();
 
 	/// <summary>
 	/// Reset the weak pointer back to the null state
@@ -104,14 +104,14 @@ public unsafe struct WeakObjectPtr<T> : IEquatable<WeakObjectPtr<T>> where T : O
 		return Data is { ObjectIndex: 0, ObjectSerialNumber: 0 };
 	}
 
-	public bool Equals(WeakObjectPtr<T> other)
+	public bool Equals(TWeakObjectPtr<T> other)
 	{
 		return Data.ObjectIndex == other.Data.ObjectIndex && Data.ObjectSerialNumber == other.Data.ObjectSerialNumber;
 	}
 
 	public override bool Equals(object? obj)
 	{
-		return obj is WeakObjectPtr<T> other && Equals(other);
+		return obj is TWeakObjectPtr<T> other && Equals(other);
 	}
 
 	public override int GetHashCode()

@@ -9,8 +9,8 @@ namespace SharpScript.Interop;
 public unsafe class SoftObjectPathInterop
 {
 #pragma warning disable CS0649
-	internal static delegate* unmanaged<in TopLevelAssetPath, char*, IntPtr> TryLoad;
-	internal static delegate* unmanaged<in TopLevelAssetPath, char*, IntPtr> ResolveObject;
+	internal static delegate* unmanaged<in FTopLevelAssetPath, char*, IntPtr> TryLoad;
+	internal static delegate* unmanaged<in FTopLevelAssetPath, char*, IntPtr> ResolveObject;
 	internal static delegate* unmanaged<IntPtr, ref NativeSoftObjectPath, void> GetOrCreateIdForObject;
 #pragma warning restore CS0649
 }

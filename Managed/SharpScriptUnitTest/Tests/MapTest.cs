@@ -4,7 +4,6 @@ using SharpScriptUnitTest.Types;
 using UnrealEngine.CoreUObject;
 using UnrealEngine.Engine;
 using UnrealEngine.Intrinsic;
-using Object = UnrealEngine.CoreUObject.Object;
 
 namespace SharpScriptUnitTest.Tests;
 
@@ -20,10 +19,10 @@ public class MapTest : IUnitTestInterface
 		IntPtr testStructTwoNativePtr = 0;
 		try
 		{
-			testStructOneNativePtr = TypeInterop.CreateStructInstance(SsMapTestStructNativeRef.NativeType);
-			SsMapTestStructNativeRef testStructOneNativeRef = new SsMapTestStructNativeRef(testStructOneNativePtr);
-			testStructTwoNativePtr = TypeInterop.CreateStructInstance(SsMapTestStructNativeRef.NativeType);
-			SsMapTestStructNativeRef testStructTwoNativeRef = new SsMapTestStructNativeRef(testStructTwoNativePtr);
+			testStructOneNativePtr = TypeInterop.CreateStructInstance(FSsMapTestStructNativeRef.NativeType);
+			FSsMapTestStructNativeRef testStructOneNativeRef = new FSsMapTestStructNativeRef(testStructOneNativePtr);
+			testStructTwoNativePtr = TypeInterop.CreateStructInstance(FSsMapTestStructNativeRef.NativeType);
+			FSsMapTestStructNativeRef testStructTwoNativeRef = new FSsMapTestStructNativeRef(testStructTwoNativePtr);
 
 			StringTextMapTest(testStructOneNativeRef.StringTextMap, testStructTwoNativeRef.StringTextMap);
 			IntBoolMapTest(testStructOneNativeRef.IntBoolMap, testStructTwoNativeRef.IntBoolMap);
@@ -41,56 +40,56 @@ public class MapTest : IUnitTestInterface
 		{
 			if (testStructOneNativePtr != 0)
 			{
-				TypeInterop.DestroyStructInstance(SsMapTestStructNativeRef.NativeType, ref testStructOneNativePtr);
+				TypeInterop.DestroyStructInstance(FSsMapTestStructNativeRef.NativeType, ref testStructOneNativePtr);
 			}
 
 			if (testStructTwoNativePtr != 0)
 			{
-				TypeInterop.DestroyStructInstance(SsMapTestStructNativeRef.NativeType, ref testStructTwoNativePtr);
+				TypeInterop.DestroyStructInstance(FSsMapTestStructNativeRef.NativeType, ref testStructTwoNativePtr);
 			}
 		}
 
 		return true;
 	}
 
-	public static void StringTextMapTest(Map<string, Text> StringTextMapOne, Map<string, Text> StringTestMapTwo)
+	public static void StringTextMapTest(TMap<string, FText> StringTextMapOne, TMap<string, FText> StringTestMapTwo)
 	{
 		// ------------------------------------------
 		// Test FString-FText dictionary - Add
-		StringTextMapOne.Add("one", new Text("one"));
-		StringTextMapOne.Add("two", new Text("two"));
-		Utils.Assert(DictEquals(StringTextMapOne, new() { { "one", new Text("one") }, { "two", new Text("two") } }));
+		StringTextMapOne.Add("one", new FText("one"));
+		StringTextMapOne.Add("two", new FText("two"));
+		Utils.Assert(DictEquals(StringTextMapOne, new() { { "one", new FText("one") }, { "two", new FText("two") } }));
 
 		// Test FString-FText dictionary - Query
 		Utils.Assert(StringTextMapOne.ContainsKey("one"));
 		Utils.Assert(!StringTextMapOne.ContainsKey("three"));
-		Utils.Assert(StringTextMapOne.ContainsValue(new Text("two")));
-		Utils.Assert(!StringTextMapOne.ContainsValue(new Text("three")));
+		Utils.Assert(StringTextMapOne.ContainsValue(new FText("two")));
+		Utils.Assert(!StringTextMapOne.ContainsValue(new FText("three")));
 
 		// Test FString-FText dictionary - Assign
-		StringTextMapOne["one"] = new Text("eno");
+		StringTextMapOne["one"] = new FText("eno");
 		Utils.Assert(StringTextMapOne["one"] == "eno");
-		StringTextMapOne["three"] = new Text("three");
+		StringTextMapOne["three"] = new FText("three");
 		Utils.Assert(StringTextMapOne["three"] == "three");
-		StringTextMapOne["one"] = new Text("one");
-		Utils.Assert(DictEquals(StringTextMapOne, new() { { "one", new Text("one") }, { "two", new Text("two") }, { "three", new Text("three") } }));
+		StringTextMapOne["one"] = new FText("one");
+		Utils.Assert(DictEquals(StringTextMapOne, new() { { "one", new FText("one") }, { "two", new FText("two") }, { "three", new FText("three") } }));
 
 		// Test FString-FText dictionary - Binary equality
-		StringTestMapTwo.CopyFrom(new Dictionary<string, Text> { { "one", new Text("one") }, { "two", new Text("two") } });
-		Utils.Assert(DictEquals(StringTestMapTwo, new() { { "one", new Text("one") }, { "two", new Text("two") } }));
+		StringTestMapTwo.CopyFrom(new Dictionary<string, FText> { { "one", new FText("one") }, { "two", new FText("two") } });
+		Utils.Assert(DictEquals(StringTestMapTwo, new() { { "one", new FText("one") }, { "two", new FText("two") } }));
 		StringTestMapTwo.Clear();
 		Utils.Assert(DictEquals(StringTestMapTwo, []));
 		StringTestMapTwo.CopyFrom(StringTextMapOne);
-		Utils.Assert(DictEquals(StringTestMapTwo, new() { { "one", new Text("one") }, { "two", new Text("two") }, { "three", new Text("three") } }));
+		Utils.Assert(DictEquals(StringTestMapTwo, new() { { "one", new FText("one") }, { "two", new FText("two") }, { "three", new FText("three") } }));
 
 		// Test FString-FText dictionary - Remove
 		StringTextMapOne.Remove("two");
-		Utils.Assert(DictEquals(StringTextMapOne, new() { { "one", new Text("one") }, { "three", new Text("three") } }));
+		Utils.Assert(DictEquals(StringTextMapOne, new() { { "one", new FText("one") }, { "three", new FText("three") } }));
 		StringTextMapOne.Clear();
 		Utils.Assert(DictEquals(StringTextMapOne, new()));
 	}
 
-	public static void IntBoolMapTest(Map<int, bool> IntBoolMapOne, Map<int, bool> IntBoolMapTwo)
+	public static void IntBoolMapTest(TMap<int, bool> IntBoolMapOne, TMap<int, bool> IntBoolMapTwo)
 	{
 		// ------------------------------------------
 		// Test int-bool dictionary - Add
@@ -127,7 +126,7 @@ public class MapTest : IUnitTestInterface
 		Utils.Assert(DictEquals(IntBoolMapOne, new()));
 	}
 
-	public static void EnumMapTest(Map<ESsTestEnum, ESsTestEnum> EnumMapOne, Map<ESsTestEnum, ESsTestEnum> EnumMapTwo)
+	public static void EnumMapTest(TMap<ESsTestEnum, ESsTestEnum> EnumMapOne, TMap<ESsTestEnum, ESsTestEnum> EnumMapTwo)
 	{
 		// ------------------------------------------
 		// Test enum dictionary - Add
@@ -164,7 +163,7 @@ public class MapTest : IUnitTestInterface
 		Utils.Assert(DictEquals(EnumMapOne, new()));
 	}
 
-	public static void LongEnumMapTest(Map<ESsTestLongEnum, ESsTestLongEnum> LongEnumMapOne, Map<ESsTestLongEnum, ESsTestLongEnum> LongEnumMapTwo)
+	public static void LongEnumMapTest(TMap<ESsTestLongEnum, ESsTestLongEnum> LongEnumMapOne, TMap<ESsTestLongEnum, ESsTestLongEnum> LongEnumMapTwo)
 	{
 		// ------------------------------------------
 		// Test enum dictionary - Add
@@ -201,19 +200,19 @@ public class MapTest : IUnitTestInterface
 		Utils.Assert(DictEquals(LongEnumMapOne, new()));
 	}
 
-	public static void IntStructMapTest(Map<int, SsMapTestInnerStruct, SsMapTestInnerStructNativeRef> IntStructMapOne, Map<int, SsMapTestInnerStruct, SsMapTestInnerStructNativeRef> IntStructMapTwo)
+	public static void IntStructMapTest(TMap<int, FSsMapTestInnerStruct, FSsMapTestInnerStructNativeRef> IntStructMapOne, TMap<int, FSsMapTestInnerStruct, FSsMapTestInnerStructNativeRef> IntStructMapTwo)
 	{
 		// ------------------------------------------
 		// Test int-struct dictionary
-		SsMapTestInnerStruct innerStructA = new SsMapTestInnerStruct()
+		FSsMapTestInnerStruct innerStructA = new FSsMapTestInnerStruct()
 		{
 			IntIntMap = new() { { 1, 1 } }
 		};
-		SsMapTestInnerStruct innerStructB = new SsMapTestInnerStruct()
+		FSsMapTestInnerStruct innerStructB = new FSsMapTestInnerStruct()
 		{
 			IntIntMap = new() { { 2, 2 } }
 		};
-		SsMapTestInnerStruct innerStructC = new SsMapTestInnerStruct()
+		FSsMapTestInnerStruct innerStructC = new FSsMapTestInnerStruct()
 		{
 			IntIntMap = new() { { 3, 3 } }
 		};
@@ -238,7 +237,7 @@ public class MapTest : IUnitTestInterface
 		Utils.Assert(DictEquals(IntStructMapOne, new() { { 1, innerStructA }, { 2, innerStructB }, { 3, innerStructC } }));
 
 		// Test int-struct dictionary - Binary equality
-		IntStructMapTwo.CopyFrom(new Dictionary<int, SsMapTestInnerStruct> { { 1, innerStructA }, { 2, innerStructB } });
+		IntStructMapTwo.CopyFrom(new Dictionary<int, FSsMapTestInnerStruct> { { 1, innerStructA }, { 2, innerStructB } });
 		Utils.Assert(DictEquals(IntStructMapTwo, new() { { 1, innerStructA }, { 2, innerStructB } }));
 		IntStructMapTwo.Clear();
 		Utils.Assert(DictEquals(IntStructMapTwo, []));
@@ -262,13 +261,13 @@ public class MapTest : IUnitTestInterface
 		Utils.Assert(DictEquals(IntStructMapOne, new()));
 	}
 
-	public static void BlittableStructMapTest(Map<SsTestBlittableStruct, SsTestBlittableStruct, SsTestBlittableStructNativeRef> BlittableStructMapOne, Map<SsTestBlittableStruct, SsTestBlittableStruct, SsTestBlittableStructNativeRef> BlittableStructMapTwo)
+	public static void BlittableStructMapTest(TMap<FSsTestBlittableStruct, FSsTestBlittableStruct, FSsTestBlittableStructNativeRef> BlittableStructMapOne, TMap<FSsTestBlittableStruct, FSsTestBlittableStruct, FSsTestBlittableStructNativeRef> BlittableStructMapTwo)
 	{
 		// ------------------------------------------
 		// Test blittable struct dictionary
-		SsTestBlittableStruct one = new SsTestBlittableStruct { X = 1, Y = 1 };
-		SsTestBlittableStruct two = new SsTestBlittableStruct { X = 2, Y = 2 };
-		SsTestBlittableStruct three = new SsTestBlittableStruct { X = 3, Y = 3 };
+		FSsTestBlittableStruct one = new FSsTestBlittableStruct { X = 1, Y = 1 };
+		FSsTestBlittableStruct two = new FSsTestBlittableStruct { X = 2, Y = 2 };
+		FSsTestBlittableStruct three = new FSsTestBlittableStruct { X = 3, Y = 3 };
 
 		// Test blittable struct dictionary - Add
 		BlittableStructMapOne.Add(one, one);
@@ -290,7 +289,7 @@ public class MapTest : IUnitTestInterface
 		Utils.Assert(DictEquals(BlittableStructMapOne, new() { { one, one }, { two, two }, { three, three } }));
 
 		// Test blittable struct dictionary - Binary equality
-		BlittableStructMapTwo.CopyFrom(new Dictionary<SsTestBlittableStruct, SsTestBlittableStruct> { { one, one }, { two, two } });
+		BlittableStructMapTwo.CopyFrom(new Dictionary<FSsTestBlittableStruct, FSsTestBlittableStruct> { { one, one }, { two, two } });
 		Utils.Assert(DictEquals(BlittableStructMapTwo, new() { { one, one }, { two, two } }));
 		BlittableStructMapTwo.Clear();
 		Utils.Assert(DictEquals(BlittableStructMapTwo, []));
@@ -304,11 +303,11 @@ public class MapTest : IUnitTestInterface
 		Utils.Assert(DictEquals(BlittableStructMapOne, new()));
 	}
 
-	public static void ObjectMapTest(Map<Object, Object?> ObjectMapOne, Map<Object, Object?> ObjectMapTwo)
+	public static void ObjectMapTest(TMap<UObject, UObject?> ObjectMapOne, TMap<UObject, UObject?> ObjectMapTwo)
 	{
-		SsTestObject objOne = NewObject<SsTestObject>();
-		SsTestObject objTwo = NewObject<SsTestObject>();
-		SsTestObject objThree = NewObject<SsTestObject>();
+		USsTestObject objOne = NewObject<USsTestObject>();
+		USsTestObject objTwo = NewObject<USsTestObject>();
+		USsTestObject objThree = NewObject<USsTestObject>();
 
 		// ------------------------------------------
 		// Test object-object dictionary - Add
@@ -331,7 +330,7 @@ public class MapTest : IUnitTestInterface
 		Utils.Assert(DictEquals(ObjectMapOne, new() { { objOne, objOne }, { objTwo, objTwo }, { objThree, objThree } }));
 
 		// Test object-object dictionary - Binary equality
-		ObjectMapTwo.CopyFrom(new Dictionary<Object, Object?> { { objOne, objOne }, { objTwo, objTwo } });
+		ObjectMapTwo.CopyFrom(new Dictionary<UObject, UObject?> { { objOne, objOne }, { objTwo, objTwo } });
 		Utils.Assert(DictEquals(ObjectMapTwo, new() { { objOne, objOne }, { objTwo, objTwo } }));
 		ObjectMapTwo.Clear();
 		Utils.Assert(DictEquals(ObjectMapTwo, []));
@@ -345,11 +344,11 @@ public class MapTest : IUnitTestInterface
 		Utils.Assert(DictEquals(ObjectMapOne, new()));
 	}
 
-	public static void SoftObjectPtrMapTest(Map<SoftObjectPtr<Object>, SoftObjectPtr<Object>> ObjectMapOne, Map<SoftObjectPtr<Object>, SoftObjectPtr<Object>> ObjectMapTwo)
+	public static void SoftObjectPtrMapTest(TMap<TSoftObjectPtr<UObject>, TSoftObjectPtr<UObject>> ObjectMapOne, TMap<TSoftObjectPtr<UObject>, TSoftObjectPtr<UObject>> ObjectMapTwo)
 	{
-		SoftObjectPtr<Object> objOne = NewObject<SsTestObject>();
-		SoftObjectPtr<Object> objTwo = NewObject<SsTestObject>();
-		SoftObjectPtr<Object> objThree = NewObject<SsTestObject>();
+		TSoftObjectPtr<UObject> objOne = NewObject<USsTestObject>();
+		TSoftObjectPtr<UObject> objTwo = NewObject<USsTestObject>();
+		TSoftObjectPtr<UObject> objThree = NewObject<USsTestObject>();
 
 		// ------------------------------------------
 		// Test object-object dictionary - Add
@@ -372,7 +371,7 @@ public class MapTest : IUnitTestInterface
 		Utils.Assert(DictEquals(ObjectMapOne, new() { { objOne, objOne }, { objTwo, objTwo }, { objThree, objThree } }));
 
 		// Test object-object dictionary - Binary equality
-		ObjectMapTwo.CopyFrom(new Dictionary<SoftObjectPtr<Object>, SoftObjectPtr<Object>> { { objOne, objOne }, { objTwo, objTwo } });
+		ObjectMapTwo.CopyFrom(new Dictionary<TSoftObjectPtr<UObject>, TSoftObjectPtr<UObject>> { { objOne, objOne }, { objTwo, objTwo } });
 		Utils.Assert(DictEquals(ObjectMapTwo, new() { { objOne, objOne }, { objTwo, objTwo } }));
 		ObjectMapTwo.Clear();
 		Utils.Assert(DictEquals(ObjectMapTwo, []));
@@ -386,11 +385,11 @@ public class MapTest : IUnitTestInterface
 		Utils.Assert(DictEquals(ObjectMapOne, new()));
 	}
 
-	public static void ClassMapTest(Map<SubclassOf<Object>, SubclassOf<Object>> ClassMapOne, Map<SubclassOf<Object>, SubclassOf<Object>> ClassMapTwo)
+	public static void ClassMapTest(TMap<TSubclassOf<UObject>, TSubclassOf<UObject>> ClassMapOne, TMap<TSubclassOf<UObject>, TSubclassOf<UObject>> ClassMapTwo)
 	{
-		Class clsOne = Object.StaticClass!;
-		Class clsTwo = Actor.StaticClass!;
-		Class clsThree = Pawn.StaticClass!;
+		UClass clsOne = UObject.StaticClass!;
+		UClass clsTwo = AActor.StaticClass!;
+		UClass clsThree = APawn.StaticClass!;
 
 		// ------------------------------------------
 		// Test class-class dictionary - Add
@@ -413,7 +412,7 @@ public class MapTest : IUnitTestInterface
 		Utils.Assert(DictEquals(ClassMapOne, new() { { clsOne, clsOne }, { clsTwo, clsTwo }, { clsThree, clsThree } }));
 
 		// Test class-class dictionary - Binary equality
-		ClassMapTwo.CopyFrom(new Dictionary<SubclassOf<Object>, SubclassOf<Object>> { { clsOne, clsOne }, { clsTwo, clsTwo } });
+		ClassMapTwo.CopyFrom(new Dictionary<TSubclassOf<UObject>, TSubclassOf<UObject>> { { clsOne, clsOne }, { clsTwo, clsTwo } });
 		Utils.Assert(DictEquals(ClassMapTwo, new() { { clsOne, clsOne }, { clsTwo, clsTwo } }));
 		ClassMapTwo.Clear();
 		Utils.Assert(DictEquals(ClassMapTwo, []));
@@ -427,11 +426,11 @@ public class MapTest : IUnitTestInterface
 		Utils.Assert(DictEquals(ClassMapOne, new()));
 	}
 
-	public static void SoftClassPtrMapTest(Map<SoftClassPtr<Object>, SoftClassPtr<Object>> ObjectMapOne, Map<SoftClassPtr<Object>, SoftClassPtr<Object>> ObjectMapTwo)
+	public static void SoftClassPtrMapTest(TMap<TSoftClassPtr<UObject>, TSoftClassPtr<UObject>> ObjectMapOne, TMap<TSoftClassPtr<UObject>, TSoftClassPtr<UObject>> ObjectMapTwo)
 	{
-		Class clsOne = Object.StaticClass!;
-		Class clsTwo = Actor.StaticClass!;
-		Class clsThree = Pawn.StaticClass!;
+		UClass clsOne = UObject.StaticClass!;
+		UClass clsTwo = AActor.StaticClass!;
+		UClass clsThree = APawn.StaticClass!;
 
 		// ------------------------------------------
 		// Test class-class dictionary - Add
@@ -454,7 +453,7 @@ public class MapTest : IUnitTestInterface
 		Utils.Assert(DictEquals(ObjectMapOne, new() { { clsOne, clsOne }, { clsTwo, clsTwo }, { clsThree, clsThree } }));
 
 		// Test class-class dictionary - Binary equality
-		ObjectMapTwo.CopyFrom(new Dictionary<SoftClassPtr<Object>, SoftClassPtr<Object>> { { clsOne, clsOne }, { clsTwo, clsTwo } });
+		ObjectMapTwo.CopyFrom(new Dictionary<TSoftClassPtr<UObject>, TSoftClassPtr<UObject>> { { clsOne, clsOne }, { clsTwo, clsTwo } });
 		Utils.Assert(DictEquals(ObjectMapTwo, new() { { clsOne, clsOne }, { clsTwo, clsTwo } }));
 		ObjectMapTwo.Clear();
 		Utils.Assert(DictEquals(ObjectMapTwo, []));
@@ -468,13 +467,13 @@ public class MapTest : IUnitTestInterface
 		Utils.Assert(DictEquals(ObjectMapOne, new()));
 	}
 
-	public static void IntInterfaceMapTest(Map<int, ISsTestChildInterface?> IntInterfaceMapOne, Map<int, ISsTestChildInterface?> IntInterfaceMapTwo)
+	public static void IntInterfaceMapTest(TMap<int, ISsTestChildInterface?> IntInterfaceMapOne, TMap<int, ISsTestChildInterface?> IntInterfaceMapTwo)
 	{
 		// ------------------------------------------
 		// Test int-interface dictionary
-		ISsTestChildInterface objA = NewObject<SsTestObject>();
-		ISsTestChildInterface objB = NewObject<SsTestObject>();
-		ISsTestChildInterface objC = NewObject<SsTestObject>();
+		ISsTestChildInterface objA = NewObject<USsTestObject>();
+		ISsTestChildInterface objB = NewObject<USsTestObject>();
+		ISsTestChildInterface objC = NewObject<USsTestObject>();
 
 		// Test int-interface dictionary - Add
 		IntInterfaceMapOne.Add(1, objA);
@@ -515,14 +514,14 @@ public class MapTest : IUnitTestInterface
 		Utils.Assert(DictEquals(IntInterfaceMapOne, new()));
 	}
 
-	public static void IntDelegateMapTest(DelegateMap<int, SsTestDelegate, Delegate<SsTestDelegate>> IntDelegateMapOne, DelegateMap<int, SsTestDelegate, Delegate<SsTestDelegate>> IntDelegateMapTwo)
+	public static void IntDelegateMapTest(TDelegateMap<int, FSsTestDelegate, Delegate<FSsTestDelegate>> IntDelegateMapOne, TDelegateMap<int, FSsTestDelegate, Delegate<FSsTestDelegate>> IntDelegateMapTwo)
 	{
 		// ------------------------------------------
 		// Test int-delegate dictionary
-		SsTestObject obj = NewObject<SsTestObject>();
-		SsTestDelegate delegateA = obj.FuncBlueprintImplementable;
-		SsTestDelegate delegateB = obj.FuncBlueprintNative;
-		SsTestDelegate delegateC = obj.CallFuncBlueprintImplementable;
+		USsTestObject obj = NewObject<USsTestObject>();
+		FSsTestDelegate delegateA = obj.FuncBlueprintImplementable;
+		FSsTestDelegate delegateB = obj.FuncBlueprintNative;
+		FSsTestDelegate delegateC = obj.CallFuncBlueprintImplementable;
 
 		// Test int-delegate dictionary - Add
 		IntDelegateMapOne.Add(1, delegateA);
@@ -544,7 +543,7 @@ public class MapTest : IUnitTestInterface
 		Utils.Assert(DictEquals(IntDelegateMapOne, new() { { 1, delegateA }, { 2, delegateB }, { 3, delegateC } }));
 
 		// Test int-delegate dictionary - Binary equality
-		IntDelegateMapTwo.CopyFrom(new Dictionary<int, SsTestDelegate> { { 1, delegateA }, { 2, delegateB } });
+		IntDelegateMapTwo.CopyFrom(new Dictionary<int, FSsTestDelegate> { { 1, delegateA }, { 2, delegateB } });
 		Utils.Assert(DictEquals(IntDelegateMapTwo, new() { { 1, delegateA }, { 2, delegateB } }));
 		IntDelegateMapTwo.Clear();
 		Utils.Assert(DictEquals(IntDelegateMapTwo, []));
@@ -569,15 +568,15 @@ public class MapTest : IUnitTestInterface
 		return a.OrderBy(x => x.Key).SequenceEqual(b.OrderBy(x => x.Key));
 	}
 
-	private static bool DictEquals<TKey, TValue, UValue>(MapBase<TKey, TValue, UValue> a, Dictionary<TKey, TValue> b)
-		where TKey : notnull where UValue : IStructNativeRef<TValue> where TValue : struct
+	private static bool DictEquals<TKey, TValue, TValueRef>(TMapBase<TKey, TValue, TValueRef> a, Dictionary<TKey, TValue> b)
+		where TKey : notnull where TValueRef : IStructNativeRef<TValue> where TValue : struct
 	{
 		// ReSharper disable once UsageOfDefaultStructEquality
 		return a.OrderBy(x => x.Key).SequenceEqual(b.OrderBy(x => x.Key));
 	}
 
-	private static bool DictEquals<TKey, TValue, UValue>(DelegateMapBase<TKey, TValue, UValue> a, Dictionary<TKey, TValue> b)
-		where TKey : notnull where UValue : Delegate<TValue> where TValue : Delegate
+	private static bool DictEquals<TKey, TValue, TValueRef>(TDelegateMapBase<TKey, TValue, TValueRef> a, Dictionary<TKey, TValue> b)
+		where TKey : notnull where TValueRef : Delegate<TValue> where TValue : Delegate
 	{
 		// ReSharper disable once UsageOfDefaultStructEquality
 		return a.OrderBy(x => x.Key).SequenceEqual(b.OrderBy(x => x.Key));

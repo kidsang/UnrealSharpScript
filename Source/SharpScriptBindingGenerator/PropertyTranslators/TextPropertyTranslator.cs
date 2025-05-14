@@ -4,7 +4,7 @@ namespace SharpScriptBindingGenerator.PropertyTranslators;
 
 public class TextPropertyTranslator : SimpleTypePropertyTranslator
 {
-	public TextPropertyTranslator() : base(typeof(UhtTextProperty), "Text")
+	public TextPropertyTranslator() : base(typeof(UhtTextProperty), "FText")
 	{
 	}
 
@@ -25,6 +25,6 @@ public class TextPropertyTranslator : SimpleTypePropertyTranslator
 			defaultValue = defaultValue.Substring(8, length);
 		}
 
-		codeBuilder.AppendLine(defaultValue == "\"\"" ? $"Text {paramName} = Text.None;" : $"Text {paramName} = new({defaultValue});");
+		codeBuilder.AppendLine(defaultValue == "\"\"" ? $"FText {paramName} = FText.None;" : $"FText {paramName} = new({defaultValue});");
 	}
 }

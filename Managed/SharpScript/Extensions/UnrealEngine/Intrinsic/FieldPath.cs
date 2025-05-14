@@ -5,7 +5,7 @@ namespace UnrealEngine.Intrinsic;
 /// <summary>
 /// Encapsulation of FieldPath.
 /// </summary>
-public readonly struct FieldPath(string? path) : IEquatable<FieldPath>
+public readonly struct FFieldPath(string? path) : IEquatable<FFieldPath>
 {
 	/// <summary>
 	/// Path to the FField object from the innermost FField to the outermost UObject (UPackage)
@@ -14,7 +14,7 @@ public readonly struct FieldPath(string? path) : IEquatable<FieldPath>
 
 	public static readonly int NativeDataSize;
 
-	static FieldPath()
+	static FFieldPath()
 	{
 		unsafe
 		{
@@ -22,18 +22,18 @@ public readonly struct FieldPath(string? path) : IEquatable<FieldPath>
 		}
 	}
 
-	public FieldPath() : this(String.Empty)
+	public FFieldPath() : this(String.Empty)
 	{
 	}
 
-	public bool Equals(FieldPath other)
+	public bool Equals(FFieldPath other)
 	{
 		return Path == other.Path;
 	}
 
 	public override bool Equals(object? obj)
 	{
-		return obj is FieldPath other && Equals(other);
+		return obj is FFieldPath other && Equals(other);
 	}
 
 	public override int GetHashCode()

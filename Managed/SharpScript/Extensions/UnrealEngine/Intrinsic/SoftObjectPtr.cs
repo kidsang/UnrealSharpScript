@@ -1,6 +1,5 @@
 ﻿using SharpScript.Interop;
 using UnrealEngine.CoreUObject;
-using Object = UnrealEngine.CoreUObject.Object;
 
 namespace UnrealEngine.Intrinsic;
 
@@ -11,14 +10,14 @@ namespace UnrealEngine.Intrinsic;
 ///
 /// This is useful to specify assets that you may want to asynchronously load on demand.
 /// </summary>
-public struct SoftObjectPtr<T>(T? Obj) : IEquatable<T?>, IComparable<SoftObjectPtr<T>>
-	where T : Object
+public struct TSoftObjectPtr<T>(T? Obj) : IEquatable<T?>, IComparable<TSoftObjectPtr<T>>
+	where T : UObject
 {
 	internal SoftObjectPtrData Data = new(Obj);
 
-	public static implicit operator SoftObjectPtr<T>(T? value) => new(value);
+	public static implicit operator TSoftObjectPtr<T>(T? value) => new(value);
 
-	public static implicit operator T?(SoftObjectPtr<T> value) => value.Get();
+	public static implicit operator T?(TSoftObjectPtr<T> value) => value.Get();
 
 	/// <summary>
 	/// Reset the soft pointer back to the null state
@@ -92,7 +91,7 @@ public struct SoftObjectPtr<T>(T? Obj) : IEquatable<T?>, IComparable<SoftObjectP
 	/// <summary>
 	/// Returns the StringObjectPath that is wrapped by this SoftObjectPtr
 	/// </summary>
-	public SoftObjectPath GetUniqueId()
+	public FSoftObjectPath GetUniqueId()
 	{
 		return Data.ObjectId;
 	}
@@ -100,7 +99,7 @@ public struct SoftObjectPtr<T>(T? Obj) : IEquatable<T?>, IComparable<SoftObjectP
 	/// <summary>
 	/// Returns the StringObjectPath that is wrapped by this SoftObjectPtr
 	/// </summary>
-	public SoftObjectPath ToSoftObjectPath()
+	public FSoftObjectPath ToSoftObjectPath()
 	{
 		return Data.ObjectId;
 	}
@@ -133,7 +132,7 @@ public struct SoftObjectPtr<T>(T? Obj) : IEquatable<T?>, IComparable<SoftObjectP
 
 	public override bool Equals(object? obj)
 	{
-		if (obj is SoftObjectPtr<T> other)
+		if (obj is TSoftObjectPtr<T> other)
 		{
 			return other.Data.ObjectId == Data.ObjectId;
 		}
@@ -156,17 +155,17 @@ public struct SoftObjectPtr<T>(T? Obj) : IEquatable<T?>, IComparable<SoftObjectP
 		return Data.ObjectId.GetHashCode();
 	}
 
-	public int CompareTo(SoftObjectPtr<T> other)
+	public int CompareTo(TSoftObjectPtr<T> other)
 	{
 		return Data.ObjectId.CompareTo(other.Data.ObjectId);
 	}
 
-	public static bool operator ==(SoftObjectPtr<T> lhs, T? rhs)
+	public static bool operator ==(TSoftObjectPtr<T> lhs, T? rhs)
 	{
 		return lhs.Equals(rhs);
 	}
 
-	public static bool operator !=(SoftObjectPtr<T> lhs, T? rhs)
+	public static bool operator !=(TSoftObjectPtr<T> lhs, T? rhs)
 	{
 		return !(lhs == rhs);
 	}
@@ -174,10 +173,10 @@ public struct SoftObjectPtr<T>(T? Obj) : IEquatable<T?>, IComparable<SoftObjectP
 
 internal struct SoftObjectPtrData
 {
-	internal WeakObjectPtr<Object> WeakPtr;
-	internal SoftObjectPath ObjectId;
+	internal TWeakObjectPtr<UObject> WeakPtr;
+	internal FSoftObjectPath ObjectId;
 
-	internal SoftObjectPtrData(Object? obj)
+	internal SoftObjectPtrData(UObject? obj)
 	{
 		if (obj is not null)
 		{
@@ -213,9 +212,9 @@ internal struct SoftObjectPtrData
 		WeakPtr.Reset();
 	}
 
-	internal Object? Get()
+	internal UObject? Get()
 	{
-		Object? obj = WeakPtr.Get();
+		UObject? obj = WeakPtr.Get();
 		if (obj != null)
 		{
 			return obj;
@@ -233,9 +232,9 @@ internal struct SoftObjectPtrData
 		return obj;
 	}
 
-	internal Object? LoadSynchronous()
+	internal UObject? LoadSynchronous()
 	{
-		Object? asset = Get();
+		UObject? asset = Get();
 		if (asset == null && ObjectId.IsValid())
 		{
 			ObjectId.TryLoad();

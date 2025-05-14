@@ -12,7 +12,7 @@ namespace UnrealEngine.Intrinsic;
 /// <param name="valueMarshaller">Dictionary value marshaller</param>
 /// <typeparam name="TKey">Dictionary key type</typeparam>
 /// <typeparam name="TValue">Dictionary value type</typeparam>
-public abstract unsafe class MapBase<TKey, TValue>(IntPtr mapPtr, IntPtr mapProp, IMarshaller<TKey> keyMarshaller, IMarshaller<TValue> valueMarshaller)
+public abstract unsafe class TMapBase<TKey, TValue>(IntPtr mapPtr, IntPtr mapProp, IMarshaller<TKey> keyMarshaller, IMarshaller<TValue> valueMarshaller)
 	: IEnumerable<KeyValuePair<TKey, TValue>>
 	where TKey : notnull
 {
@@ -179,14 +179,14 @@ public abstract unsafe class MapBase<TKey, TValue>(IntPtr mapPtr, IntPtr mapProp
 	}
 
 	/// <summary>
-	/// Implicit converter from <see cref="MapBase{TKey,TValue}"/> to <see cref="Dictionary{TKey,TValue}"/>
+	/// Implicit converter from <see cref="TMapBase{TKey,TValue}"/> to <see cref="Dictionary{TKey,TValue}"/>
 	/// </summary>
-	public static implicit operator Dictionary<TKey, TValue>(MapBase<TKey, TValue> map)
+	public static implicit operator Dictionary<TKey, TValue>(TMapBase<TKey, TValue> map)
 	{
 		return map.ToDictionary();
 	}
 
-	public struct Enumerator(MapBase<TKey, TValue> map) : IEnumerator<KeyValuePair<TKey, TValue>>
+	public struct Enumerator(TMapBase<TKey, TValue> map) : IEnumerator<KeyValuePair<TKey, TValue>>
 	{
 		private int _index = -1;
 
@@ -224,9 +224,9 @@ public abstract unsafe class MapBase<TKey, TValue>(IntPtr mapPtr, IntPtr mapProp
 		return GetEnumerator();
 	}
 
-	public readonly struct KeyCollection(MapBase<TKey, TValue> map) : ICollection<TKey>
+	public readonly struct KeyCollection(TMapBase<TKey, TValue> map) : ICollection<TKey>
 	{
-		public struct KeyEnumerator(MapBase<TKey, TValue> map) : IEnumerator<TKey>
+		public struct KeyEnumerator(TMapBase<TKey, TValue> map) : IEnumerator<TKey>
 		{
 			private int _index = -1;
 
@@ -302,9 +302,9 @@ public abstract unsafe class MapBase<TKey, TValue>(IntPtr mapPtr, IntPtr mapProp
 		public bool IsReadOnly => true;
 	}
 
-	public readonly struct ValueCollection(MapBase<TKey, TValue> map) : ICollection<TValue>
+	public readonly struct ValueCollection(TMapBase<TKey, TValue> map) : ICollection<TValue>
 	{
-		public struct ValueEnumerator(MapBase<TKey, TValue> map) : IEnumerator<TValue>
+		public struct ValueEnumerator(TMapBase<TKey, TValue> map) : IEnumerator<TValue>
 		{
 			private int _index = -1;
 
@@ -384,9 +384,9 @@ public abstract unsafe class MapBase<TKey, TValue>(IntPtr mapPtr, IntPtr mapProp
 /// <summary>
 /// Read-only wrapper for TMap.
 /// </summary>
-/// <inheritdoc cref="MapBase{TKey,TValue}"/>
-public class MapReadOnly<TKey, TValue>(IntPtr mapPtr, IntPtr mapProp, IMarshaller<TKey> keyMarshaller, IMarshaller<TValue> valueMarshaller)
-	: MapBase<TKey, TValue>(mapPtr, mapProp, keyMarshaller, valueMarshaller), IReadOnlyDictionary<TKey, TValue>
+/// <inheritdoc cref="TMapBase{TKey,TValue}"/>
+public class TMapReadOnly<TKey, TValue>(IntPtr mapPtr, IntPtr mapProp, IMarshaller<TKey> keyMarshaller, IMarshaller<TValue> valueMarshaller)
+	: TMapBase<TKey, TValue>(mapPtr, mapProp, keyMarshaller, valueMarshaller), IReadOnlyDictionary<TKey, TValue>
 	where TKey : notnull
 {
 	public bool TryGetValue(TKey key, out TValue value)
@@ -413,9 +413,9 @@ public class MapReadOnly<TKey, TValue>(IntPtr mapPtr, IntPtr mapProp, IMarshalle
 /// <summary>
 /// Wrapper for TMap.
 /// </summary>
-/// <inheritdoc cref="MapBase{TKey,TValue}"/>
-public unsafe class Map<TKey, TValue>(IntPtr mapPtr, IntPtr mapProp, IMarshaller<TKey> keyMarshaller, IMarshaller<TValue> valueMarshaller)
-	: MapBase<TKey, TValue>(mapPtr, mapProp, keyMarshaller, valueMarshaller), IDictionary<TKey, TValue>
+/// <inheritdoc cref="TMapBase{TKey,TValue}"/>
+public unsafe class TMap<TKey, TValue>(IntPtr mapPtr, IntPtr mapProp, IMarshaller<TKey> keyMarshaller, IMarshaller<TValue> valueMarshaller)
+	: TMapBase<TKey, TValue>(mapPtr, mapProp, keyMarshaller, valueMarshaller), IDictionary<TKey, TValue>
 	where TKey : notnull
 {
 	public void Add(KeyValuePair<TKey, TValue> item)
@@ -522,7 +522,7 @@ public unsafe class Map<TKey, TValue>(IntPtr mapPtr, IntPtr mapProp, IMarshaller
 			return;
 		}
 
-		if (other is MapBase<TKey, TValue> otherMap)
+		if (other is TMapBase<TKey, TValue> otherMap)
 		{
 			if (MapPtr != otherMap.MapPtr)
 			{

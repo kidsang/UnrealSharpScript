@@ -4,7 +4,7 @@ using UnrealEngine.Intrinsic;
 
 namespace UnrealEngine.CoreUObject;
 
-public partial class Class
+public partial class UClass
 {
 	/// <summary>
 	/// Gets the class flags.
@@ -21,7 +21,7 @@ public partial class Class
 	/// <summary>
 	/// Returns parent class, the parent of a Class is always another class
 	/// </summary>
-	public Class? GetSuperClass()
+	public UClass? GetSuperClass()
 	{
 		ThrowIfNotValid();
 		unsafe
@@ -32,14 +32,14 @@ public partial class Class
 				return null;
 			}
 
-			return GCHandle.FromIntPtr(handlePtr).Target as Class;
+			return GCHandle.FromIntPtr(handlePtr).Target as UClass;
 		}
 	}
 
 	/// <summary>
 	/// Returns true if this struct either is SomeBase, or is a child of SomeBase.
 	/// </summary>
-	public bool IsChildOf(Class other)
+	public bool IsChildOf(UClass other)
 	{
 		if (!other.IsValid())
 		{
@@ -57,7 +57,7 @@ public partial class Class
 	/// <summary>
 	/// This will return whether or not this class implements the passed in class / interface
 	/// </summary>
-	public bool ImplementsInterface<T>(SubclassOf<T> someInterface) where T : Interface
+	public bool ImplementsInterface<T>(TSubclassOf<T> someInterface) where T : UInterface
 	{
 		if (!someInterface.IsValid())
 		{
@@ -77,7 +77,7 @@ public partial class Class
 	/// </summary>
 	/// <param name="bCreateIfNeeded">if true (default) then the CDO is created if it is null</param>
 	/// <returns>the CDO for this class</returns>
-	public Object? GetDefaultObject(bool bCreateIfNeeded = true)
+	public UObject? GetDefaultObject(bool bCreateIfNeeded = true)
 	{
 		ThrowIfNotValid();
 		unsafe
@@ -89,7 +89,7 @@ public partial class Class
 				return null;
 			}
 
-			return GCHandle.FromIntPtr(handlePtr).Target as Object;
+			return GCHandle.FromIntPtr(handlePtr).Target as UObject;
 		}
 	}
 }

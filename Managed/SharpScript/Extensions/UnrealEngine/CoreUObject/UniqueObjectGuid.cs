@@ -8,12 +8,12 @@ namespace UnrealEngine.CoreUObject;
 /// The actual GUID is stored in an object annotation that is updated when a new reference is made.
 /// </summary>
 [StructLayout(LayoutKind.Sequential)]
-public struct UniqueObjectGuid(Guid guid) : IEquatable<UniqueObjectGuid>, IComparable<UniqueObjectGuid>
+public struct FUniqueObjectGuid(FGuid guid) : IEquatable<FUniqueObjectGuid>, IComparable<FUniqueObjectGuid>
 {
 	/// <summary>
 	/// Guid representing the object, should be unique
 	/// </summary>
-	internal Guid Guid = guid;
+	internal FGuid Guid = guid;
 
 	/// <summary>
 	/// Reset the guid pointer back to the invalid state
@@ -34,7 +34,7 @@ public struct UniqueObjectGuid(Guid guid) : IEquatable<UniqueObjectGuid>, ICompa
 	/// <summary>
 	/// Returns wrapped Guid
 	/// </summary>
-	public Guid GetGuid()
+	public FGuid GetGuid()
 	{
 		return Guid;
 	}
@@ -43,7 +43,7 @@ public struct UniqueObjectGuid(Guid guid) : IEquatable<UniqueObjectGuid>, ICompa
 	/// Attempts to find a currently loaded object that matches this object ID
 	/// </summary>
 	/// <returns>Found UObject, or nullptr if not currently loaded</returns>
-	public unsafe Object? ResolveObject()
+	public unsafe UObject? ResolveObject()
 	{
 		IntPtr managedHandlePtr = UniqueObjectGuidInterop.ResolveObject(this);
 		if (managedHandlePtr == IntPtr.Zero)
@@ -52,17 +52,17 @@ public struct UniqueObjectGuid(Guid guid) : IEquatable<UniqueObjectGuid>, ICompa
 		}
 
 		GCHandle managedHandle = GCHandle.FromIntPtr(managedHandlePtr);
-		return managedHandle.Target as Object;
+		return managedHandle.Target as UObject;
 	}
 
-	public bool Equals(UniqueObjectGuid other)
+	public bool Equals(FUniqueObjectGuid other)
 	{
 		return Guid == other.Guid;
 	}
 
 	public override bool Equals(object? obj)
 	{
-		return obj is UniqueObjectGuid other && Equals(other);
+		return obj is FUniqueObjectGuid other && Equals(other);
 	}
 
 	public override int GetHashCode()
@@ -70,17 +70,17 @@ public struct UniqueObjectGuid(Guid guid) : IEquatable<UniqueObjectGuid>, ICompa
 		return Guid.GetHashCode();
 	}
 
-	public int CompareTo(UniqueObjectGuid other)
+	public int CompareTo(FUniqueObjectGuid other)
 	{
 		return Guid.CompareTo(other.Guid);
 	}
 
-	public static bool operator ==(UniqueObjectGuid lhs, UniqueObjectGuid rhs)
+	public static bool operator ==(FUniqueObjectGuid lhs, FUniqueObjectGuid rhs)
 	{
 		return lhs.Equals(rhs);
 	}
 
-	public static bool operator !=(UniqueObjectGuid lhs, UniqueObjectGuid rhs)
+	public static bool operator !=(FUniqueObjectGuid lhs, FUniqueObjectGuid rhs)
 	{
 		return !(lhs == rhs);
 	}

@@ -22,7 +22,7 @@ public ref struct PropertyIterator(IntPtr nativeType)
 	/// If not found by the end of the property list, it will start searching from the beginning until it returns to the starting position.
 	/// Calling this function in the order of property definition can find all properties on the property list with linear complexity.
 	/// </remarks>
-	public IntPtr FindNext(Name propName)
+	public IntPtr FindNext(FName propName)
 	{
 		if (_currProp == IntPtr.Zero)
 		{
@@ -59,7 +59,7 @@ public ref struct PropertyIterator(IntPtr nativeType)
 	/// <param name="propName">The property name to search for</param>
 	/// <returns>Returns the property offset.</returns>
 	/// <seealso cref="FindNext"/>
-	public int FindNextAndGetOffset(Name propName)
+	public int FindNextAndGetOffset(FName propName)
 	{
 		IntPtr nativeProp = FindNext(propName);
 		return TypeInterop.GetPropertyOffset(nativeProp);

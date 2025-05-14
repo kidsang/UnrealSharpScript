@@ -18,10 +18,10 @@ public class BindingMapTest : IUnitTestInterface
 		IntPtr testStructTwoNativePtr = 0;
 		try
 		{
-			testStructOneNativePtr = TypeInterop.CreateStructInstance(SsBindingMapTestStructNativeRef.NativeType);
-			SsBindingMapTestStructNativeRef testStructOneNativeRef = new SsBindingMapTestStructNativeRef(testStructOneNativePtr);
-			testStructTwoNativePtr = TypeInterop.CreateStructInstance(SsBindingMapTestStructNativeRef.NativeType);
-			SsBindingMapTestStructNativeRef testStructTwoNativeRef = new SsBindingMapTestStructNativeRef(testStructTwoNativePtr);
+			testStructOneNativePtr = TypeInterop.CreateStructInstance(FSsBindingMapTestStructNativeRef.NativeType);
+			FSsBindingMapTestStructNativeRef testStructOneNativeRef = new FSsBindingMapTestStructNativeRef(testStructOneNativePtr);
+			testStructTwoNativePtr = TypeInterop.CreateStructInstance(FSsBindingMapTestStructNativeRef.NativeType);
+			FSsBindingMapTestStructNativeRef testStructTwoNativeRef = new FSsBindingMapTestStructNativeRef(testStructTwoNativePtr);
 
 			MapTest.StringTextMapTest(testStructOneNativeRef.StringTextMap, testStructTwoNativeRef.StringTextMap);
 			MapTest.IntBoolMapTest(testStructOneNativeRef.IntBoolMap, testStructTwoNativeRef.IntBoolMap);
@@ -40,19 +40,19 @@ public class BindingMapTest : IUnitTestInterface
 		{
 			if (testStructOneNativePtr != 0)
 			{
-				TypeInterop.DestroyStructInstance(SsBindingMapTestStructNativeRef.NativeType, ref testStructOneNativePtr);
+				TypeInterop.DestroyStructInstance(FSsBindingMapTestStructNativeRef.NativeType, ref testStructOneNativePtr);
 			}
 
 			if (testStructTwoNativePtr != 0)
 			{
-				TypeInterop.DestroyStructInstance(SsBindingMapTestStructNativeRef.NativeType, ref testStructTwoNativePtr);
+				TypeInterop.DestroyStructInstance(FSsBindingMapTestStructNativeRef.NativeType, ref testStructTwoNativePtr);
 			}
 		}
 
 		return true;
 	}
 
-	public static void EnumMapTest(Map<ESsBindingTestEnum, ESsBindingTestEnum> EnumMapOne, Map<ESsBindingTestEnum, ESsBindingTestEnum> EnumMapTwo)
+	public static void EnumMapTest(TMap<ESsBindingTestEnum, ESsBindingTestEnum> EnumMapOne, TMap<ESsBindingTestEnum, ESsBindingTestEnum> EnumMapTwo)
 	{
 		// ------------------------------------------
 		// Test enum dictionary - Add
@@ -89,7 +89,7 @@ public class BindingMapTest : IUnitTestInterface
 		Utils.Assert(DictEquals(EnumMapOne, new()));
 	}
 
-	public static void LongEnumMapTest(Map<ESsBindingTestLongEnum, ESsBindingTestLongEnum> LongEnumMapOne, Map<ESsBindingTestLongEnum, ESsBindingTestLongEnum> LongEnumMapTwo)
+	public static void LongEnumMapTest(TMap<ESsBindingTestLongEnum, ESsBindingTestLongEnum> LongEnumMapOne, TMap<ESsBindingTestLongEnum, ESsBindingTestLongEnum> LongEnumMapTwo)
 	{
 		// ------------------------------------------
 		// Test enum dictionary - Add
@@ -126,19 +126,19 @@ public class BindingMapTest : IUnitTestInterface
 		Utils.Assert(DictEquals(LongEnumMapOne, new()));
 	}
 
-	private static void IntStructMapTest(Map<int, SsBindingMapTestInnerStruct, SsBindingMapTestInnerStructNativeRef> IntStructMapOne, Map<int, SsBindingMapTestInnerStruct, SsBindingMapTestInnerStructNativeRef> IntStructMapTwo)
+	private static void IntStructMapTest(TMap<int, FSsBindingMapTestInnerStruct, FSsBindingMapTestInnerStructNativeRef> IntStructMapOne, TMap<int, FSsBindingMapTestInnerStruct, FSsBindingMapTestInnerStructNativeRef> IntStructMapTwo)
 	{
 		// ------------------------------------------
 		// Test int-struct dictionary
-		SsBindingMapTestInnerStruct innerStructA = new SsBindingMapTestInnerStruct()
+		FSsBindingMapTestInnerStruct innerStructA = new FSsBindingMapTestInnerStruct()
 		{
 			IntIntMap = new() { { 1, 1 } }
 		};
-		SsBindingMapTestInnerStruct innerStructB = new SsBindingMapTestInnerStruct()
+		FSsBindingMapTestInnerStruct innerStructB = new FSsBindingMapTestInnerStruct()
 		{
 			IntIntMap = new() { { 2, 2 } }
 		};
-		SsBindingMapTestInnerStruct innerStructC = new SsBindingMapTestInnerStruct()
+		FSsBindingMapTestInnerStruct innerStructC = new FSsBindingMapTestInnerStruct()
 		{
 			IntIntMap = new() { { 3, 3 } }
 		};
@@ -163,7 +163,7 @@ public class BindingMapTest : IUnitTestInterface
 		Utils.Assert(DictEquals(IntStructMapOne, new() { { 1, innerStructA }, { 2, innerStructB }, { 3, innerStructC } }));
 
 		// Test int-struct dictionary - Binary equality
-		IntStructMapTwo.CopyFrom(new Dictionary<int, SsBindingMapTestInnerStruct> { { 1, innerStructA }, { 2, innerStructB } });
+		IntStructMapTwo.CopyFrom(new Dictionary<int, FSsBindingMapTestInnerStruct> { { 1, innerStructA }, { 2, innerStructB } });
 		Utils.Assert(DictEquals(IntStructMapTwo, new() { { 1, innerStructA }, { 2, innerStructB } }));
 		IntStructMapTwo.Clear();
 		Utils.Assert(DictEquals(IntStructMapTwo, []));
@@ -187,13 +187,13 @@ public class BindingMapTest : IUnitTestInterface
 		Utils.Assert(DictEquals(IntStructMapOne, new()));
 	}
 
-	public static void BlittableStructMapTest(Map<SsBindingTestBlittableStruct, SsBindingTestBlittableStruct, SsBindingTestBlittableStructNativeRef> BlittableStructMapOne, Map<SsBindingTestBlittableStruct, SsBindingTestBlittableStruct, SsBindingTestBlittableStructNativeRef> BlittableStructMapTwo)
+	public static void BlittableStructMapTest(TMap<FSsBindingTestBlittableStruct, FSsBindingTestBlittableStruct, FSsBindingTestBlittableStructNativeRef> BlittableStructMapOne, TMap<FSsBindingTestBlittableStruct, FSsBindingTestBlittableStruct, FSsBindingTestBlittableStructNativeRef> BlittableStructMapTwo)
 	{
 		// ------------------------------------------
 		// Test blittable struct dictionary
-		SsBindingTestBlittableStruct one = new SsBindingTestBlittableStruct { X = 1, Y = 1 };
-		SsBindingTestBlittableStruct two = new SsBindingTestBlittableStruct { X = 2, Y = 2 };
-		SsBindingTestBlittableStruct three = new SsBindingTestBlittableStruct { X = 3, Y = 3 };
+		FSsBindingTestBlittableStruct one = new FSsBindingTestBlittableStruct { X = 1, Y = 1 };
+		FSsBindingTestBlittableStruct two = new FSsBindingTestBlittableStruct { X = 2, Y = 2 };
+		FSsBindingTestBlittableStruct three = new FSsBindingTestBlittableStruct { X = 3, Y = 3 };
 
 		// Test blittable struct dictionary - Add
 		BlittableStructMapOne.Add(one, one);
@@ -215,7 +215,7 @@ public class BindingMapTest : IUnitTestInterface
 		Utils.Assert(DictEquals(BlittableStructMapOne, new() { { one, one }, { two, two }, { three, three } }));
 
 		// Test blittable struct dictionary - Binary equality
-		BlittableStructMapTwo.CopyFrom(new Dictionary<SsBindingTestBlittableStruct, SsBindingTestBlittableStruct> { { one, one }, { two, two } });
+		BlittableStructMapTwo.CopyFrom(new Dictionary<FSsBindingTestBlittableStruct, FSsBindingTestBlittableStruct> { { one, one }, { two, two } });
 		Utils.Assert(DictEquals(BlittableStructMapTwo, new() { { one, one }, { two, two } }));
 		BlittableStructMapTwo.Clear();
 		Utils.Assert(DictEquals(BlittableStructMapTwo, []));
@@ -229,13 +229,13 @@ public class BindingMapTest : IUnitTestInterface
 		Utils.Assert(DictEquals(BlittableStructMapOne, new()));
 	}
 
-	public static void IntInterfaceMapTest(Map<int, ISsBindingTestChildInterface?> IntInterfaceMapOne, Map<int, ISsBindingTestChildInterface?> IntInterfaceMapTwo)
+	public static void IntInterfaceMapTest(TMap<int, ISsBindingTestChildInterface?> IntInterfaceMapOne, TMap<int, ISsBindingTestChildInterface?> IntInterfaceMapTwo)
 	{
 		// ------------------------------------------
 		// Test int-interface dictionary
-		ISsBindingTestChildInterface objA = NewObject<SsBindingTestObject>();
-		ISsBindingTestChildInterface objB = NewObject<SsBindingTestObject>();
-		ISsBindingTestChildInterface objC = NewObject<SsBindingTestObject>();
+		ISsBindingTestChildInterface objA = NewObject<USsBindingTestObject>();
+		ISsBindingTestChildInterface objB = NewObject<USsBindingTestObject>();
+		ISsBindingTestChildInterface objC = NewObject<USsBindingTestObject>();
 
 		// Test int-interface dictionary - Add
 		IntInterfaceMapOne.Add(1, objA);
@@ -276,11 +276,11 @@ public class BindingMapTest : IUnitTestInterface
 		Utils.Assert(DictEquals(IntInterfaceMapOne, new()));
 	}
 
-	public static void IntDelegateMapTest(DelegateMap<int, FSsBindingTestDelegate, Delegate<FSsBindingTestDelegate>> IntDelegateMapOne, DelegateMap<int, FSsBindingTestDelegate, Delegate<FSsBindingTestDelegate>> IntDelegateMapTwo)
+	public static void IntDelegateMapTest(TDelegateMap<int, FSsBindingTestDelegate, Delegate<FSsBindingTestDelegate>> IntDelegateMapOne, TDelegateMap<int, FSsBindingTestDelegate, Delegate<FSsBindingTestDelegate>> IntDelegateMapTwo)
 	{
 		// ------------------------------------------
 		// Test int-delegate dictionary
-		SsBindingTestObject obj = NewObject<SsBindingTestObject>();
+		USsBindingTestObject obj = NewObject<USsBindingTestObject>();
 		// FSsBindingTestDelegate  delegateA = obj.FuncBlueprintImplementable;
 		// FSsBindingTestDelegate  delegateB = obj.FuncBlueprintNative;
 		FSsBindingTestDelegate delegateA = obj.CallFuncBlueprintImplementable;
@@ -332,16 +332,16 @@ public class BindingMapTest : IUnitTestInterface
 		return a.OrderBy(x => x.Key).SequenceEqual(b.OrderBy(x => x.Key));
 	}
 
-	private static bool DictEquals(Map<int, SsBindingMapTestInnerStruct, SsBindingMapTestInnerStructNativeRef> mapA,
-		Dictionary<int, SsBindingMapTestInnerStruct> mapB)
+	private static bool DictEquals(TMap<int, FSsBindingMapTestInnerStruct, FSsBindingMapTestInnerStructNativeRef> mapA,
+		Dictionary<int, FSsBindingMapTestInnerStruct> mapB)
 	{
 		if (mapA.Count != mapB.Count)
 		{
 			return false;
 		}
 
-		List<KeyValuePair<int, SsBindingMapTestInnerStruct>> listA = [..mapA.OrderBy(x => x.Key)];
-		List<KeyValuePair<int, SsBindingMapTestInnerStruct>> listB = [..mapB.OrderBy(x => x.Key)];
+		List<KeyValuePair<int, FSsBindingMapTestInnerStruct>> listA = [..mapA.OrderBy(x => x.Key)];
+		List<KeyValuePair<int, FSsBindingMapTestInnerStruct>> listB = [..mapB.OrderBy(x => x.Key)];
 		for (int i = 0; i < listA.Count; ++i)
 		{
 			var pairA = listA[i];
@@ -361,8 +361,8 @@ public class BindingMapTest : IUnitTestInterface
 		return true;
 	}
 
-	private static bool DictEquals(Map<SsBindingTestBlittableStruct, SsBindingTestBlittableStruct, SsBindingTestBlittableStructNativeRef> mapA,
-		Dictionary<SsBindingTestBlittableStruct, SsBindingTestBlittableStruct> mapB)
+	private static bool DictEquals(TMap<FSsBindingTestBlittableStruct, FSsBindingTestBlittableStruct, FSsBindingTestBlittableStructNativeRef> mapA,
+		Dictionary<FSsBindingTestBlittableStruct, FSsBindingTestBlittableStruct> mapB)
 	{
 		if (mapA.Count != mapB.Count)
 		{
@@ -371,7 +371,7 @@ public class BindingMapTest : IUnitTestInterface
 
 		foreach (var pairA in mapA)
 		{
-			if (!mapB.TryGetValue(pairA.Key, out SsBindingTestBlittableStruct valueB))
+			if (!mapB.TryGetValue(pairA.Key, out FSsBindingTestBlittableStruct valueB))
 			{
 				return false;
 			}

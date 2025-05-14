@@ -41,7 +41,7 @@ public struct NativeString
 /// <param name="arrayProp">FArrayProperty pointer</param>
 /// <param name="itemMarshaller">Container internal element wrapper</param>
 /// <typeparam name="T">Array element type</typeparam>
-public abstract unsafe class ArrayBase<T>(IntPtr nativeBuffer, IntPtr arrayProp, IMarshaller<T> itemMarshaller) : IEnumerable<T>
+public abstract unsafe class TArrayBase<T>(IntPtr nativeBuffer, IntPtr arrayProp, IMarshaller<T> itemMarshaller) : IEnumerable<T>
 {
 	/// <summary>
 	/// C++ array pointer.
@@ -110,7 +110,7 @@ public abstract unsafe class ArrayBase<T>(IntPtr nativeBuffer, IntPtr arrayProp,
 
 	public bool SequenceEqual(IEnumerable<T> other)
 	{
-		if (other is ArrayBase<T> otherArray)
+		if (other is TArrayBase<T> otherArray)
 		{
 			if (NativeBuffer == otherArray.NativeBuffer)
 			{
@@ -132,9 +132,9 @@ public abstract unsafe class ArrayBase<T>(IntPtr nativeBuffer, IntPtr arrayProp,
 	}
 
 	/// <summary>
-	/// Implicit converter from <see cref="ArrayBase{T}"/> to <see cref="List{T}"/>
+	/// Implicit converter from <see cref="TArrayBase{T}"/> to <see cref="List{T}"/>
 	/// </summary>
-	public static implicit operator List<T>(ArrayBase<T> array)
+	public static implicit operator List<T>(TArrayBase<T> array)
 	{
 		return array.ToList();
 	}
@@ -142,7 +142,7 @@ public abstract unsafe class ArrayBase<T>(IntPtr nativeBuffer, IntPtr arrayProp,
 	/// <summary>
 	/// Array iterator.
 	/// </summary>
-	public struct Enumerator(ArrayBase<T> array) : IEnumerator<T>
+	public struct Enumerator(TArrayBase<T> array) : IEnumerator<T>
 	{
 		private int _index = -1;
 
@@ -180,9 +180,9 @@ public abstract unsafe class ArrayBase<T>(IntPtr nativeBuffer, IntPtr arrayProp,
 /// <summary>
 /// Read-only wrapper for TArray.
 /// </summary>
-/// <inheritdoc cref="ArrayBase{T}"/>
-public class ArrayReadOnly<T>(IntPtr nativeBuffer, IntPtr arrayProp, IMarshaller<T> itemMarshaller)
-	: ArrayBase<T>(nativeBuffer, arrayProp, itemMarshaller), IReadOnlyList<T>
+/// <inheritdoc cref="TArrayBase{T}"/>
+public class TArrayReadOnly<T>(IntPtr nativeBuffer, IntPtr arrayProp, IMarshaller<T> itemMarshaller)
+	: TArrayBase<T>(nativeBuffer, arrayProp, itemMarshaller), IReadOnlyList<T>
 {
 	public T this[int index] => Get(index);
 }
@@ -190,9 +190,9 @@ public class ArrayReadOnly<T>(IntPtr nativeBuffer, IntPtr arrayProp, IMarshaller
 /// <summary>
 /// Wrapper for TArray.
 /// </summary>
-/// <inheritdoc cref="ArrayBase{T}"/>
-public unsafe class Array<T>(IntPtr nativeBuffer, IntPtr arrayProp, IMarshaller<T> itemMarshaller)
-	: ArrayBase<T>(nativeBuffer, arrayProp, itemMarshaller), IList<T>
+/// <inheritdoc cref="TArrayBase{T}"/>
+public unsafe class TArray<T>(IntPtr nativeBuffer, IntPtr arrayProp, IMarshaller<T> itemMarshaller)
+	: TArrayBase<T>(nativeBuffer, arrayProp, itemMarshaller), IList<T>
 {
 	public bool IsReadOnly => false;
 
@@ -270,7 +270,7 @@ public unsafe class Array<T>(IntPtr nativeBuffer, IntPtr arrayProp, IMarshaller<
 			return;
 		}
 
-		if (other is ArrayBase<T> otherArray)
+		if (other is TArrayBase<T> otherArray)
 		{
 			if (!SequenceEqual(otherArray))
 			{

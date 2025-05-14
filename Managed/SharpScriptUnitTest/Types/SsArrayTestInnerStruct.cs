@@ -4,8 +4,8 @@ using UnrealEngine.Intrinsic;
 
 namespace SharpScriptUnitTest.Types;
 
-public class SsArrayTestInnerStructNativeRef(IntPtr nativePtr)
-	: IStructNativeRef<SsArrayTestInnerStruct>
+public class FSsArrayTestInnerStructNativeRef(IntPtr nativePtr)
+	: IStructNativeRef<FSsArrayTestInnerStruct>
 {
 	// ReSharper disable InconsistentNaming
 	public static readonly IntPtr NativeType;
@@ -14,7 +14,7 @@ public class SsArrayTestInnerStructNativeRef(IntPtr nativePtr)
 	internal static readonly int IntArray_Offset;
 	// ReSharper restore InconsistentNaming
 
-	static SsArrayTestInnerStructNativeRef()
+	static FSsArrayTestInnerStructNativeRef()
 	{
 		NativeType = TypeInterop.FindStruct("SsArrayTestInnerStruct");
 		NativeDataSize = TypeInterop.GetStructureSize(NativeType);
@@ -24,25 +24,25 @@ public class SsArrayTestInnerStructNativeRef(IntPtr nativePtr)
 		IntArray_Offset = TypeInterop.GetPropertyOffset(IntArray_NativeProp);
 	}
 
-	private Array<int>? _intArray;
-	public Array<int> IntArray => _intArray ??= new(nativePtr + IntArray_Offset, IntArray_NativeProp, BlittableMarshaller<int>.Instance);
+	private TArray<int>? _intArray;
+	public TArray<int> IntArray => _intArray ??= new(nativePtr + IntArray_Offset, IntArray_NativeProp, BlittableMarshaller<int>.Instance);
 
-	public SsArrayTestInnerStruct ToManaged()
+	public FSsArrayTestInnerStruct ToManaged()
 	{
-		return new SsArrayTestInnerStruct()
+		return new FSsArrayTestInnerStruct()
 		{
 			IntArray = IntArray,
 		};
 	}
 
-	public void FromManaged(in SsArrayTestInnerStruct value)
+	public void FromManaged(in FSsArrayTestInnerStruct value)
 	{
 		IntArray.CopyFrom(value.IntArray);
 	}
 
-	public static IStructNativeRef<SsArrayTestInnerStruct> CreateInstance(IntPtr valuePtr)
+	public static IStructNativeRef<FSsArrayTestInnerStruct> CreateInstance(IntPtr valuePtr)
 	{
-		return new SsArrayTestInnerStructNativeRef(valuePtr);
+		return new FSsArrayTestInnerStructNativeRef(valuePtr);
 	}
 
 	public static int GetNativeDataSize()
@@ -50,24 +50,24 @@ public class SsArrayTestInnerStructNativeRef(IntPtr nativePtr)
 		return NativeDataSize;
 	}
 
-	public static implicit operator SsArrayTestInnerStruct(SsArrayTestInnerStructNativeRef nativeRef)
+	public static implicit operator FSsArrayTestInnerStruct(FSsArrayTestInnerStructNativeRef nativeRef)
 	{
 		return nativeRef.ToManaged();
 	}
 }
 
-public struct SsArrayTestInnerStruct : IEquatable<SsArrayTestInnerStruct>
+public struct FSsArrayTestInnerStruct : IEquatable<FSsArrayTestInnerStruct>
 {
 	public List<int> IntArray;
 
-	public bool Equals(SsArrayTestInnerStruct other)
+	public bool Equals(FSsArrayTestInnerStruct other)
 	{
 		return IntArray.SequenceEqual(other.IntArray);
 	}
 
 	public override bool Equals(object? obj)
 	{
-		return obj is SsArrayTestInnerStruct other && Equals(other);
+		return obj is FSsArrayTestInnerStruct other && Equals(other);
 	}
 
 	public override int GetHashCode()

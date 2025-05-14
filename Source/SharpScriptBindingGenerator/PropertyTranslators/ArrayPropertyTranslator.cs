@@ -10,9 +10,9 @@ public class ArrayPropertyTranslator : ContainerPropertyTranslator
 		PropertyTranslator valueTranslator = GetValueTranslator(property);
 		return valueTranslator switch
 		{
-			StructPropertyTranslator => $"Array<{valueTranslator.GetParamManagedType(valueProperty)}, {valueTranslator.GetPropManagedType(valueProperty)}>",
-			DelegatePropertyTranslator => $"DelegateArray<{valueTranslator.GetParamManagedType(valueProperty)}, {valueTranslator.GetPropManagedType(valueProperty)}>",
-			_ => $"Array<{valueTranslator.GetPropManagedType(valueProperty)}>"
+			StructPropertyTranslator => $"TArray<{valueTranslator.GetParamManagedType(valueProperty)}, {valueTranslator.GetPropManagedType(valueProperty)}>",
+			DelegatePropertyTranslator => $"TDelegateArray<{valueTranslator.GetParamManagedType(valueProperty)}, {valueTranslator.GetPropManagedType(valueProperty)}>",
+			_ => $"TArray<{valueTranslator.GetPropManagedType(valueProperty)}>"
 		};
 	}
 
@@ -87,7 +87,7 @@ public class ArrayPropertyTranslator : ContainerPropertyTranslator
 			return;
 		}
 
-		string propManagedType = $"Array<{typeArgument}?>";
+		string propManagedType = $"TArray<{typeArgument}?>";
 		string valueMarshaller = $"ObjectMarshaller<{typeArgument}>";
 		string funcEngineName = function.StrippedFunctionName;
 		string paramSourceName = property.SourceName;

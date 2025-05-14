@@ -21,7 +21,7 @@ public class UnsupportedPropertyTranslator : PropertyTranslator
 	{
 		if (property is UhtClassProperty classProperty)
 		{
-			return $"SubclassOf<{classProperty.Class.EngineName}>";
+			return $"TSubclassOf<{classProperty.Class.EngineName}>";
 		}
 
 		if (property is UhtObjectPropertyBase objectProperty)

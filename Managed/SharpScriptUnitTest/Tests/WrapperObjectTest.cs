@@ -2,7 +2,6 @@ using static SharpScriptUnitTest.Tests.MapTest;
 using SharpScriptUnitTest.Types;
 using UnrealEngine.CoreUObject;
 using UnrealEngine.Intrinsic;
-using Object = UnrealEngine.CoreUObject.Object;
 
 namespace SharpScriptUnitTest.Tests;
 
@@ -14,24 +13,24 @@ public class WrapperObjectTest : IUnitTestInterface
 {
 	public bool RunTest()
 	{
-		SsTestObject obj = NewObject<SsTestObject>();
-		SsTestObject objValue = NewObject<SsTestObject>();
-		Class clsValue = SsTestObject.StaticClass!;
+		USsTestObject obj = NewObject<USsTestObject>();
+		USsTestObject objValue = NewObject<USsTestObject>();
+		UClass clsValue = USsTestObject.StaticClass!;
 
-		// Test Object base properties
+		// Test UObject base properties
 		Utils.Assert(obj.GetName() == obj.ToString());
-		Utils.Assert(obj.GetClass() == SsTestObject.StaticClass.Class);
+		Utils.Assert(obj.GetClass() == USsTestObject.StaticClass.Class);
 
 		// Test type information
-		Utils.Assert(obj.GetClass().IsChildOf(Object.StaticClass!));
-		Utils.Assert(obj.GetClass().GetSuperClass() == Object.StaticClass.Class);
+		Utils.Assert(obj.GetClass().IsChildOf(UObject.StaticClass!));
+		Utils.Assert(obj.GetClass().GetSuperClass() == UObject.StaticClass.Class);
 		Utils.Assert(obj.GetClass().GetSuperClass()!.GetSuperClass() == null);
 
 		// Test package properties
-		Package package = obj.GetPackage();
+		UPackage package = obj.GetPackage();
 		Utils.Assert(obj.GetOuter() == package);
 		Utils.Assert(package.GetName() == "/Engine/Transient");
-		Utils.Assert(package.GetPackageName() == Name.None);
+		Utils.Assert(package.GetPackageName() == FName.None);
 
 		// Test member default values
 		Utils.Assert(!obj.Bool);
@@ -42,7 +41,7 @@ public class WrapperObjectTest : IUnitTestInterface
 		Utils.Assert(obj.Enum == 0);
 		Utils.Assert(obj.LongEnum == 0);
 		Utils.Assert(obj.String == string.Empty);
-		Utils.Assert(obj.Name == Name.None);
+		Utils.Assert(obj.Name == FName.None);
 		Utils.Assert(obj.Text == string.Empty);
 		Utils.Assert(obj.FieldPath.Path == string.Empty);
 		Utils.Assert(obj.StructFieldPath.Path == string.Empty);
@@ -81,11 +80,11 @@ public class WrapperObjectTest : IUnitTestInterface
 		Utils.Assert(obj.String == "String");
 		obj.Name = "Name";
 		Utils.Assert(obj.Name == "Name");
-		obj.Text = new Text("Text");
+		obj.Text = new FText("Text");
 		Utils.Assert(obj.Text == "Text");
-		obj.FieldPath = new FieldPath("/Script/SharpScriptUnitTest.SsTestStruct:StringArray");
+		obj.FieldPath = new FFieldPath("/Script/SharpScriptUnitTest.SsTestStruct:StringArray");
 		Utils.Assert(obj.FieldPath.Path == "/Script/SharpScriptUnitTest.SsTestStruct:StringArray");
-		obj.StructFieldPath = new FieldPath("/Script/SharpScriptUnitTest.SsTestObject:Struct");
+		obj.StructFieldPath = new FFieldPath("/Script/SharpScriptUnitTest.SsTestObject:Struct");
 		Utils.Assert(obj.StructFieldPath.Path == "/Script/SharpScriptUnitTest.SsTestObject:Struct");
 		obj.StringArray.CopyFrom(["String", "Array"]);
 		Utils.Assert(obj.StringArray.SequenceEqual(["String", "Array"]));
@@ -116,7 +115,7 @@ public class WrapperObjectTest : IUnitTestInterface
 		Utils.Assert(obj.LazyObjectPtr == null);
 		obj.Class = clsValue;
 		Utils.Assert(obj.Class == clsValue);
-		obj.Class = null as Class;
+		obj.Class = null;
 		Utils.Assert(obj.Class == null);
 		obj.ClassPtr = clsValue;
 		Utils.Assert(obj.ClassPtr == clsValue);
@@ -138,7 +137,7 @@ public class WrapperObjectTest : IUnitTestInterface
 		Utils.Assert(obj.Struct.Enum == 0);
 		Utils.Assert(obj.Struct.LongEnum == 0);
 		Utils.Assert(obj.Struct.String == string.Empty);
-		Utils.Assert(obj.Struct.Name == Name.None);
+		Utils.Assert(obj.Struct.Name == FName.None);
 		Utils.Assert(obj.Struct.Text == string.Empty);
 		Utils.Assert(obj.Struct.StringArray.SequenceEqual([]));
 		Utils.Assert(obj.Struct.StringSet.SequenceEqual([]));
@@ -169,7 +168,7 @@ public class WrapperObjectTest : IUnitTestInterface
 		Utils.Assert(obj.Struct.String == "String");
 		obj.Struct.Name = "Name";
 		Utils.Assert(obj.Struct.Name == "Name");
-		obj.Struct.Text = new Text("Text");
+		obj.Struct.Text = new FText("Text");
 		Utils.Assert(obj.Struct.Text == "Text");
 		obj.Struct.StringArray.CopyFrom(["String", "Array"]);
 		Utils.Assert(obj.Struct.StringArray.SequenceEqual(["String", "Array"]));
@@ -199,7 +198,7 @@ public class WrapperObjectTest : IUnitTestInterface
 		Utils.Assert(obj.Struct.LazyObjectPtr == null);
 		obj.Struct.Class = clsValue;
 		Utils.Assert(obj.Struct.Class == clsValue);
-		obj.Struct.Class = null as Class;
+		obj.Struct.Class = null;
 		Utils.Assert(obj.Struct.Class == null);
 		obj.Struct.ClassPtr = clsValue;
 		Utils.Assert(obj.Struct.ClassPtr == clsValue);
@@ -224,7 +223,7 @@ public class WrapperObjectTest : IUnitTestInterface
 		Utils.Assert(obj.StructArray[0].Enum == 0);
 		Utils.Assert(obj.StructArray[0].LongEnum == 0);
 		Utils.Assert(obj.StructArray[0].String == string.Empty);
-		Utils.Assert(obj.StructArray[0].Name == Name.None);
+		Utils.Assert(obj.StructArray[0].Name == FName.None);
 		Utils.Assert(obj.StructArray[0].Text == string.Empty);
 		Utils.Assert(obj.StructArray[0].StringArray.SequenceEqual([]));
 		Utils.Assert(obj.StructArray[0].StringSet.SequenceEqual([]));
@@ -246,7 +245,7 @@ public class WrapperObjectTest : IUnitTestInterface
 		Utils.Assert(obj.BlittableStruct.X == 10);
 		obj.BlittableStruct.Y = 20;
 		Utils.Assert(obj.BlittableStruct.Y == 20);
-		obj.BlittableStruct = new SsTestBlittableStruct { X = 30, Y = 30 };
+		obj.BlittableStruct = new FSsTestBlittableStruct { X = 30, Y = 30 };
 		Utils.Assert(obj.BlittableStruct.X == 30);
 		Utils.Assert(obj.BlittableStruct.Y == 30);
 
@@ -266,7 +265,7 @@ public class WrapperObjectTest : IUnitTestInterface
 		Utils.Assert(obj.StructArray[0].String == "String");
 		obj.StructArray[0].Name = "Name";
 		Utils.Assert(obj.StructArray[0].Name == "Name");
-		obj.StructArray[0].Text = new Text("Text");
+		obj.StructArray[0].Text = new FText("Text");
 		Utils.Assert(obj.StructArray[0].Text == "Text");
 		obj.StructArray[0].StringArray.CopyFrom(["String", "Array"]);
 		Utils.Assert(obj.StructArray[0].StringArray.SequenceEqual(["String", "Array"]));
@@ -296,7 +295,7 @@ public class WrapperObjectTest : IUnitTestInterface
 		Utils.Assert(obj.StructArray[0].LazyObjectPtr == null);
 		obj.StructArray[0].Class = clsValue;
 		Utils.Assert(obj.StructArray[0].Class == clsValue);
-		obj.StructArray[0].Class = null as Class;
+		obj.StructArray[0].Class = null;
 		Utils.Assert(obj.StructArray[0].Class == null);
 		obj.StructArray[0].ClassPtr = clsValue;
 		Utils.Assert(obj.StructArray[0].ClassPtr == clsValue);
@@ -312,7 +311,7 @@ public class WrapperObjectTest : IUnitTestInterface
 		Utils.Assert(obj.StructArray[0].Interface == null);
 
 		// Test function calls
-		SsTestStruct testStruct = new SsTestStruct
+		FSsTestStruct testStruct = new FSsTestStruct
 		{
 			Int = 10,
 			String = "test"
@@ -328,7 +327,7 @@ public class WrapperObjectTest : IUnitTestInterface
 		Utils.Assert(testStruct.Int == 10);
 		Utils.Assert(testStruct.String == "test");
 		Utils.Assert(obj.FuncTakingSsTestDelegate(obj.CallFuncBlueprintNative, 2) == 2);
-		obj.FuncTakingFieldPath(new FieldPath("/Script/SharpScriptUnitTest.SsTestStruct:Int"));
+		obj.FuncTakingFieldPath(new FFieldPath("/Script/SharpScriptUnitTest.SsTestStruct:Int"));
 		Utils.Assert(obj.FieldPath.Path == "/Script/SharpScriptUnitTest.SsTestStruct:Int");
 		Utils.Assert(obj.FuncInterface(123) == 123);
 		Utils.Assert(obj.FuncInterfaceChild(123) == 123);
@@ -347,7 +346,7 @@ public class WrapperObjectTest : IUnitTestInterface
 		Utils.Assert(dict.ContainsKey(10));
 		Utils.Assert(dict[10]);
 
-		FieldPath fieldPath = obj.ReturnFieldPath();
+		FFieldPath fieldPath = obj.ReturnFieldPath();
 		Utils.Assert(fieldPath.Path == "/Script/SharpScriptUnitTest.SsTestObject:FieldPath");
 
 		obj.SetInt(42);

@@ -30,12 +30,12 @@ public class SoftClassPropertyTranslator : SimpleTypePropertyTranslator
 
 	public override string GetPropManagedType(UhtProperty property)
 	{
-		return $"SoftClassPtr<{GetManagedType(property)}>";
+		return $"TSoftClassPtr<{GetManagedType(property)}>";
 	}
 
 	public override string GetParamManagedType(UhtProperty property)
 	{
-		return $"SoftClassPtr<{GetManagedType(property)}>";
+		return $"TSoftClassPtr<{GetManagedType(property)}>";
 	}
 
 	public override string GetMarshaller(UhtProperty property)

@@ -6,7 +6,7 @@ namespace UnrealEngine.Intrinsic;
 /// <summary>
 /// Base class for all UObjects bound to C#.
 /// </summary>
-public unsafe class ObjectBase : IComparable<ObjectBase>
+public unsafe class UObjectBase : IComparable<UObjectBase>
 {
 	/// <summary>
 	/// Underlying UObject
@@ -69,7 +69,7 @@ public unsafe class ObjectBase : IComparable<ObjectBase>
 		}
 	}
 
-	public int CompareTo(ObjectBase? other)
+	public int CompareTo(UObjectBase? other)
 	{
 		IntPtr otherPtr = other?.NativeObject ?? IntPtr.Zero;
 		return NativeObject.CompareTo(otherPtr);

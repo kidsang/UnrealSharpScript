@@ -13,7 +13,7 @@ namespace UnrealEngine.Intrinsic;
 /// <typeparam name="TKey">Dictionary key type</typeparam>
 /// <typeparam name="TValue">Dictionary value type</typeparam>
 /// <typeparam name="TValueRef">Dictionary value reference type</typeparam>
-public abstract unsafe class MapBase<TKey, TValue, TValueRef>(IntPtr mapPtr, IntPtr mapProp, IMarshaller<TKey> keyMarshaller)
+public abstract unsafe class TMapBase<TKey, TValue, TValueRef>(IntPtr mapPtr, IntPtr mapProp, IMarshaller<TKey> keyMarshaller)
 	: IEnumerable<KeyValuePair<TKey, TValue>>
 	where TKey : notnull where TValueRef : IStructNativeRef<TValue> where TValue : struct
 {
@@ -175,14 +175,14 @@ public abstract unsafe class MapBase<TKey, TValue, TValueRef>(IntPtr mapPtr, Int
 	}
 
 	/// <summary>
-	/// Implicit converter from <see cref="MapBase{TKey,TValue,TValueRef}"/> to <see cref="Dictionary{TKey,TValue}"/>
+	/// Implicit converter from <see cref="TMapBase{TKey,TValue,TValueRef}"/> to <see cref="Dictionary{TKey,TValue}"/>
 	/// </summary>
-	public static implicit operator Dictionary<TKey, TValue>(MapBase<TKey, TValue, TValueRef> map)
+	public static implicit operator Dictionary<TKey, TValue>(TMapBase<TKey, TValue, TValueRef> map)
 	{
 		return map.ToDictionary();
 	}
 
-	public struct Enumerator(MapBase<TKey, TValue, TValueRef> map) : IEnumerator<KeyValuePair<TKey, TValue>>
+	public struct Enumerator(TMapBase<TKey, TValue, TValueRef> map) : IEnumerator<KeyValuePair<TKey, TValue>>
 	{
 		private int _index = -1;
 
@@ -227,9 +227,9 @@ public abstract unsafe class MapBase<TKey, TValue, TValueRef>(IntPtr mapPtr, Int
 		return GetEnumerator();
 	}
 
-	public readonly struct KeyCollection(MapBase<TKey, TValue, TValueRef> map) : ICollection<TKey>
+	public readonly struct KeyCollection(TMapBase<TKey, TValue, TValueRef> map) : ICollection<TKey>
 	{
-		public struct KeyEnumerator(MapBase<TKey, TValue, TValueRef> map) : IEnumerator<TKey>
+		public struct KeyEnumerator(TMapBase<TKey, TValue, TValueRef> map) : IEnumerator<TKey>
 		{
 			private int _index = -1;
 
@@ -305,9 +305,9 @@ public abstract unsafe class MapBase<TKey, TValue, TValueRef>(IntPtr mapPtr, Int
 		public bool IsReadOnly => true;
 	}
 
-	public readonly struct ValueCollection(MapBase<TKey, TValue, TValueRef> map) : ICollection<TValue>
+	public readonly struct ValueCollection(TMapBase<TKey, TValue, TValueRef> map) : ICollection<TValue>
 	{
-		public struct ValueEnumerator(MapBase<TKey, TValue, TValueRef> map) : IEnumerator<TValue>
+		public struct ValueEnumerator(TMapBase<TKey, TValue, TValueRef> map) : IEnumerator<TValue>
 		{
 			private int _index = -1;
 
@@ -387,9 +387,9 @@ public abstract unsafe class MapBase<TKey, TValue, TValueRef>(IntPtr mapPtr, Int
 /// <summary>
 /// Read-only wrapper for TMap.
 /// </summary>
-/// <inheritdoc cref="MapBase{TKey,TValue,TValueRef}"/>
-public class MapReadOnly<TKey, TValue, TValueRef>(IntPtr mapPtr, IntPtr mapProp, IMarshaller<TKey> keyMarshaller)
-	: MapBase<TKey, TValue, TValueRef>(mapPtr, mapProp, keyMarshaller)
+/// <inheritdoc cref="TMapBase{TKey,TValue,TValueRef}"/>
+public class TMapReadOnly<TKey, TValue, TValueRef>(IntPtr mapPtr, IntPtr mapProp, IMarshaller<TKey> keyMarshaller)
+	: TMapBase<TKey, TValue, TValueRef>(mapPtr, mapProp, keyMarshaller)
 	where TKey : notnull where TValueRef : IStructNativeRef<TValue> where TValue : struct
 {
 	public bool TryGetValue(TKey key, out TValueRef value)
@@ -415,9 +415,9 @@ public class MapReadOnly<TKey, TValue, TValueRef>(IntPtr mapPtr, IntPtr mapProp,
 /// <summary>
 /// Wrapper for TMap.
 /// </summary>
-/// <inheritdoc cref="MapBase{TKey,TValue,TValueRef}"/>
-public unsafe class Map<TKey, TValue, TValueRef>(IntPtr mapPtr, IntPtr mapProp, IMarshaller<TKey> keyMarshaller)
-	: MapBase<TKey, TValue, TValueRef>(mapPtr, mapProp, keyMarshaller)
+/// <inheritdoc cref="TMapBase{TKey,TValue,TValueRef}"/>
+public unsafe class TMap<TKey, TValue, TValueRef>(IntPtr mapPtr, IntPtr mapProp, IMarshaller<TKey> keyMarshaller)
+	: TMapBase<TKey, TValue, TValueRef>(mapPtr, mapProp, keyMarshaller)
 	where TKey : notnull where TValueRef : IStructNativeRef<TValue> where TValue : struct
 {
 	public void Add(KeyValuePair<TKey, TValue> item)
@@ -520,7 +520,7 @@ public unsafe class Map<TKey, TValue, TValueRef>(IntPtr mapPtr, IntPtr mapProp, 
 			return;
 		}
 
-		if (other is MapBase<TKey, TValue, TValueRef> otherMap)
+		if (other is TMapBase<TKey, TValue, TValueRef> otherMap)
 		{
 			if (MapPtr != otherMap.MapPtr)
 			{

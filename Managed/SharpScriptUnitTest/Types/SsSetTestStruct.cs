@@ -4,8 +4,8 @@ using UnrealEngine.Intrinsic;
 
 namespace SharpScriptUnitTest.Types;
 
-public class SsSetTestStructNativeRef(IntPtr nativePtr)
-	: IStructNativeRef<SsSetTestStruct>
+public class FSsSetTestStructNativeRef(IntPtr nativePtr)
+	: IStructNativeRef<FSsSetTestStruct>
 {
 	// ReSharper disable InconsistentNaming
 	public static readonly IntPtr NativeType;
@@ -16,7 +16,7 @@ public class SsSetTestStructNativeRef(IntPtr nativePtr)
 	internal static readonly int StructSet_Offset;
 	// ReSharper restore InconsistentNaming
 
-	static SsSetTestStructNativeRef()
+	static FSsSetTestStructNativeRef()
 	{
 		NativeType = TypeInterop.FindStruct("SsSetTestStruct");
 		NativeDataSize = TypeInterop.GetStructureSize(NativeType);
@@ -29,28 +29,28 @@ public class SsSetTestStructNativeRef(IntPtr nativePtr)
 		StructSet_Offset = TypeInterop.GetPropertyOffset(StructSet_NativeProp);
 	}
 
-	private Set<int>? _intSet;
-	public Set<int> IntSet => _intSet ??= new(nativePtr + IntSet_Offset, IntSet_NativeProp, BlittableMarshaller<int>.Instance);
+	private TSet<int>? _intSet;
+	public TSet<int> IntSet => _intSet ??= new(nativePtr + IntSet_Offset, IntSet_NativeProp, BlittableMarshaller<int>.Instance);
 
-	private Set<SsTestBlittableStruct>? _structSet;
-	public Set<SsTestBlittableStruct> StructSet => _structSet ??= new(nativePtr + StructSet_Offset, StructSet_NativeProp, BlittableMarshaller<SsTestBlittableStruct>.Instance);
+	private TSet<FSsTestBlittableStruct>? _structSet;
+	public TSet<FSsTestBlittableStruct> StructSet => _structSet ??= new(nativePtr + StructSet_Offset, StructSet_NativeProp, BlittableMarshaller<FSsTestBlittableStruct>.Instance);
 
-	public SsSetTestStruct ToManaged()
+	public FSsSetTestStruct ToManaged()
 	{
-		return new SsSetTestStruct()
+		return new FSsSetTestStruct()
 		{
 			IntSet = IntSet,
 		};
 	}
 
-	public void FromManaged(in SsSetTestStruct value)
+	public void FromManaged(in FSsSetTestStruct value)
 	{
 		IntSet.CopyFrom(value.IntSet);
 	}
 
-	public static IStructNativeRef<SsSetTestStruct> CreateInstance(IntPtr valuePtr)
+	public static IStructNativeRef<FSsSetTestStruct> CreateInstance(IntPtr valuePtr)
 	{
-		return new SsSetTestStructNativeRef(valuePtr);
+		return new FSsSetTestStructNativeRef(valuePtr);
 	}
 
 	public static int GetNativeDataSize()
@@ -58,13 +58,13 @@ public class SsSetTestStructNativeRef(IntPtr nativePtr)
 		return NativeDataSize;
 	}
 
-	public static implicit operator SsSetTestStruct(SsSetTestStructNativeRef nativeRef)
+	public static implicit operator FSsSetTestStruct(FSsSetTestStructNativeRef nativeRef)
 	{
 		return nativeRef.ToManaged();
 	}
 }
 
-public struct SsSetTestStruct
+public struct FSsSetTestStruct
 {
 	public HashSet<int> IntSet;
 }

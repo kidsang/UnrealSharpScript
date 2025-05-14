@@ -4,22 +4,23 @@ using UnrealEngine.Intrinsic;
 
 namespace SharpScriptUnitTest.Types;
 
-public class SsTestChildInterface : SsTestInterface, IStaticClass<SsTestChildInterface>
+[UnrealTypeName("SsTestChildInterface")]
+public class USsTestChildInterface : USsTestInterface, IStaticClass<USsTestChildInterface>
 {
-	public new static SubclassOf<SsTestChildInterface> StaticClass { get; }
+	public new static TSubclassOf<USsTestChildInterface> StaticClass { get; }
 
 	public new static readonly IntPtr NativeType;
 
-	static SsTestChildInterface()
+	static USsTestChildInterface()
 	{
 		NativeType = TypeInterop.FindClass("SsTestChildInterface");
-		StaticClass = new SubclassOf<SsTestChildInterface>(NativeType);
+		StaticClass = new TSubclassOf<USsTestChildInterface>(NativeType);
 	}
 }
 
 public interface ISsTestChildInterface : ISsTestInterface
 {
-	static Class IGetInterfaceClass.InterfaceClass => SsTestChildInterface.StaticClass.Class!;
+	static UClass IGetInterfaceClass.InterfaceClass => USsTestChildInterface.StaticClass.Class!;
 
 	public int FuncInterfaceChild(int InValue);
 }

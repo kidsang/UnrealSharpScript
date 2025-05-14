@@ -20,8 +20,8 @@ public unsafe class BindingStructTest : IUnitTestInterface
 		{
 			// Create a default struct, test if the struct reference and struct copy are equal in value.
 			testStructDefaultNativePtr = WrapperStructTest.CreateNativeTestStructDefault();
-			SsBindingTestStructNativeRef testStructDefaultNativeRef = new SsBindingTestStructNativeRef(testStructDefaultNativePtr);
-			SsBindingTestStruct testStructDefault = testStructDefaultNativeRef;
+			FSsBindingTestStructNativeRef testStructDefaultNativeRef = new FSsBindingTestStructNativeRef(testStructDefaultNativePtr);
+			FSsBindingTestStruct testStructDefault = testStructDefaultNativeRef;
 			TestFieldEquality(testStructDefaultNativeRef, testStructDefault);
 
 			// Test if the default struct values meet expectations.
@@ -33,7 +33,7 @@ public unsafe class BindingStructTest : IUnitTestInterface
 			Utils.Assert(testStructDefault.Enum == 0);
 			Utils.Assert(testStructDefault.LongEnum == 0);
 			Utils.Assert(testStructDefault.String == string.Empty);
-			Utils.Assert(testStructDefault.Name == Name.None);
+			Utils.Assert(testStructDefault.Name == FName.None);
 			Utils.Assert(testStructDefault.Text == string.Empty);
 			Utils.Assert(testStructDefault.FieldPath.Path == string.Empty);
 			Utils.Assert(testStructDefault.StructFieldPath.Path == string.Empty);
@@ -53,19 +53,19 @@ public unsafe class BindingStructTest : IUnitTestInterface
 
 			// Create a struct filled with custom data, test if the struct reference and struct copy are equal in value.
 			testStructCustomNativePtr = WrapperStructTest.CreateNativeTestStructCustom();
-			SsBindingTestStructNativeRef testStructCustomNativeRef = new SsBindingTestStructNativeRef(testStructCustomNativePtr);
-			SsBindingTestObject objValue = NewObject<SsBindingTestObject>();
+			FSsBindingTestStructNativeRef testStructCustomNativeRef = new FSsBindingTestStructNativeRef(testStructCustomNativePtr);
+			USsBindingTestObject objValue = NewObject<USsBindingTestObject>();
 			testStructCustomNativeRef.Object = objValue;
 			testStructCustomNativeRef.ObjectPtr = objValue;
 			testStructCustomNativeRef.SoftObjectPtr = objValue;
 			testStructCustomNativeRef.WeakObjectPtr = objValue;
 			testStructCustomNativeRef.LazyObjectPtr = objValue;
-			Class clsValue = SsBindingTestObject.StaticClass!;
+			UClass clsValue = USsBindingTestObject.StaticClass!;
 			testStructCustomNativeRef.Class = clsValue;
 			testStructCustomNativeRef.ClassPtr = clsValue;
 			testStructCustomNativeRef.SoftClassPtr = clsValue;
 			testStructCustomNativeRef.Interface = objValue;
-			SsBindingTestStruct testStructCustom = testStructCustomNativeRef;
+			FSsBindingTestStruct testStructCustom = testStructCustomNativeRef;
 			TestFieldEquality(testStructCustomNativeRef, testStructCustom);
 
 			// Test if the values of the struct filled with custom data meet expectations.
@@ -105,12 +105,12 @@ public unsafe class BindingStructTest : IUnitTestInterface
 		{
 			if (testStructDefaultNativePtr != 0)
 			{
-				TypeInterop.DestroyStructInstance(SsBindingTestStructNativeRef.NativeType, ref testStructDefaultNativePtr);
+				TypeInterop.DestroyStructInstance(FSsBindingTestStructNativeRef.NativeType, ref testStructDefaultNativePtr);
 			}
 
 			if (testStructCustomNativePtr != 0)
 			{
-				TypeInterop.DestroyStructInstance(SsBindingTestStructNativeRef.NativeType, ref testStructCustomNativePtr);
+				TypeInterop.DestroyStructInstance(FSsBindingTestStructNativeRef.NativeType, ref testStructCustomNativePtr);
 			}
 		}
 
@@ -120,7 +120,7 @@ public unsafe class BindingStructTest : IUnitTestInterface
 	/// <summary>
 	/// Test if the struct reference and its copy are equal in value.
 	/// </summary>
-	private void TestFieldEquality(in SsBindingTestStructNativeRef structRef, in SsBindingTestStruct structVal)
+	private void TestFieldEquality(in FSsBindingTestStructNativeRef structRef, in FSsBindingTestStruct structVal)
 	{
 		Utils.Assert(structRef.Bool == structVal.Bool);
 		Utils.Assert(structRef.BitfieldBoolA == structVal.BitfieldBoolA);

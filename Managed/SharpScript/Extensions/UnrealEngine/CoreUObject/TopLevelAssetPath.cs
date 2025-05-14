@@ -4,14 +4,14 @@ using UnrealEngine.Intrinsic;
 namespace UnrealEngine.CoreUObject;
 
 [StructLayout(LayoutKind.Sequential)]
-public partial struct TopLevelAssetPath : IEquatable<TopLevelAssetPath>, IComparable<TopLevelAssetPath>
+public partial struct FTopLevelAssetPath : IEquatable<FTopLevelAssetPath>, IComparable<FTopLevelAssetPath>
 {
 	/// <summary>
 	/// Check if this could possibly refer to a real object
 	/// </summary>
 	public bool IsValid()
 	{
-		return PackageName != Name.None;
+		return PackageName != FName.None;
 	}
 
 	/// <summary>
@@ -19,17 +19,17 @@ public partial struct TopLevelAssetPath : IEquatable<TopLevelAssetPath>, ICompar
 	/// </summary>
 	public bool IsNull()
 	{
-		return PackageName == Name.None;
+		return PackageName == FName.None;
 	}
 
-	public bool Equals(TopLevelAssetPath other)
+	public bool Equals(FTopLevelAssetPath other)
 	{
 		return PackageName == other.PackageName && AssetName == other.AssetName;
 	}
 
 	public override bool Equals(object? obj)
 	{
-		return obj is TopLevelAssetPath other && Equals(other);
+		return obj is FTopLevelAssetPath other && Equals(other);
 	}
 
 	public override int GetHashCode()
@@ -37,17 +37,17 @@ public partial struct TopLevelAssetPath : IEquatable<TopLevelAssetPath>, ICompar
 		return HashCode.Combine(PackageName, AssetName);
 	}
 
-	public static bool operator ==(TopLevelAssetPath lhs, TopLevelAssetPath rhs)
+	public static bool operator ==(FTopLevelAssetPath lhs, FTopLevelAssetPath rhs)
 	{
 		return lhs.Equals(rhs);
 	}
 
-	public static bool operator !=(TopLevelAssetPath lhs, TopLevelAssetPath rhs)
+	public static bool operator !=(FTopLevelAssetPath lhs, FTopLevelAssetPath rhs)
 	{
 		return !(lhs == rhs);
 	}
 
-	public int CompareTo(TopLevelAssetPath other)
+	public int CompareTo(FTopLevelAssetPath other)
 	{
 		int diff = PackageName.CompareTo(other.PackageName);
 		if (diff != 0)
@@ -60,12 +60,12 @@ public partial struct TopLevelAssetPath : IEquatable<TopLevelAssetPath>, ICompar
 
 	public override string ToString()
 	{
-		if (PackageName == Name.None)
+		if (PackageName == FName.None)
 		{
 			return string.Empty;
 		}
 
-		if (AssetName == Name.None)
+		if (AssetName == FName.None)
 		{
 			return PackageName;
 		}

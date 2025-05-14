@@ -30,13 +30,6 @@ public static class NameMapper
 	public static string GetPropertyName(this UhtProperty property)
 	{
 		string propertyName = property.Deprecated ? property.SourceName : property.EngineName;
-
-		// todo: twx Export outer type by SourceName, and remove this.
-		if (property.Outer!.EngineName == propertyName)
-		{
-			propertyName = char.ToLowerInvariant(propertyName[0]) + propertyName.Substring(1);
-		}
-
 		if (IsAKeyword(propertyName))
 		{
 			propertyName = $"@{propertyName}";
@@ -63,47 +56,22 @@ public static class NameMapper
 			return "K2_GetType";
 		}
 
-		// todo: twx Export outer type by SourceName, and remove this.
-		if (function.Outer!.EngineName == functionName)
-		{
-			functionName = "K2_" + functionName;
-		}
-
 		return functionName;
 	}
 
 	public static string GetManagedName(this UhtType type)
 	{
-		return type.GetScriptName();
+		return type.SourceName;
 	}
 
 	public static string GetFullManagedName(this UhtType type)
 	{
-		return $"{type.GetNamespace()}.{type.GetScriptName()}";
+		return $"{type.GetNamespace()}.{type.SourceName}";
 	}
 
 	public static string GetInterfaceFullManagedName(this UhtType type)
 	{
-		return $"{type.GetNamespace()}.I{type.GetScriptName()}";
-	}
-
-	private static string GetScriptName(this UhtType type)
-	{
-		if (type is UhtEnum)
-		{
-			return type.EngineName;
-		}
-
-		if (type.MetaData.TryGetValue("ScriptName", out string? scriptName))
-		{
-			scriptName = scriptName.Trim();
-			if (scriptName.Length > 0)
-			{
-				return scriptName;
-			}
-		}
-
-		return type.EngineName;
+		return $"{type.GetNamespace()}.I{type.EngineName}";
 	}
 
 	public static string GetNamespace(this UhtType typeObj)

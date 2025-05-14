@@ -2,7 +2,7 @@ using UnrealEngine.CoreUObject;
 using UnrealEngine.Engine;
 using UnrealEngine.Intrinsic;
 using UnrealEngine.SharpScriptUnitTest;
-using TestClass = UnrealEngine.SharpScriptUnitTest.SsBindingFunctionTest;
+using TestClass = UnrealEngine.SharpScriptUnitTest.USsBindingFunctionTest;
 
 namespace SharpScriptUnitTest.Tests;
 
@@ -66,11 +66,11 @@ public class BindingFunctionTest : IUnitTestInterface
 		Utils.Assert(TestClass.FuncString(inputString, out var outputString) == inputString);
 		Utils.Assert(outputString == inputString);
 
-		Name inputName = new("123");
+		FName inputName = new("123");
 		Utils.Assert(TestClass.FuncName(inputName, out var outputName) == inputName);
 		Utils.Assert(outputName == inputName);
 
-		Text inputText = new("123");
+		FText inputText = new("123");
 		Utils.Assert(TestClass.FuncText(inputText, out var outputText) == inputText);
 		Utils.Assert(outputText == inputText);
 
@@ -82,7 +82,7 @@ public class BindingFunctionTest : IUnitTestInterface
 		Utils.Assert(TestClass.FuncLongEnum(inputLongEnum, out var outputLongEnum) == inputLongEnum);
 		Utils.Assert(outputLongEnum == inputLongEnum);
 
-		FieldPath inputFieldPath = new("/Script/SharpScriptUnitTest.SsTestStruct:Int");
+		FFieldPath inputFieldPath = new("/Script/SharpScriptUnitTest.SsTestStruct:Int");
 		Utils.Assert(TestClass.FuncFieldPath(inputFieldPath, out var outputFieldPath).Path == inputFieldPath.Path);
 		Utils.Assert(outputFieldPath.Path == inputFieldPath.Path);
 
@@ -102,7 +102,7 @@ public class BindingFunctionTest : IUnitTestInterface
 		Utils.Assert(TestClass.FuncStringIntMap(inputStringIntMap, out var outputStringIntMap).DictEquals(inputStringIntMap));
 		Utils.Assert(outputStringIntMap.DictEquals(inputStringIntMap));
 
-		SsBindingTestStruct inputStruct = new()
+		FSsBindingTestStruct inputStruct = new()
 		{
 			Int = 123,
 			String = "123",
@@ -110,7 +110,7 @@ public class BindingFunctionTest : IUnitTestInterface
 		Utils.Assert(TestClass.FuncStruct(inputStruct, out var outputStruct).Int == inputStruct.Int);
 		Utils.Assert(outputStruct.String == inputStruct.String);
 
-		SsBindingTestBlittableStruct inputBlittableStruct = new()
+		FSsBindingTestBlittableStruct inputBlittableStruct = new()
 		{
 			X = 10,
 			Y = 20,
@@ -118,29 +118,29 @@ public class BindingFunctionTest : IUnitTestInterface
 		Utils.Assert(TestClass.FuncBlittableStruct(inputBlittableStruct, out var outputBlittableStruct).X == inputBlittableStruct.X);
 		Utils.Assert(outputBlittableStruct.Y == inputBlittableStruct.Y);
 
-		SsBindingTestObject inputObject = NewObject<SsBindingTestObject>();
+		USsBindingTestObject inputObject = NewObject<USsBindingTestObject>();
 		Utils.Assert(TestClass.FuncObject(inputObject, out var outputObject) == inputObject);
 		Utils.Assert(outputObject == inputObject);
 
 		Utils.Assert(TestClass.FuncSoftObjectPtr(inputObject, out var outputSoftObjectPtr) == inputObject);
 		Utils.Assert(outputSoftObjectPtr == inputObject);
 
-		Class inputClass = SsBindingTestObject.StaticClass!;
-		Utils.Assert(TestClass.FuncClass<SsBindingTestObject, SsBindingTestObject>(inputClass, out var outputClass) == inputClass);
+		UClass inputClass = USsBindingTestObject.StaticClass!;
+		Utils.Assert(TestClass.FuncClass<USsBindingTestObject, USsBindingTestObject>(inputClass, out var outputClass) == inputClass);
 		Utils.Assert(outputClass == inputClass);
 
 		Utils.Assert(TestClass.FuncSoftClassPtr(inputClass, out var outputSoftClassPtr) == inputClass);
 		Utils.Assert(outputSoftClassPtr == inputClass);
 
-		ISsBindingTestChildInterface inputInterface = NewObject<SsBindingTestObject>();
+		ISsBindingTestChildInterface inputInterface = NewObject<USsBindingTestObject>();
 		Utils.Assert(TestClass.FuncInterface(inputInterface, out var outputInterface) == inputInterface);
 		Utils.Assert(outputInterface == inputInterface);
 
 		FSsBindingTestDelegate inputDelegate = inputObject.CallFuncBlueprintNative;
 		Utils.Assert(TestClass.FuncDelegate(inputDelegate) == inputDelegate);
 
-		var testGenericClass1 = InputComponent.StaticClass;
-		var testGenericClass2 = CameraComponent.StaticClass;
+		var testGenericClass1 = UInputComponent.StaticClass;
+		var testGenericClass2 = UCameraComponent.StaticClass;
 
 		Utils.Assert(TestClass.FuncGenericRet(testGenericClass1, testGenericClass2, out var outputGeneric11, out var outputGeneric12, out var outputGeneric13) == testGenericClass1.GetDefaultObject());
 		Utils.Assert(outputGeneric11[0] == testGenericClass1.GetDefaultObject());

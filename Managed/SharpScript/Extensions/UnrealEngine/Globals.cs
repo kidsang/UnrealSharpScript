@@ -1,7 +1,7 @@
 ﻿using System.Runtime.InteropServices;
 using SharpScript;
+using UnrealEngine.CoreUObject;
 using UnrealEngine.Intrinsic;
-using Object = UnrealEngine.CoreUObject.Object;
 
 namespace UnrealEngine;
 
@@ -26,10 +26,10 @@ public static unsafe partial class Globals
 	/// </summary>
 	/// <param name="cls">the class of object to construct</param>
 	/// <param name="name">the name for the new object.  If not specified, the object will be given a transient name via MakeUniqueObjectName</param>
-	/// <typeparam name="T">subclass of Object</typeparam>
+	/// <typeparam name="T">subclass of UObject</typeparam>
 	/// <returns>a pointer of type T to a new object of the specified class</returns>
-	public static T NewObject<T>(SubclassOf<T> cls = default, Name name = default)
-		where T : Object, IStaticClass<T>
+	public static T NewObject<T>(TSubclassOf<T> cls = default, FName name = default)
+		where T : UObject, IStaticClass<T>
 	{
 		if (!cls.IsValid())
 		{
@@ -47,10 +47,10 @@ public static unsafe partial class Globals
 	/// <param name="cls">the class of object to construct</param>
 	/// <param name="name">the name for the new object.  If not specified, the object will be given a transient name via MakeUniqueObjectName</param>
 	/// <param name="flags">the object flags to apply to the new object</param>
-	/// <typeparam name="T">subclass of Object</typeparam>
+	/// <typeparam name="T">subclass of UObject</typeparam>
 	/// <returns>a pointer of type T to a new object of the specified class</returns>
-	public static T NewObject<T>(Object outer, SubclassOf<T> cls = default, Name name = default, UInt32 flags = 0)
-		where T : Object, IStaticClass<T>
+	public static T NewObject<T>(UObject outer, TSubclassOf<T> cls = default, FName name = default, UInt32 flags = 0)
+		where T : UObject, IStaticClass<T>
 	{
 		if (!cls.IsValid())
 		{
@@ -63,7 +63,7 @@ public static unsafe partial class Globals
 
 #pragma warning disable CS0649
 	internal static delegate* unmanaged[Cdecl]<void> NativeCollectGarbage;
-	internal static delegate* unmanaged[Cdecl]<IntPtr/*Class*/, Name/*Name*/, IntPtr> NativeNewObjectSimple;
-	internal static delegate* unmanaged[Cdecl]<IntPtr/*Outer*/, IntPtr/*Class*/, Name/*Name*/, UInt32/*Flags*/, IntPtr/*Template*/, IntPtr> NativeNewObject;
+	internal static delegate* unmanaged[Cdecl]<IntPtr/*Class*/, FName/*Name*/, IntPtr> NativeNewObjectSimple;
+	internal static delegate* unmanaged[Cdecl]<IntPtr/*Outer*/, IntPtr/*Class*/, FName/*Name*/, UInt32/*Flags*/, IntPtr/*Template*/, IntPtr> NativeNewObject;
 #pragma warning restore CS0649
 }

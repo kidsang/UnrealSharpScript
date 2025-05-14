@@ -24,7 +24,7 @@ public static class InterfaceExporter
 
 	private static void GenerateInterfaceClass(CodeBuilder codeBuilder, UhtClass classObj)
 	{
-		string className = classObj.EngineName;
+		string className = classObj.GetManagedName();
 		string superClassName = $"{classObj.SuperClass!.GetFullManagedName()}, IStaticClass<{className}>";
 
 		codeBuilder.AppendTooltip(classObj);
@@ -52,7 +52,7 @@ public static class InterfaceExporter
 
 		using (new CodeBlock(codeBuilder)) // interface body
 		{
-			codeBuilder.AppendLine($"static Class IGetInterfaceClass.InterfaceClass => {classObj.EngineName}.StaticClass.Class!;");
+			codeBuilder.AppendLine($"static UClass IGetInterfaceClass.InterfaceClass => {classObj.GetManagedName()}.StaticClass.Class!;");
 			ExportInterfaceFunctions(codeBuilder, exportedFunctions, unsupportedFunctions);
 		}
 	}

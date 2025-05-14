@@ -1,5 +1,5 @@
 ﻿using SharpScript.Interop;
-using Object = UnrealEngine.CoreUObject.Object;
+using UnrealEngine.CoreUObject;
 
 namespace UnrealEngine.Intrinsic;
 
@@ -27,7 +27,7 @@ public unsafe class MulticastDelegate<T>(IntPtr delegatePtr)
 	/// <returns>True if the delegate is already in the list.</returns>
 	public bool Contains(T value)
 	{
-		if (value.Target is not Object obj)
+		if (value.Target is not UObject obj)
 		{
 			return false;
 		}
@@ -41,7 +41,7 @@ public unsafe class MulticastDelegate<T>(IntPtr delegatePtr)
 	/// <param name="obj">delegate binding object</param>
 	/// <param name="functionName">delegate function name</param>
 	/// <returns>True if the delegate is already in the list.</returns>
-	public bool ContainsUFunction(Object obj, Name functionName)
+	public bool ContainsUFunction(UObject obj, FName functionName)
 	{
 		return MulticastDelegateInterop.ContainsUFunction(delegatePtr, obj.NativeObject, functionName) != 0;
 	}
@@ -52,7 +52,7 @@ public unsafe class MulticastDelegate<T>(IntPtr delegatePtr)
 	/// <param name="value">Delegate to add</param>
 	public void Add(T value)
 	{
-		if (value.Target is not Object obj
+		if (value.Target is not UObject obj
 			|| TypeInterop.FindFunction(obj.GetClass().NativeObject, value.Method.Name) == IntPtr.Zero)
 		{
 			throw new ArgumentException($"the callback for delegate must be a valid UFunction. {nameof(value)}");
@@ -66,7 +66,7 @@ public unsafe class MulticastDelegate<T>(IntPtr delegatePtr)
 	/// </summary>
 	/// <param name="obj">delegate binding object</param>
 	/// <param name="functionName">delegate function name</param>
-	public void AddUFunction(Object obj, Name functionName)
+	public void AddUFunction(UObject obj, FName functionName)
 	{
 		MulticastDelegateInterop.AddUFunction(delegatePtr, obj.NativeObject, functionName);
 	}
@@ -78,7 +78,7 @@ public unsafe class MulticastDelegate<T>(IntPtr delegatePtr)
 	/// <param name="value">Delegate to add</param>
 	public void AddUnique(T value)
 	{
-		if (value.Target is not Object obj
+		if (value.Target is not UObject obj
 			|| TypeInterop.FindFunction(obj.GetClass().NativeObject, value.Method.Name) == IntPtr.Zero)
 		{
 			throw new ArgumentException($"the callback for delegate must be a valid UFunction. {nameof(value)}");
@@ -93,7 +93,7 @@ public unsafe class MulticastDelegate<T>(IntPtr delegatePtr)
 	/// </summary>
 	/// <param name="obj">delegate binding object</param>
 	/// <param name="functionName">delegate function name</param>
-	public void AddUniqueUFunction(Object obj, Name functionName)
+	public void AddUniqueUFunction(UObject obj, FName functionName)
 	{
 		MulticastDelegateInterop.AddUniqueUFunction(delegatePtr, obj.NativeObject, functionName);
 	}
@@ -105,7 +105,7 @@ public unsafe class MulticastDelegate<T>(IntPtr delegatePtr)
 	/// <param name="value">Delegate to remove</param>
 	public void Remove(T value)
 	{
-		if (value.Target is not Object obj)
+		if (value.Target is not UObject obj)
 		{
 			return;
 		}
@@ -119,7 +119,7 @@ public unsafe class MulticastDelegate<T>(IntPtr delegatePtr)
 	/// </summary>
 	/// <param name="obj">delegate binding object</param>
 	/// <param name="functionName">delegate function name</param>
-	public void RemoveUFunction(Object obj, Name functionName)
+	public void RemoveUFunction(UObject obj, FName functionName)
 	{
 		MulticastDelegateInterop.RemoveUFunction(delegatePtr, obj.NativeObject, functionName);
 	}
@@ -131,7 +131,7 @@ public unsafe class MulticastDelegate<T>(IntPtr delegatePtr)
 	/// This method also compacts the invocation list.
 	/// </summary>
 	/// <param name="obj">The object to remove bindings for.</param>
-	public void RemoveAll(Object obj)
+	public void RemoveAll(UObject obj)
 	{
 		MulticastDelegateInterop.RemoveAll(delegatePtr, obj.NativeObject);
 	}

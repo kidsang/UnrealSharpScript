@@ -10,12 +10,12 @@ public class LazyObjectPropertyTranslator : ObjectPropertyTranslator
 
 	public override string GetPropManagedType(UhtProperty property)
 	{
-		return $"LazyObjectPtr<{GetManagedType(property)}>";
+		return $"TLazyObjectPtr<{GetManagedType(property)}>";
 	}
 
 	public override string GetParamManagedType(UhtProperty property)
 	{
-		return $"LazyObjectPtr<{GetManagedType(property)}>";
+		return $"TLazyObjectPtr<{GetManagedType(property)}>";
 	}
 
 	public override string GetMarshaller(UhtProperty property)

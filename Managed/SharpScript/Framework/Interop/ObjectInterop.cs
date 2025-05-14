@@ -10,7 +10,7 @@ static unsafe class ObjectInterop
 {
 #pragma warning disable CS0649
 	internal static delegate* unmanaged<IntPtr, int> IsValid;
-	internal static delegate* unmanaged<IntPtr, Name> GetName;
+	internal static delegate* unmanaged<IntPtr, FName> GetName;
 	internal static delegate* unmanaged<IntPtr, UInt32> GetUniqueId;
 	internal static delegate* unmanaged<IntPtr, IntPtr> GetClass;
 	internal static delegate* unmanaged<IntPtr, IntPtr> GetOuter;

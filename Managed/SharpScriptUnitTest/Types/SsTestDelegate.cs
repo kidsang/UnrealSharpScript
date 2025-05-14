@@ -3,9 +3,9 @@ using UnrealEngine.Intrinsic;
 
 namespace SharpScriptUnitTest.Types;
 
-public delegate int SsTestDelegate(int InValue);
+public delegate int FSsTestDelegate(int InValue);
 
-public static class SsTestDelegateInvoker
+public static class FSsTestDelegateInvoker
 {
 	// ReSharper disable InconsistentNaming
 	private static IntPtr SsTestDelegate_NativeFunc;
@@ -22,7 +22,7 @@ public static class SsTestDelegateInvoker
 		SsTestDelegate_ReturnValue_Offset = TypeInterop.GetPropertyOffsetFromName(SsTestDelegate_NativeFunc, "ReturnValue");
 	}
 
-	public static unsafe int Execute(this Delegate<SsTestDelegate> instance, int InValue)
+	public static unsafe int Execute(this Delegate<FSsTestDelegate> instance, int InValue)
 	{
 		// ReSharper disable InconsistentNaming
 		byte* _paramsBuffer = stackalloc byte[SsTestDelegate_ParamsSize];

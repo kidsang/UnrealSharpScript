@@ -124,7 +124,7 @@ public static unsafe class TypeInterop
 	/// <param name="nativeClass">UClass pointer</param>
 	/// <param name="funcName">Method name</param>
 	/// <returns>UFunction pointer</returns>
-	public static IntPtr FindFunction(IntPtr nativeClass, Name funcName)
+	public static IntPtr FindFunction(IntPtr nativeClass, FName funcName)
 	{
 		return NativeFindFunction(nativeClass, funcName);
 	}
@@ -187,7 +187,7 @@ public static unsafe class TypeInterop
 	/// <param name="nativeStruct">UClass, UScriptStruct, or UFunction pointer</param>
 	/// <param name="propName">Property name</param>
 	/// <returns>FProperty pointer</returns>
-	public static IntPtr FindProperty(IntPtr nativeStruct, Name propName)
+	public static IntPtr FindProperty(IntPtr nativeStruct, FName propName)
 	{
 		return NativeFindProerty(nativeStruct, propName);
 	}
@@ -207,7 +207,7 @@ public static unsafe class TypeInterop
 	/// </summary>
 	/// <param name="nativeProp">FProperty pointer</param>
 	/// <returns>Property name</returns>
-	public static Name GetPropertyFName(IntPtr nativeProp)
+	public static FName GetPropertyFName(IntPtr nativeProp)
 	{
 		return NativeGetPropertyName(nativeProp);
 	}
@@ -228,7 +228,7 @@ public static unsafe class TypeInterop
 	/// <param name="nativeStruct">UClass, UScriptStruct, or UFunction pointer</param>
 	/// <param name="propName">Property name</param>
 	/// <returns>Property offset</returns>
-	public static int GetPropertyOffsetFromName(IntPtr nativeStruct, Name propName)
+	public static int GetPropertyOffsetFromName(IntPtr nativeStruct, FName propName)
 	{
 		return NativeGetPropertyOffsetFromName(nativeStruct, propName);
 	}
@@ -342,18 +342,18 @@ public static unsafe class TypeInterop
 	internal static delegate* unmanaged[Cdecl]<IntPtr, int> NativeGetStructureSize;
 	internal static delegate* unmanaged[Cdecl]<IntPtr, IntPtr, void> NativeInitializeStruct;
 	internal static delegate* unmanaged[Cdecl]<IntPtr, IntPtr, void> NativeDeinitializeStruct;
-	internal static delegate* unmanaged[Cdecl]<IntPtr, Name> NativeGetTypeName;
+	internal static delegate* unmanaged[Cdecl]<IntPtr, FName> NativeGetTypeName;
 	internal static delegate* unmanaged[Cdecl]<char*, IntPtr> NativeFindEnum;
-	internal static delegate* unmanaged[Cdecl]<IntPtr, Name, IntPtr> NativeFindFunction;
+	internal static delegate* unmanaged[Cdecl]<IntPtr, FName, IntPtr> NativeFindFunction;
 	internal static delegate* unmanaged[Cdecl]<IntPtr, int> NativeGetFunctionParamsSize;
 	internal static delegate* unmanaged[Cdecl]<IntPtr, IntPtr, void> NativeInitializeFunctionParams;
 	internal static delegate* unmanaged[Cdecl]<IntPtr, IntPtr, void> NativeDeinitializeFunctionParams;
 	internal static delegate* unmanaged[Cdecl]<IntPtr, IntPtr> NativeGetFirstProperty;
 	internal static delegate* unmanaged[Cdecl]<IntPtr, IntPtr> NativeGetNextProperty;
-	internal static delegate* unmanaged[Cdecl]<IntPtr, Name, IntPtr> NativeFindProerty;
-	internal static delegate* unmanaged[Cdecl]<IntPtr, Name> NativeGetPropertyName;
+	internal static delegate* unmanaged[Cdecl]<IntPtr, FName, IntPtr> NativeFindProerty;
+	internal static delegate* unmanaged[Cdecl]<IntPtr, FName> NativeGetPropertyName;
 	internal static delegate* unmanaged[Cdecl]<IntPtr, int> NativeGetPropertyOffset;
-	internal static delegate* unmanaged[Cdecl]<IntPtr, Name, int> NativeGetPropertyOffsetFromName;
+	internal static delegate* unmanaged[Cdecl]<IntPtr, FName, int> NativeGetPropertyOffsetFromName;
 	internal static delegate* unmanaged[Cdecl]<IntPtr, int> NativeGetPropertySize;
 	internal static delegate* unmanaged[Cdecl]<IntPtr, byte> NativeGetBoolPropertyFieldMask;
 	internal static delegate* unmanaged[Cdecl]<IntPtr, IntPtr> NativeGetMapKeyProperty;

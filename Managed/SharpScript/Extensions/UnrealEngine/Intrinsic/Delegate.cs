@@ -1,5 +1,5 @@
 ﻿using SharpScript.Interop;
-using Object = UnrealEngine.CoreUObject.Object;
+using UnrealEngine.CoreUObject;
 
 namespace UnrealEngine.Intrinsic;
 /// <summary>
@@ -13,7 +13,7 @@ public unsafe class Delegate<T>(IntPtr delegatePtr)
 	/// <summary>
 	/// ScriptDelegate pointer
 	/// </summary>
-	private readonly ScriptDelegate* _scriptDelegate = (ScriptDelegate*)delegatePtr;
+	private readonly FScriptDelegate* _scriptDelegate = (FScriptDelegate*)delegatePtr;
 
 	/// <summary>
 	/// Bind a C# callback function, this callback must be a UFunction.
@@ -26,7 +26,7 @@ public unsafe class Delegate<T>(IntPtr delegatePtr)
 			throw new InvalidOperationException($"delegate already bound with '{_scriptDelegate->ToString()}'.");
 		}
 
-		if (handler.Target is not Object targetObject
+		if (handler.Target is not UObject targetObject
 			|| TypeInterop.FindFunction(targetObject.GetClass().NativeObject, handler.Method.Name) == IntPtr.Zero)
 		{
 			throw new ArgumentException($"the callback for delegate must be a valid UFunction. {nameof(handler)}");
@@ -35,8 +35,8 @@ public unsafe class Delegate<T>(IntPtr delegatePtr)
 		_scriptDelegate->BindUFunction(targetObject, handler.Method.Name);
 	}
 
-	/// <inheritdoc cref="ScriptDelegate.BindUFunction"/>
-	public void BindUFunction(Object obj, Name functionName)
+	/// <inheritdoc cref="FScriptDelegate.BindUFunction"/>
+	public void BindUFunction(UObject obj, FName functionName)
 	{
 		if (_scriptDelegate->IsBound())
 		{
@@ -51,25 +51,25 @@ public unsafe class Delegate<T>(IntPtr delegatePtr)
 		_scriptDelegate->BindUFunction(obj, functionName);
 	}
 
-	/// <inheritdoc cref="ScriptDelegate.IsBound"/>
+	/// <inheritdoc cref="FScriptDelegate.IsBound"/>
 	public bool IsBound()
 	{
 		return _scriptDelegate->IsBound();
 	}
 
-	/// <inheritdoc cref="ScriptDelegate.IsBoundToObject"/>
-	public bool IsBoundToObject(Object obj)
+	/// <inheritdoc cref="FScriptDelegate.IsBoundToObject"/>
+	public bool IsBoundToObject(UObject obj)
 	{
 		return _scriptDelegate->IsBoundToObject(obj);
 	}
 
-	/// <inheritdoc cref="ScriptDelegate.Unbind"/>
+	/// <inheritdoc cref="FScriptDelegate.Unbind"/>
 	public void Unbind()
 	{
 		_scriptDelegate->Unbind();
 	}
 
-	/// <inheritdoc cref="ScriptDelegate.ProcessDelegate"/>
+	/// <inheritdoc cref="FScriptDelegate.ProcessDelegate"/>
 	public void ProcessDelegate(IntPtr paramsBuffer)
 	{
 		if (!IsBound())

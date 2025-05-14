@@ -14,7 +14,7 @@ public class SetPropertyTranslator : ContainerPropertyTranslator
 	{
 		UhtProperty valueProperty = GetValueProperty(property);
 		PropertyTranslator valueTranslator = GetValueTranslator(property);
-		return $"Set<{valueTranslator.GetParamManagedType(valueProperty)}>";
+		return $"TSet<{valueTranslator.GetParamManagedType(valueProperty)}>";
 	}
 
 	public override string GetParamManagedType(UhtProperty property)
@@ -77,7 +77,7 @@ public class SetPropertyTranslator : ContainerPropertyTranslator
 			return;
 		}
 
-		string propManagedType = $"Set<{typeArgument}?>";
+		string propManagedType = $"TSet<{typeArgument}?>";
 		string valueMarshaller = $"ObjectMarshaller<{typeArgument}>";
 		string funcEngineName = function.StrippedFunctionName;
 		string paramSourceName = property.SourceName;

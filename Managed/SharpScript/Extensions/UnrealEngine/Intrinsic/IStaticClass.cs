@@ -1,8 +1,11 @@
-﻿using Object = UnrealEngine.CoreUObject.Object;
+﻿using UnrealEngine.CoreUObject;
 
 namespace UnrealEngine.Intrinsic;
 
-public interface IStaticClass<T> where T : Object
+public interface IStaticClass<T> where T : UObject
 {
-	static abstract SubclassOf<T> StaticClass { get; }
+	/// <summary>
+	/// Return unreal class of this type.
+	/// </summary>
+	static abstract TSubclassOf<T> StaticClass { get; }
 }

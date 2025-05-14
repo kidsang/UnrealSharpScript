@@ -9,7 +9,7 @@ namespace SharpScript.Interop;
 public unsafe class UniqueObjectGuidInterop
 {
 #pragma warning disable CS0649
-	internal static delegate* unmanaged<in UniqueObjectGuid, IntPtr> ResolveObject;
-	internal static delegate* unmanaged<IntPtr, ref UniqueObjectGuid, void> GetOrCreateIdForObject;
+	internal static delegate* unmanaged<in FUniqueObjectGuid, IntPtr> ResolveObject;
+	internal static delegate* unmanaged<IntPtr, ref FUniqueObjectGuid, void> GetOrCreateIdForObject;
 #pragma warning restore CS0649
 }

@@ -4,7 +4,7 @@ namespace SharpScriptBindingGenerator.PropertyTranslators;
 
 public class FieldPathPropertyTranslator : SimpleTypePropertyTranslator
 {
-	public FieldPathPropertyTranslator() : base(typeof(UhtFieldPathProperty), "FieldPath")
+	public FieldPathPropertyTranslator() : base(typeof(UhtFieldPathProperty), "FFieldPath")
 	{
 	}
 
@@ -19,6 +19,6 @@ public class FieldPathPropertyTranslator : SimpleTypePropertyTranslator
 
 	public override void ExportCppDefaultParameterAsLocalVariable(CodeBuilder codeBuilder, UhtProperty property, string paramName, string defaultValue)
 	{
-		codeBuilder.AppendLine(defaultValue == "None" ? $"FieldPath {paramName} = default;" : $"FieldPath {paramName} = new(\"{defaultValue}\");");
+		codeBuilder.AppendLine(defaultValue == "None" ? $"FFieldPath {paramName} = default;" : $"FFieldPath {paramName} = new(\"{defaultValue}\");");
 	}
 }

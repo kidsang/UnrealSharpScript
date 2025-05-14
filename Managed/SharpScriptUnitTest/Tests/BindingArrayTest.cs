@@ -16,10 +16,10 @@ public class BindingArrayTest : IUnitTestInterface
 		IntPtr testStructTwoNativePtr = 0;
 		try
 		{
-			testStructOneNativePtr = TypeInterop.CreateStructInstance(SsBindingArrayTestStructNativeRef.NativeType);
-			SsBindingArrayTestStructNativeRef testStructOneNativeRef = new SsBindingArrayTestStructNativeRef(testStructOneNativePtr);
-			testStructTwoNativePtr = TypeInterop.CreateStructInstance(SsBindingArrayTestStructNativeRef.NativeType);
-			SsBindingArrayTestStructNativeRef testStructTwoNativeRef = new SsBindingArrayTestStructNativeRef(testStructTwoNativePtr);
+			testStructOneNativePtr = TypeInterop.CreateStructInstance(FSsBindingArrayTestStructNativeRef.NativeType);
+			FSsBindingArrayTestStructNativeRef testStructOneNativeRef = new FSsBindingArrayTestStructNativeRef(testStructOneNativePtr);
+			testStructTwoNativePtr = TypeInterop.CreateStructInstance(FSsBindingArrayTestStructNativeRef.NativeType);
+			FSsBindingArrayTestStructNativeRef testStructTwoNativeRef = new FSsBindingArrayTestStructNativeRef(testStructTwoNativePtr);
 
 			ArrayTest.IntArrayTest(testStructOneNativeRef.IntArray, testStructTwoNativeRef.IntArray);
 			ArrayTest.BoolArrayTest(testStructOneNativeRef.BoolArray, testStructTwoNativeRef.BoolArray);
@@ -42,35 +42,35 @@ public class BindingArrayTest : IUnitTestInterface
 		{
 			if (testStructOneNativePtr != 0)
 			{
-				TypeInterop.DestroyStructInstance(SsBindingArrayTestStructNativeRef.NativeType, ref testStructOneNativePtr);
+				TypeInterop.DestroyStructInstance(FSsBindingArrayTestStructNativeRef.NativeType, ref testStructOneNativePtr);
 			}
 
 			if (testStructTwoNativePtr != 0)
 			{
-				TypeInterop.DestroyStructInstance(SsBindingArrayTestStructNativeRef.NativeType, ref testStructTwoNativePtr);
+				TypeInterop.DestroyStructInstance(FSsBindingArrayTestStructNativeRef.NativeType, ref testStructTwoNativePtr);
 			}
 		}
 
 		return true;
 	}
 
-	private static void StructArrayTest(Array<SsBindingArrayTestInnerStruct, SsBindingArrayTestInnerStructNativeRef> StructArrayOne, Array<SsBindingArrayTestInnerStruct, SsBindingArrayTestInnerStructNativeRef> StructArrayTwo)
+	private static void StructArrayTest(TArray<FSsBindingArrayTestInnerStruct, FSsBindingArrayTestInnerStructNativeRef> StructArrayOne, TArray<FSsBindingArrayTestInnerStruct, FSsBindingArrayTestInnerStructNativeRef> StructArrayTwo)
 	{
 		// ------------------------------------------
 		// Test struct array
-		SsBindingArrayTestInnerStruct innerStructA = new SsBindingArrayTestInnerStruct
+		FSsBindingArrayTestInnerStruct innerStructA = new FSsBindingArrayTestInnerStruct
 		{
 			IntArray = [1, 2, 3]
 		};
-		SsBindingArrayTestInnerStruct innerStructB = new SsBindingArrayTestInnerStruct
+		FSsBindingArrayTestInnerStruct innerStructB = new FSsBindingArrayTestInnerStruct
 		{
 			IntArray = [4, 5, 6]
 		};
-		SsBindingArrayTestInnerStruct innerStructC = new SsBindingArrayTestInnerStruct
+		FSsBindingArrayTestInnerStruct innerStructC = new FSsBindingArrayTestInnerStruct
 		{
 			IntArray = [7, 8, 9]
 		};
-		SsBindingArrayTestInnerStruct innerStructD = new SsBindingArrayTestInnerStruct
+		FSsBindingArrayTestInnerStruct innerStructD = new FSsBindingArrayTestInnerStruct
 		{
 			IntArray = [10, 11, 12]
 		};
@@ -102,7 +102,7 @@ public class BindingArrayTest : IUnitTestInterface
 		]));
 
 		// Test struct array - Binary equality
-		StructArrayTwo.CopyFrom(new List<SsBindingArrayTestInnerStruct> { innerStructA, innerStructB, innerStructD });
+		StructArrayTwo.CopyFrom(new List<FSsBindingArrayTestInnerStruct> { innerStructA, innerStructB, innerStructD });
 		Utils.Assert(StructArrayTwo.SequenceEqual(StructArrayOne));
 		StructArrayTwo.Clear();
 		Utils.Assert(StructArrayTwo.ToList().SequenceEqual([]));
@@ -128,7 +128,7 @@ public class BindingArrayTest : IUnitTestInterface
 		Utils.Assert(StructArrayOne.ToList().SequenceEqual([]));
 	}
 
-	public static void EnumArrayTest(Array<ESsBindingTestEnum> EnumArrayOne, Array<ESsBindingTestEnum> EnumArrayTwo)
+	public static void EnumArrayTest(TArray<ESsBindingTestEnum> EnumArrayOne, TArray<ESsBindingTestEnum> EnumArrayTwo)
 	{
 		// ------------------------------------------
 		// Test FEnum array - Add
@@ -168,7 +168,7 @@ public class BindingArrayTest : IUnitTestInterface
 		Utils.Assert(EnumArrayOne.ToList().SequenceEqual([]));
 	}
 
-	public static void LongEnumArrayTest(Array<ESsBindingTestLongEnum> LongEnumArrayOne, Array<ESsBindingTestLongEnum> LongEnumArrayTwo)
+	public static void LongEnumArrayTest(TArray<ESsBindingTestLongEnum> LongEnumArrayOne, TArray<ESsBindingTestLongEnum> LongEnumArrayTwo)
 	{
 		// ------------------------------------------
 		// Test FLongEnum array - Add
@@ -208,27 +208,27 @@ public class BindingArrayTest : IUnitTestInterface
 		Utils.Assert(LongEnumArrayOne.ToList().SequenceEqual([]));
 	}
 
-	public static void BlittableStructArrayTest(Array<SsBindingTestBlittableStruct, SsBindingTestBlittableStructNativeRef> BlittableStructArrayOne, Array<SsBindingTestBlittableStruct, SsBindingTestBlittableStructNativeRef> BlittableStructArrayTwo)
+	public static void BlittableStructArrayTest(TArray<FSsBindingTestBlittableStruct, FSsBindingTestBlittableStructNativeRef> BlittableStructArrayOne, TArray<FSsBindingTestBlittableStruct, FSsBindingTestBlittableStructNativeRef> BlittableStructArrayTwo)
 	{
 		// ReSharper disable UsageOfDefaultStructEquality
 		// ------------------------------------------
 		// Test struct array
-		SsBindingTestBlittableStruct innerBlittableStructA = new SsBindingTestBlittableStruct
+		FSsBindingTestBlittableStruct innerBlittableStructA = new FSsBindingTestBlittableStruct
 		{
 			X = 10,
 			Y = 10,
 		};
-		SsBindingTestBlittableStruct innerBlittableStructB = new SsBindingTestBlittableStruct
+		FSsBindingTestBlittableStruct innerBlittableStructB = new FSsBindingTestBlittableStruct
 		{
 			X = 20,
 			Y = 20,
 		};
-		SsBindingTestBlittableStruct innerBlittableStructC = new SsBindingTestBlittableStruct
+		FSsBindingTestBlittableStruct innerBlittableStructC = new FSsBindingTestBlittableStruct
 		{
 			X = 30,
 			Y = 30,
 		};
-		SsBindingTestBlittableStruct innerBlittableStructD = new SsBindingTestBlittableStruct
+		FSsBindingTestBlittableStruct innerBlittableStructD = new FSsBindingTestBlittableStruct
 		{
 			X = 40,
 			Y = 40,
@@ -261,7 +261,7 @@ public class BindingArrayTest : IUnitTestInterface
 		]));
 
 		// Test struct array - Binary equality
-		BlittableStructArrayTwo.CopyFrom(new List<SsBindingTestBlittableStruct> { innerBlittableStructA, innerBlittableStructB, innerBlittableStructD });
+		BlittableStructArrayTwo.CopyFrom(new List<FSsBindingTestBlittableStruct> { innerBlittableStructA, innerBlittableStructB, innerBlittableStructD });
 		Utils.Assert(BlittableStructArrayTwo.SequenceEqual(BlittableStructArrayOne));
 		BlittableStructArrayTwo.Clear();
 		Utils.Assert(BlittableStructArrayTwo.ToList().SequenceEqual([]));
@@ -286,14 +286,14 @@ public class BindingArrayTest : IUnitTestInterface
 		// ReSharper restore UsageOfDefaultStructEquality
 	}
 
-	public static void InterfaceArrayTest(Array<ISsBindingTestChildInterface?> InterfaceArrayOne, Array<ISsBindingTestChildInterface?> InterfaceArrayTwo)
+	public static void InterfaceArrayTest(TArray<ISsBindingTestChildInterface?> InterfaceArrayOne, TArray<ISsBindingTestChildInterface?> InterfaceArrayTwo)
 	{
 		// ------------------------------------------
 		// Test interface array
-		ISsBindingTestChildInterface objA = NewObject<SsBindingTestObject>();
-		ISsBindingTestChildInterface objB = NewObject<SsBindingTestObject>();
-		ISsBindingTestChildInterface objC = NewObject<SsBindingTestObject>();
-		ISsBindingTestChildInterface objD = NewObject<SsBindingTestObject>();
+		ISsBindingTestChildInterface objA = NewObject<USsBindingTestObject>();
+		ISsBindingTestChildInterface objB = NewObject<USsBindingTestObject>();
+		ISsBindingTestChildInterface objC = NewObject<USsBindingTestObject>();
+		ISsBindingTestChildInterface objD = NewObject<USsBindingTestObject>();
 
 		// Test interface array - Add
 		InterfaceArrayOne.Add(objA);
@@ -343,11 +343,11 @@ public class BindingArrayTest : IUnitTestInterface
 		Utils.Assert(InterfaceArrayOne.ToList().SequenceEqual([]));
 	}
 
-	public static void DelegateArrayTest(DelegateArray<FSsBindingTestDelegate, Delegate<FSsBindingTestDelegate>> DelegateArrayOne, DelegateArray<FSsBindingTestDelegate, Delegate<FSsBindingTestDelegate>> DelegateArrayTwo)
+	public static void DelegateArrayTest(TDelegateArray<FSsBindingTestDelegate, Delegate<FSsBindingTestDelegate>> DelegateArrayOne, TDelegateArray<FSsBindingTestDelegate, Delegate<FSsBindingTestDelegate>> DelegateArrayTwo)
 	{
 		// ------------------------------------------
 		// Test delegate array
-		SsBindingTestObject obj = NewObject<SsBindingTestObject>();
+		USsBindingTestObject obj = NewObject<USsBindingTestObject>();
 		// FSsBindingTestDelegate  delegateA = obj.FuncBlueprintImplementable;
 		// FSsBindingTestDelegate  delegateB = obj.FuncBlueprintNative;
 		FSsBindingTestDelegate delegateA = obj.CallFuncBlueprintImplementable;
@@ -406,9 +406,9 @@ public class BindingArrayTest : IUnitTestInterface
 
 public static class BindingArrayTestMethods
 {
-	public static bool SequenceEqual(this List<SsBindingArrayTestInnerStruct> listA, IEnumerable<SsBindingArrayTestInnerStruct> b)
+	public static bool SequenceEqual(this List<FSsBindingArrayTestInnerStruct> listA, IEnumerable<FSsBindingArrayTestInnerStruct> b)
 	{
-		List<SsBindingArrayTestInnerStruct> listB = [..b];
+		List<FSsBindingArrayTestInnerStruct> listB = [..b];
 		if (listA.Count != listB.Count)
 		{
 			return false;

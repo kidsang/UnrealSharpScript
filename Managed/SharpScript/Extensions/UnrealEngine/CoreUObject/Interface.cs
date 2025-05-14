@@ -5,7 +5,7 @@ namespace UnrealEngine.CoreUObject;
 /// <summary>
 /// Base class for all interfaces
 /// </summary>
-public partial class Interface
+public partial class UInterface
 {
 }
 
@@ -14,7 +14,7 @@ public partial class Interface
 /// </summary>
 public interface IInterface : IGetInterfaceClass
 {
-	static Class IGetInterfaceClass.InterfaceClass => Interface.StaticClass!;
+	static UClass IGetInterfaceClass.InterfaceClass => UInterface.StaticClass!;
 }
 
 /// <summary>
@@ -22,7 +22,7 @@ public interface IInterface : IGetInterfaceClass
 /// </summary>
 public interface IGetInterfaceClass
 {
-	public static abstract Class InterfaceClass { get; }
+	public static abstract UClass InterfaceClass { get; }
 }
 
 /// <summary>

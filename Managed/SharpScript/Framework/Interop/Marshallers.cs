@@ -2,7 +2,6 @@
 using System.Runtime.InteropServices;
 using UnrealEngine.CoreUObject;
 using UnrealEngine.Intrinsic;
-using Object = UnrealEngine.CoreUObject.Object;
 
 namespace SharpScript.Interop;
 
@@ -216,7 +215,7 @@ public static class BitfieldBoolMarshaller
 /// Handles marshalling of enum types.
 /// </summary>
 public class EnumMarshaller<T> : BlittableMarshaller<T>
-	where T : unmanaged, System.Enum
+	where T : unmanaged, Enum
 {
 }
 
@@ -290,14 +289,14 @@ public class StringMarshaller : IMarshaller<string>
 /// <summary>
 /// Handles marshalling of FName.
 // </summary>
-public class NameMarshaller : BlittableMarshaller<Name>
+public class NameMarshaller : BlittableMarshaller<FName>
 {
 }
 
 /// <summary>
 /// Handles marshalling of FText.
 /// </summary>
-public class TextMarshaller : IMarshaller<Text>
+public class TextMarshaller : IMarshaller<FText>
 {
 	private static readonly int SizeOfText;
 
@@ -313,7 +312,7 @@ public class TextMarshaller : IMarshaller<Text>
 		Instance = new TextMarshaller();
 	}
 
-	public static void ToNative(IntPtr valuePtr, in Text value)
+	public static void ToNative(IntPtr valuePtr, in FText value)
 	{
 		unsafe
 		{
@@ -324,12 +323,12 @@ public class TextMarshaller : IMarshaller<Text>
 		}
 	}
 
-	public static void ToNative(IntPtr arrayPtr, int arrayIndex, in Text value)
+	public static void ToNative(IntPtr arrayPtr, int arrayIndex, in FText value)
 	{
 		ToNative(arrayPtr + arrayIndex * SizeOfText, value);
 	}
 
-	public static Text FromNative(IntPtr valuePtr)
+	public static FText FromNative(IntPtr valuePtr)
 	{
 		unsafe
 		{
@@ -337,7 +336,7 @@ public class TextMarshaller : IMarshaller<Text>
 			try
 			{
 				TextInterop.TextToString(valuePtr, ref buffer);
-				return new Text(buffer.ToString());
+				return new FText(buffer.ToString());
 			}
 			finally
 			{
@@ -346,27 +345,27 @@ public class TextMarshaller : IMarshaller<Text>
 		}
 	}
 
-	public static Text FromNative(IntPtr arrayPtr, int arrayIndex)
+	public static FText FromNative(IntPtr arrayPtr, int arrayIndex)
 	{
 		return FromNative(arrayPtr + arrayIndex * SizeOfText);
 	}
 
-	public void MarshallToNative(IntPtr valuePtr, in Text value)
+	public void MarshallToNative(IntPtr valuePtr, in FText value)
 	{
 		ToNative(valuePtr, value);
 	}
 
-	public void MarshallToNative(IntPtr arrayPtr, int arrayIndex, in Text value)
+	public void MarshallToNative(IntPtr arrayPtr, int arrayIndex, in FText value)
 	{
 		ToNative(arrayPtr, arrayIndex, value);
 	}
 
-	public Text MarshallFromNative(IntPtr valuePtr)
+	public FText MarshallFromNative(IntPtr valuePtr)
 	{
 		return FromNative(valuePtr);
 	}
 
-	public Text MarshallFromNative(IntPtr arrayPtr, int arrayIndex)
+	public FText MarshallFromNative(IntPtr arrayPtr, int arrayIndex)
 	{
 		return FromNative(arrayPtr, arrayIndex);
 	}
@@ -375,7 +374,7 @@ public class TextMarshaller : IMarshaller<Text>
 /// <summary>
 /// Handles marshalling of FFieldPath.
 /// </summary>
-public class FieldPathMarshaller : IMarshaller<FieldPath>
+public class FieldPathMarshaller : IMarshaller<FFieldPath>
 {
 	public static readonly FieldPathMarshaller Instance;
 
@@ -384,7 +383,7 @@ public class FieldPathMarshaller : IMarshaller<FieldPath>
 		Instance = new FieldPathMarshaller();
 	}
 
-	public static void ToNative(IntPtr valuePtr, in FieldPath value)
+	public static void ToNative(IntPtr valuePtr, in FFieldPath value)
 	{
 		unsafe
 		{
@@ -395,12 +394,12 @@ public class FieldPathMarshaller : IMarshaller<FieldPath>
 		}
 	}
 
-	public static void ToNative(IntPtr arrayPtr, int arrayIndex, in FieldPath value)
+	public static void ToNative(IntPtr arrayPtr, int arrayIndex, in FFieldPath value)
 	{
-		ToNative(arrayPtr + arrayIndex * FieldPath.NativeDataSize, value);
+		ToNative(arrayPtr + arrayIndex * FFieldPath.NativeDataSize, value);
 	}
 
-	public static FieldPath FromNative(IntPtr valuePtr)
+	public static FFieldPath FromNative(IntPtr valuePtr)
 	{
 		unsafe
 		{
@@ -408,7 +407,7 @@ public class FieldPathMarshaller : IMarshaller<FieldPath>
 			try
 			{
 				FieldPathInterop.FieldPathToString(valuePtr, ref buffer);
-				FieldPath fieldPath = new(buffer.ToString());
+				FFieldPath fieldPath = new(buffer.ToString());
 				return fieldPath;
 			}
 			finally
@@ -418,27 +417,27 @@ public class FieldPathMarshaller : IMarshaller<FieldPath>
 		}
 	}
 
-	public static FieldPath FromNative(IntPtr arrayPtr, int arrayIndex)
+	public static FFieldPath FromNative(IntPtr arrayPtr, int arrayIndex)
 	{
-		return FromNative(arrayPtr + arrayIndex * FieldPath.NativeDataSize);
+		return FromNative(arrayPtr + arrayIndex * FFieldPath.NativeDataSize);
 	}
 
-	public void MarshallToNative(IntPtr valuePtr, in FieldPath value)
+	public void MarshallToNative(IntPtr valuePtr, in FFieldPath value)
 	{
 		ToNative(valuePtr, value);
 	}
 
-	public void MarshallToNative(IntPtr arrayPtr, int arrayIndex, in FieldPath value)
+	public void MarshallToNative(IntPtr arrayPtr, int arrayIndex, in FFieldPath value)
 	{
 		ToNative(arrayPtr, arrayIndex, value);
 	}
 
-	public FieldPath MarshallFromNative(IntPtr valuePtr)
+	public FFieldPath MarshallFromNative(IntPtr valuePtr)
 	{
 		return FromNative(valuePtr);
 	}
 
-	public FieldPath MarshallFromNative(IntPtr arrayPtr, int arrayIndex)
+	public FFieldPath MarshallFromNative(IntPtr arrayPtr, int arrayIndex)
 	{
 		return FromNative(arrayPtr, arrayIndex);
 	}
@@ -515,7 +514,7 @@ public class StructMarshaller<T> : IMarshaller<T>
 /// Handles marshalling of UObjects.
 /// </summary>
 public class ObjectMarshaller<T> : IMarshaller<T?>
-	where T : Object
+	where T : UObject
 {
 	public static readonly ObjectMarshaller<T> Instance;
 
@@ -580,8 +579,8 @@ public class ObjectMarshaller<T> : IMarshaller<T?>
 /// <summary>
 /// Handles marshalling of TSoftObjectPtr.
 /// </summary>
-public class SoftObjectPtrMarshaller<T> : IMarshaller<SoftObjectPtr<T>>
-	where T : Object
+public class SoftObjectPtrMarshaller<T> : IMarshaller<TSoftObjectPtr<T>>
+	where T : UObject
 {
 	public static readonly SoftObjectPtrMarshaller<T> Instance;
 
@@ -597,61 +596,61 @@ public class SoftObjectPtrMarshaller<T> : IMarshaller<SoftObjectPtr<T>>
 
 		unsafe
 		{
-			AssetPathOffset = sizeof(WeakObjectPtr<T>);
-			SubPathStringOffset = AssetPathOffset + sizeof(TopLevelAssetPath);
+			AssetPathOffset = sizeof(TWeakObjectPtr<T>);
+			SubPathStringOffset = AssetPathOffset + sizeof(FTopLevelAssetPath);
 			NativeDataSize = SubPathStringOffset + sizeof(NativeString);
 		}
 	}
 
-	public static void ToNative(IntPtr valuePtr, in SoftObjectPtr<T> value)
+	public static void ToNative(IntPtr valuePtr, in TSoftObjectPtr<T> value)
 	{
-		BlittableMarshaller<WeakObjectPtr<Object>>.ToNative(valuePtr, value.Data.WeakPtr);
-		BlittableMarshaller<TopLevelAssetPath>.ToNative(valuePtr + AssetPathOffset, value.Data.ObjectId.AssetPath);
+		BlittableMarshaller<TWeakObjectPtr<UObject>>.ToNative(valuePtr, value.Data.WeakPtr);
+		BlittableMarshaller<FTopLevelAssetPath>.ToNative(valuePtr + AssetPathOffset, value.Data.ObjectId.AssetPath);
 		StringMarshaller.ToNative(valuePtr + SubPathStringOffset, value.Data.ObjectId.SubPathString);
 	}
 
-	public static void ToNative(IntPtr arrayPtr, int arrayIndex, in SoftObjectPtr<T> value)
+	public static void ToNative(IntPtr arrayPtr, int arrayIndex, in TSoftObjectPtr<T> value)
 	{
 		ToNative(arrayPtr + arrayIndex * NativeDataSize, value);
 	}
 
-	public static SoftObjectPtr<T> FromNative(IntPtr valuePtr)
+	public static TSoftObjectPtr<T> FromNative(IntPtr valuePtr)
 	{
-		return new SoftObjectPtr<T>
+		return new TSoftObjectPtr<T>
 		{
 			Data = new SoftObjectPtrData
 			{
-				WeakPtr = BlittableMarshaller<WeakObjectPtr<Object>>.FromNative(valuePtr),
-				ObjectId = new SoftObjectPath
+				WeakPtr = BlittableMarshaller<TWeakObjectPtr<UObject>>.FromNative(valuePtr),
+				ObjectId = new FSoftObjectPath
 				{
-					AssetPath = BlittableMarshaller<TopLevelAssetPath>.FromNative(valuePtr + AssetPathOffset),
+					AssetPath = BlittableMarshaller<FTopLevelAssetPath>.FromNative(valuePtr + AssetPathOffset),
 					SubPathString = StringMarshaller.FromNative(valuePtr + SubPathStringOffset)
 				}
 			}
 		};
 	}
 
-	public static SoftObjectPtr<T> FromNative(IntPtr arrayPtr, int arrayIndex)
+	public static TSoftObjectPtr<T> FromNative(IntPtr arrayPtr, int arrayIndex)
 	{
 		return FromNative(arrayPtr + arrayIndex * NativeDataSize);
 	}
 
-	public void MarshallToNative(IntPtr valuePtr, in SoftObjectPtr<T> value)
+	public void MarshallToNative(IntPtr valuePtr, in TSoftObjectPtr<T> value)
 	{
 		ToNative(valuePtr, value);
 	}
 
-	public void MarshallToNative(IntPtr arrayPtr, int arrayIndex, in SoftObjectPtr<T> value)
+	public void MarshallToNative(IntPtr arrayPtr, int arrayIndex, in TSoftObjectPtr<T> value)
 	{
 		ToNative(arrayPtr, arrayIndex, value);
 	}
 
-	public SoftObjectPtr<T> MarshallFromNative(IntPtr valuePtr)
+	public TSoftObjectPtr<T> MarshallFromNative(IntPtr valuePtr)
 	{
 		return FromNative(valuePtr);
 	}
 
-	public SoftObjectPtr<T> MarshallFromNative(IntPtr arrayPtr, int arrayIndex)
+	public TSoftObjectPtr<T> MarshallFromNative(IntPtr arrayPtr, int arrayIndex)
 	{
 		return FromNative(arrayPtr, arrayIndex);
 	}
@@ -660,8 +659,8 @@ public class SoftObjectPtrMarshaller<T> : IMarshaller<SoftObjectPtr<T>>
 /// <summary>
 /// Handles marshalling of TLazyObjectPtr.
 /// </summary>
-public class LazyObjectPtrMarshaller<T> : BlittableMarshaller<LazyObjectPtr<T>>
-	where T : Object
+public class LazyObjectPtrMarshaller<T> : BlittableMarshaller<TLazyObjectPtr<T>>
+	where T : UObject
 {
 	public new static readonly LazyObjectPtrMarshaller<T> Instance;
 
@@ -674,8 +673,8 @@ public class LazyObjectPtrMarshaller<T> : BlittableMarshaller<LazyObjectPtr<T>>
 /// <summary>
 /// Handles marshalling of TSubclassOf.
 /// </summary>
-public class SubclassOfMarshaller<T> : IMarshaller<SubclassOf<T>>
-	where T : Object
+public class SubclassOfMarshaller<T> : IMarshaller<TSubclassOf<T>>
+	where T : UObject
 {
 	public static readonly SubclassOfMarshaller<T> Instance;
 
@@ -684,7 +683,7 @@ public class SubclassOfMarshaller<T> : IMarshaller<SubclassOf<T>>
 		Instance = new SubclassOfMarshaller<T>();
 	}
 
-	public static void ToNative(IntPtr valuePtr, in SubclassOf<T> value)
+	public static void ToNative(IntPtr valuePtr, in TSubclassOf<T> value)
 	{
 		unsafe
 		{
@@ -692,12 +691,12 @@ public class SubclassOfMarshaller<T> : IMarshaller<SubclassOf<T>>
 		}
 	}
 
-	public static void ToNative(IntPtr arrayPtr, int arrayIndex, in SubclassOf<T> value)
+	public static void ToNative(IntPtr arrayPtr, int arrayIndex, in TSubclassOf<T> value)
 	{
 		ToNative(arrayPtr + arrayIndex * IntPtr.Size, value);
 	}
 
-	public static SubclassOf<T> FromNative(IntPtr valuePtr)
+	public static TSubclassOf<T> FromNative(IntPtr valuePtr)
 	{
 		unsafe
 		{
@@ -707,31 +706,31 @@ public class SubclassOfMarshaller<T> : IMarshaller<SubclassOf<T>>
 				return default;
 			}
 
-			return new SubclassOf<T>(classPtr);
+			return new TSubclassOf<T>(classPtr);
 		}
 	}
 
-	public static SubclassOf<T> FromNative(IntPtr arrayPtr, int arrayIndex)
+	public static TSubclassOf<T> FromNative(IntPtr arrayPtr, int arrayIndex)
 	{
 		return FromNative(arrayPtr + arrayIndex * IntPtr.Size);
 	}
 
-	public void MarshallToNative(IntPtr valuePtr, in SubclassOf<T> value)
+	public void MarshallToNative(IntPtr valuePtr, in TSubclassOf<T> value)
 	{
 		ToNative(valuePtr, value);
 	}
 
-	public void MarshallToNative(IntPtr arrayPtr, int arrayIndex, in SubclassOf<T> value)
+	public void MarshallToNative(IntPtr arrayPtr, int arrayIndex, in TSubclassOf<T> value)
 	{
 		ToNative(arrayPtr, arrayIndex, value);
 	}
 
-	public SubclassOf<T> MarshallFromNative(IntPtr valuePtr)
+	public TSubclassOf<T> MarshallFromNative(IntPtr valuePtr)
 	{
 		return FromNative(valuePtr);
 	}
 
-	public SubclassOf<T> MarshallFromNative(IntPtr arrayPtr, int arrayIndex)
+	public TSubclassOf<T> MarshallFromNative(IntPtr arrayPtr, int arrayIndex)
 	{
 		return FromNative(arrayPtr, arrayIndex);
 	}
@@ -740,8 +739,8 @@ public class SubclassOfMarshaller<T> : IMarshaller<SubclassOf<T>>
 /// <summary>
 /// Handles marshalling of TSoftClassPtr.
 /// </summary>
-public class SoftClassPtrMarshaller<T> : IMarshaller<SoftClassPtr<T>>
-	where T : Object, IStaticClass<T>
+public class SoftClassPtrMarshaller<T> : IMarshaller<TSoftClassPtr<T>>
+	where T : UObject, IStaticClass<T>
 {
 	public static readonly SoftClassPtrMarshaller<T> Instance;
 
@@ -757,61 +756,61 @@ public class SoftClassPtrMarshaller<T> : IMarshaller<SoftClassPtr<T>>
 
 		unsafe
 		{
-			AssetPathOffset = sizeof(WeakObjectPtr<T>);
-			SubPathStringOffset = AssetPathOffset + sizeof(TopLevelAssetPath);
+			AssetPathOffset = sizeof(TWeakObjectPtr<T>);
+			SubPathStringOffset = AssetPathOffset + sizeof(FTopLevelAssetPath);
 			NativeDataSize = SubPathStringOffset + sizeof(NativeString);
 		}
 	}
 
-	public static void ToNative(IntPtr valuePtr, in SoftClassPtr<T> value)
+	public static void ToNative(IntPtr valuePtr, in TSoftClassPtr<T> value)
 	{
-		BlittableMarshaller<WeakObjectPtr<Object>>.ToNative(valuePtr, value.Data.WeakPtr);
-		BlittableMarshaller<TopLevelAssetPath>.ToNative(valuePtr + AssetPathOffset, value.Data.ObjectId.AssetPath);
+		BlittableMarshaller<TWeakObjectPtr<UObject>>.ToNative(valuePtr, value.Data.WeakPtr);
+		BlittableMarshaller<FTopLevelAssetPath>.ToNative(valuePtr + AssetPathOffset, value.Data.ObjectId.AssetPath);
 		StringMarshaller.ToNative(valuePtr + SubPathStringOffset, value.Data.ObjectId.SubPathString);
 	}
 
-	public static void ToNative(IntPtr arrayPtr, int arrayIndex, in SoftClassPtr<T> value)
+	public static void ToNative(IntPtr arrayPtr, int arrayIndex, in TSoftClassPtr<T> value)
 	{
 		ToNative(arrayPtr + arrayIndex * NativeDataSize, value);
 	}
 
-	public static SoftClassPtr<T> FromNative(IntPtr valuePtr)
+	public static TSoftClassPtr<T> FromNative(IntPtr valuePtr)
 	{
-		return new SoftClassPtr<T>
+		return new TSoftClassPtr<T>
 		{
 			Data = new SoftObjectPtrData
 			{
-				WeakPtr = BlittableMarshaller<WeakObjectPtr<Object>>.FromNative(valuePtr),
-				ObjectId = new SoftObjectPath
+				WeakPtr = BlittableMarshaller<TWeakObjectPtr<UObject>>.FromNative(valuePtr),
+				ObjectId = new FSoftObjectPath
 				{
-					AssetPath = BlittableMarshaller<TopLevelAssetPath>.FromNative(valuePtr + AssetPathOffset),
+					AssetPath = BlittableMarshaller<FTopLevelAssetPath>.FromNative(valuePtr + AssetPathOffset),
 					SubPathString = StringMarshaller.FromNative(valuePtr + SubPathStringOffset)
 				}
 			}
 		};
 	}
 
-	public static SoftClassPtr<T> FromNative(IntPtr arrayPtr, int arrayIndex)
+	public static TSoftClassPtr<T> FromNative(IntPtr arrayPtr, int arrayIndex)
 	{
 		return FromNative(arrayPtr + arrayIndex * NativeDataSize);
 	}
 
-	public void MarshallToNative(IntPtr valuePtr, in SoftClassPtr<T> value)
+	public void MarshallToNative(IntPtr valuePtr, in TSoftClassPtr<T> value)
 	{
 		ToNative(valuePtr, value);
 	}
 
-	public void MarshallToNative(IntPtr arrayPtr, int arrayIndex, in SoftClassPtr<T> value)
+	public void MarshallToNative(IntPtr arrayPtr, int arrayIndex, in TSoftClassPtr<T> value)
 	{
 		ToNative(arrayPtr, arrayIndex, value);
 	}
 
-	public SoftClassPtr<T> MarshallFromNative(IntPtr valuePtr)
+	public TSoftClassPtr<T> MarshallFromNative(IntPtr valuePtr)
 	{
 		return FromNative(valuePtr);
 	}
 
-	public SoftClassPtr<T> MarshallFromNative(IntPtr arrayPtr, int arrayIndex)
+	public TSoftClassPtr<T> MarshallFromNative(IntPtr arrayPtr, int arrayIndex)
 	{
 		return FromNative(arrayPtr, arrayIndex);
 	}
@@ -836,7 +835,8 @@ public class InterfaceMarshaller<T> : IMarshaller<T?>
 		{
 			IntPtr objectPtr = IntPtr.Zero;
 			IntPtr interfacePtr = IntPtr.Zero;
-			if (value is Object obj)
+			// ReSharper disable once SuspiciousTypeConversion.Global
+			if (value is UObject obj)
 			{
 				objectPtr = obj.NativeObject;
 				interfacePtr = T.InterfaceClass.NativeObject;
@@ -915,14 +915,14 @@ public class DelegateMarshaller<T> : IMarshaller<T>
 	{
 		unsafe
 		{
-			ScriptDelegate* scriptDelegatePtr = (ScriptDelegate*)valuePtr;
+			FScriptDelegate* scriptDelegatePtr = (FScriptDelegate*)valuePtr;
 			if (value == null)
 			{
 				scriptDelegatePtr->Unbind();
 			}
 			else
 			{
-				if (value.Target is not Object targetObject
+				if (value.Target is not UObject targetObject
 					|| TypeInterop.FindFunction(targetObject.GetClass().NativeObject, value.Method.Name) == IntPtr.Zero)
 				{
 					throw new ArgumentException($"the callback for delegate must be a valid UFunction. {nameof(value)}");
@@ -937,7 +937,7 @@ public class DelegateMarshaller<T> : IMarshaller<T>
 	{
 		unsafe
 		{
-			ToNative(arrayPtr + arrayIndex * sizeof(ScriptDelegate), value);
+			ToNative(arrayPtr + arrayIndex * sizeof(FScriptDelegate), value);
 		}
 	}
 
@@ -945,15 +945,15 @@ public class DelegateMarshaller<T> : IMarshaller<T>
 	{
 		unsafe
 		{
-			ScriptDelegate* scriptDelegatePtr = (ScriptDelegate*)valuePtr;
-			Object? obj = scriptDelegatePtr->GetUObject();
+			FScriptDelegate* scriptDelegatePtr = (FScriptDelegate*)valuePtr;
+			UObject? obj = scriptDelegatePtr->GetUObject();
 			if (obj == null)
 			{
 				return null!;
 			}
 
-			Name funcName = scriptDelegatePtr->GetFunctionName();
-			if (funcName == Name.None)
+			FName funcName = scriptDelegatePtr->GetFunctionName();
+			if (funcName == FName.None)
 			{
 				return null!;
 			}
@@ -974,7 +974,7 @@ public class DelegateMarshaller<T> : IMarshaller<T>
 	{
 		unsafe
 		{
-			return FromNative(arrayPtr + arrayIndex * sizeof(ScriptDelegate));
+			return FromNative(arrayPtr + arrayIndex * sizeof(FScriptDelegate));
 		}
 	}
 
@@ -1007,7 +1007,7 @@ public class DelegateMarshaller<T> : IMarshaller<T>
 	{
 		unsafe
 		{
-			return MarshallToNativeRef(arrayPtr + arrayIndex * sizeof(ScriptDelegate));
+			return MarshallToNativeRef(arrayPtr + arrayIndex * sizeof(FScriptDelegate));
 		}
 	}
 }

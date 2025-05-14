@@ -40,7 +40,7 @@ public static class ClassExporter
 			}
 			else
 			{
-				superClassName = "ObjectBase";
+				superClassName = "UObjectBase";
 			}
 
 			superClassName = $"{superClassName}, IStaticClass<{className}>";
@@ -52,6 +52,7 @@ public static class ClassExporter
 			}
 
 			codeBuilder.AppendTooltip(classObj);
+			codeBuilder.AppendLine($"[UnrealTypeName(\"{classObj.EngineName}\")]");
 			codeBuilder.AppendTypeDeclare("class", className, baseTypeName: superClassName, nativeInterfaces: interfaces);
 
 			using (new CodeBlock(codeBuilder)) // class body

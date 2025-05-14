@@ -1,12 +1,12 @@
 ﻿using SharpScript;
 using SharpScript.Interop;
+using UnrealEngine.CoreUObject;
 using UnrealEngine.Intrinsic;
-using Object = UnrealEngine.CoreUObject.Object;
 
 namespace SharpScriptUnitTest.Types;
 
-public class SsArrayTestStructNativeRef(IntPtr nativePtr)
-	: IStructNativeRef<SsArrayTestStruct>
+public class FSsArrayTestStructNativeRef(IntPtr nativePtr)
+	: IStructNativeRef<FSsArrayTestStruct>
 {
 	// ReSharper disable InconsistentNaming
 	public static readonly IntPtr NativeType;
@@ -45,7 +45,7 @@ public class SsArrayTestStructNativeRef(IntPtr nativePtr)
 	internal static readonly int DelegateArray_Offset;
 	// ReSharper restore InconsistentNaming
 
-	static SsArrayTestStructNativeRef()
+	static FSsArrayTestStructNativeRef()
 	{
 		NativeType = TypeInterop.FindStruct("SsArrayTestStruct");
 		NativeDataSize = TypeInterop.GetStructureSize(NativeType);
@@ -100,77 +100,77 @@ public class SsArrayTestStructNativeRef(IntPtr nativePtr)
 		DelegateArray_Offset = TypeInterop.GetPropertyOffset(DelegateArray_NativeProp);
 	}
 
-	private Array<int>? _intArray;
-	public Array<int> IntArray => _intArray ??= new(nativePtr + IntArray_Offset, IntArray_NativeProp, BlittableMarshaller<int>.Instance);
+	private TArray<int>? _intArray;
+	public TArray<int> IntArray => _intArray ??= new(nativePtr + IntArray_Offset, IntArray_NativeProp, BlittableMarshaller<int>.Instance);
 
-	private Array<bool>? _boolArray;
-	public Array<bool> BoolArray => _boolArray ??= new(nativePtr + BoolArray_Offset, BoolArray_NativeProp, BoolMarshaller.Instance);
+	private TArray<bool>? _boolArray;
+	public TArray<bool> BoolArray => _boolArray ??= new(nativePtr + BoolArray_Offset, BoolArray_NativeProp, BoolMarshaller.Instance);
 
-	private Array<string>? _stringArray;
-	public Array<string> StringArray => _stringArray ??= new(nativePtr + StringArray_Offset, StringArray_NativeProp, StringMarshaller.Instance);
+	private TArray<string>? _stringArray;
+	public TArray<string> StringArray => _stringArray ??= new(nativePtr + StringArray_Offset, StringArray_NativeProp, StringMarshaller.Instance);
 
-	private Array<Text>? _textArray;
-	public Array<Text> TextArray => _textArray ??= new(nativePtr + TextArray_Offset, TextArray_NativeProp, TextMarshaller.Instance);
+	private TArray<FText>? _textArray;
+	public TArray<FText> TextArray => _textArray ??= new(nativePtr + TextArray_Offset, TextArray_NativeProp, TextMarshaller.Instance);
 
-	private Array<ESsTestEnum>? _enumArray;
-	public Array<ESsTestEnum> EnumArray => _enumArray ??= new(nativePtr + EnumArray_Offset, EnumArray_NativeProp, EnumMarshaller<ESsTestEnum>.Instance);
+	private TArray<ESsTestEnum>? _enumArray;
+	public TArray<ESsTestEnum> EnumArray => _enumArray ??= new(nativePtr + EnumArray_Offset, EnumArray_NativeProp, EnumMarshaller<ESsTestEnum>.Instance);
 
-	private Array<ESsTestLongEnum>? _longEnumArray;
-	public Array<ESsTestLongEnum> LongEnumArray => _longEnumArray ??= new(nativePtr + LongEnumArray_Offset, LongEnumArray_NativeProp, EnumMarshaller<ESsTestLongEnum>.Instance);
+	private TArray<ESsTestLongEnum>? _longEnumArray;
+	public TArray<ESsTestLongEnum> LongEnumArray => _longEnumArray ??= new(nativePtr + LongEnumArray_Offset, LongEnumArray_NativeProp, EnumMarshaller<ESsTestLongEnum>.Instance);
 
-	private Array<SsArrayTestInnerStruct, SsArrayTestInnerStructNativeRef>? _structArray;
+	private TArray<FSsArrayTestInnerStruct, FSsArrayTestInnerStructNativeRef>? _structArray;
 
-	public Array<SsArrayTestInnerStruct, SsArrayTestInnerStructNativeRef> StructArray
+	public TArray<FSsArrayTestInnerStruct, FSsArrayTestInnerStructNativeRef> StructArray
 		=> _structArray ??= new(nativePtr + StructArray_Offset, StructArray_NativeProp);
 
-	private Array<SsTestBlittableStruct, SsTestBlittableStructNativeRef>? _blittableStructArray;
+	private TArray<FSsTestBlittableStruct, FSsTestBlittableStructNativeRef>? _blittableStructArray;
 
-	public Array<SsTestBlittableStruct, SsTestBlittableStructNativeRef> BlittableStructArray
+	public TArray<FSsTestBlittableStruct, FSsTestBlittableStructNativeRef> BlittableStructArray
 		=> _blittableStructArray ??= new(nativePtr + BlittableStructArray_Offset, BlittableStructArray_NativeProp);
 
-	private Array<Object?>? _objectArray;
+	private TArray<UObject?>? _objectArray;
 
-	public Array<Object?> ObjectArray
-		=> _objectArray ??= new(nativePtr + ObjectArray_Offset, ObjectArray_NativeProp, ObjectMarshaller<Object>.Instance);
+	public TArray<UObject?> ObjectArray
+		=> _objectArray ??= new(nativePtr + ObjectArray_Offset, ObjectArray_NativeProp, ObjectMarshaller<UObject>.Instance);
 
-	private Array<SoftObjectPtr<Object>>? _softObjectPtrArray;
+	private TArray<TSoftObjectPtr<UObject>>? _softObjectPtrArray;
 
-	public Array<SoftObjectPtr<Object>> SoftObjectPtrArray
-		=> _softObjectPtrArray ??= new(nativePtr + SoftObjectPtrArray_Offset, SoftObjectPtrArray_NativeProp, SoftObjectPtrMarshaller<Object>.Instance);
+	public TArray<TSoftObjectPtr<UObject>> SoftObjectPtrArray
+		=> _softObjectPtrArray ??= new(nativePtr + SoftObjectPtrArray_Offset, SoftObjectPtrArray_NativeProp, SoftObjectPtrMarshaller<UObject>.Instance);
 
-	private Array<Object?>? _weakObjectPtrArray;
+	private TArray<UObject?>? _weakObjectPtrArray;
 
-	public Array<Object?> WeakObjectPtrArray
-		=> _weakObjectPtrArray ??= new(nativePtr + WeakObjectPtrArray_Offset, WeakObjectPtrArray_NativeProp, ObjectMarshaller<Object>.Instance);
+	public TArray<UObject?> WeakObjectPtrArray
+		=> _weakObjectPtrArray ??= new(nativePtr + WeakObjectPtrArray_Offset, WeakObjectPtrArray_NativeProp, ObjectMarshaller<UObject>.Instance);
 
-	private Array<LazyObjectPtr<Object>>? _lazyObjectPtrArray;
+	private TArray<TLazyObjectPtr<UObject>>? _lazyObjectPtrArray;
 
-	public Array<LazyObjectPtr<Object>> LazyObjectPtrArray
-		=> _lazyObjectPtrArray ??= new(nativePtr + LazyObjectPtrArray_Offset, LazyObjectPtrArray_NativeProp, LazyObjectPtrMarshaller<Object>.Instance);
+	public TArray<TLazyObjectPtr<UObject>> LazyObjectPtrArray
+		=> _lazyObjectPtrArray ??= new(nativePtr + LazyObjectPtrArray_Offset, LazyObjectPtrArray_NativeProp, LazyObjectPtrMarshaller<UObject>.Instance);
 
-	private Array<SubclassOf<Object>>? _classArray;
+	private TArray<TSubclassOf<UObject>>? _classArray;
 
-	public Array<SubclassOf<Object>> ClassArray
-		=> _classArray ??= new(nativePtr + ClassArray_Offset, ClassArray_NativeProp, SubclassOfMarshaller<Object>.Instance);
+	public TArray<TSubclassOf<UObject>> ClassArray
+		=> _classArray ??= new(nativePtr + ClassArray_Offset, ClassArray_NativeProp, SubclassOfMarshaller<UObject>.Instance);
 
-	private Array<SoftClassPtr<Object>>? _softClassPtrArray;
+	private TArray<TSoftClassPtr<UObject>>? _softClassPtrArray;
 
-	public Array<SoftClassPtr<Object>> SoftClassPtrArray
-		=> _softClassPtrArray ??= new(nativePtr + SoftClassPtrArray_Offset, SoftClassPtrArray_NativeProp, SoftClassPtrMarshaller<Object>.Instance);
+	public TArray<TSoftClassPtr<UObject>> SoftClassPtrArray
+		=> _softClassPtrArray ??= new(nativePtr + SoftClassPtrArray_Offset, SoftClassPtrArray_NativeProp, SoftClassPtrMarshaller<UObject>.Instance);
 
-	private Array<ISsTestChildInterface?>? _interfaceArray;
+	private TArray<ISsTestChildInterface?>? _interfaceArray;
 
-	public Array<ISsTestChildInterface?> InterfaceArray
+	public TArray<ISsTestChildInterface?> InterfaceArray
 		=> _interfaceArray ??= new(nativePtr + InterfaceArray_Offset, InterfaceArray_NativeProp, InterfaceMarshaller<ISsTestChildInterface>.Instance);
 
-	private DelegateArray<SsTestDelegate, Delegate<SsTestDelegate>>? _delegateArray;
+	private TDelegateArray<FSsTestDelegate, Delegate<FSsTestDelegate>>? _delegateArray;
 
-	public DelegateArray<SsTestDelegate, Delegate<SsTestDelegate>> DelegateArray
-		=> _delegateArray ??= new(nativePtr + DelegateArray_Offset, DelegateArray_NativeProp, DelegateMarshaller<SsTestDelegate>.Instance);
+	public TDelegateArray<FSsTestDelegate, Delegate<FSsTestDelegate>> DelegateArray
+		=> _delegateArray ??= new(nativePtr + DelegateArray_Offset, DelegateArray_NativeProp, DelegateMarshaller<FSsTestDelegate>.Instance);
 
-	public SsArrayTestStruct ToManaged()
+	public FSsArrayTestStruct ToManaged()
 	{
-		return new SsArrayTestStruct()
+		return new FSsArrayTestStruct()
 		{
 			IntArray = IntArray,
 			BoolArray = BoolArray,
@@ -190,7 +190,7 @@ public class SsArrayTestStructNativeRef(IntPtr nativePtr)
 		};
 	}
 
-	public void FromManaged(in SsArrayTestStruct value)
+	public void FromManaged(in FSsArrayTestStruct value)
 	{
 		IntArray.CopyFrom(value.IntArray);
 		BoolArray.CopyFrom(value.BoolArray);
@@ -209,9 +209,9 @@ public class SsArrayTestStructNativeRef(IntPtr nativePtr)
 		DelegateArray.CopyFrom(value.DelegateArray);
 	}
 
-	public static IStructNativeRef<SsArrayTestStruct> CreateInstance(IntPtr valuePtr)
+	public static IStructNativeRef<FSsArrayTestStruct> CreateInstance(IntPtr valuePtr)
 	{
-		return new SsArrayTestStructNativeRef(valuePtr);
+		return new FSsArrayTestStructNativeRef(valuePtr);
 	}
 
 	public static int GetNativeDataSize()
@@ -219,13 +219,13 @@ public class SsArrayTestStructNativeRef(IntPtr nativePtr)
 		return NativeDataSize;
 	}
 
-	public static implicit operator SsArrayTestStruct(SsArrayTestStructNativeRef nativeRef)
+	public static implicit operator FSsArrayTestStruct(FSsArrayTestStructNativeRef nativeRef)
 	{
 		return nativeRef.ToManaged();
 	}
 }
 
-public struct SsArrayTestStruct
+public struct FSsArrayTestStruct
 {
 	public List<int> IntArray;
 
@@ -233,27 +233,27 @@ public struct SsArrayTestStruct
 
 	public List<string> StringArray;
 
-	public List<Text> TextArray;
+	public List<FText> TextArray;
 
 	public List<ESsTestEnum> EnumArray;
 
 	public List<ESsTestLongEnum> LongEnumArray;
 
-	public List<SsArrayTestInnerStruct> StructArray;
+	public List<FSsArrayTestInnerStruct> StructArray;
 
-	public List<Object?> ObjectArray;
+	public List<UObject?> ObjectArray;
 
-	public List<SoftObjectPtr<Object>> SoftObjectPtrArray;
+	public List<TSoftObjectPtr<UObject>> SoftObjectPtrArray;
 
-	public List<Object?> WeakObjectPtrArray;
+	public List<UObject?> WeakObjectPtrArray;
 
-	public List<LazyObjectPtr<Object>> LazyObjectPtrArray;
+	public List<TLazyObjectPtr<UObject>> LazyObjectPtrArray;
 
-	public List<SubclassOf<Object>> ClassArray;
+	public List<TSubclassOf<UObject>> ClassArray;
 
-	public List<SoftClassPtr<Object>> SoftClassPtrArray;
+	public List<TSoftClassPtr<UObject>> SoftClassPtrArray;
 
 	public List<ISsTestChildInterface?> InterfaceArray;
 
-	public List<SsTestDelegate> DelegateArray;
+	public List<FSsTestDelegate> DelegateArray;
 }

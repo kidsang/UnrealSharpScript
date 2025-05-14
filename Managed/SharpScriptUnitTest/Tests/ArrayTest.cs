@@ -3,7 +3,6 @@ using SharpScriptUnitTest.Types;
 using UnrealEngine.CoreUObject;
 using UnrealEngine.Engine;
 using UnrealEngine.Intrinsic;
-using Object = UnrealEngine.CoreUObject.Object;
 
 namespace SharpScriptUnitTest.Tests;
 
@@ -19,10 +18,10 @@ public class ArrayTest : IUnitTestInterface
 		IntPtr testStructTwoNativePtr = 0;
 		try
 		{
-			testStructOneNativePtr = TypeInterop.CreateStructInstance(SsArrayTestStructNativeRef.NativeType);
-			SsArrayTestStructNativeRef testStructOneNativeRef = new SsArrayTestStructNativeRef(testStructOneNativePtr);
-			testStructTwoNativePtr = TypeInterop.CreateStructInstance(SsArrayTestStructNativeRef.NativeType);
-			SsArrayTestStructNativeRef testStructTwoNativeRef = new SsArrayTestStructNativeRef(testStructTwoNativePtr);
+			testStructOneNativePtr = TypeInterop.CreateStructInstance(FSsArrayTestStructNativeRef.NativeType);
+			FSsArrayTestStructNativeRef testStructOneNativeRef = new FSsArrayTestStructNativeRef(testStructOneNativePtr);
+			testStructTwoNativePtr = TypeInterop.CreateStructInstance(FSsArrayTestStructNativeRef.NativeType);
+			FSsArrayTestStructNativeRef testStructTwoNativeRef = new FSsArrayTestStructNativeRef(testStructTwoNativePtr);
 
 			IntArrayTest(testStructOneNativeRef.IntArray, testStructTwoNativeRef.IntArray);
 			BoolArrayTest(testStructOneNativeRef.BoolArray, testStructTwoNativeRef.BoolArray);
@@ -45,19 +44,19 @@ public class ArrayTest : IUnitTestInterface
 		{
 			if (testStructOneNativePtr != 0)
 			{
-				TypeInterop.DestroyStructInstance(SsArrayTestStructNativeRef.NativeType, ref testStructOneNativePtr);
+				TypeInterop.DestroyStructInstance(FSsArrayTestStructNativeRef.NativeType, ref testStructOneNativePtr);
 			}
 
 			if (testStructTwoNativePtr != 0)
 			{
-				TypeInterop.DestroyStructInstance(SsArrayTestStructNativeRef.NativeType, ref testStructTwoNativePtr);
+				TypeInterop.DestroyStructInstance(FSsArrayTestStructNativeRef.NativeType, ref testStructTwoNativePtr);
 			}
 		}
 
 		return true;
 	}
 
-	public static void IntArrayTest(Array<int> IntArrayOne, Array<int> IntArrayTwo)
+	public static void IntArrayTest(TArray<int> IntArrayOne, TArray<int> IntArrayTwo)
 	{
 		// ------------------------------------------
 		// Test integer array - Add
@@ -97,7 +96,7 @@ public class ArrayTest : IUnitTestInterface
 		Utils.Assert(IntArrayOne.ToList().SequenceEqual([]));
 	}
 
-	public static void BoolArrayTest(Array<bool> BoolArrayOne, Array<bool> BoolArrayTwo)
+	public static void BoolArrayTest(TArray<bool> BoolArrayOne, TArray<bool> BoolArrayTwo)
 	{
 		// ------------------------------------------
 		// Test boolean array - Add
@@ -136,7 +135,7 @@ public class ArrayTest : IUnitTestInterface
 		Utils.Assert(BoolArrayOne.ToList().SequenceEqual([]));
 	}
 
-	public static void StringArrayTest(Array<string> StringArrayOne, Array<string> StringArrayTwo)
+	public static void StringArrayTest(TArray<string> StringArrayOne, TArray<string> StringArrayTwo)
 	{
 		// ------------------------------------------
 		// Test FString array - Add
@@ -176,31 +175,31 @@ public class ArrayTest : IUnitTestInterface
 		Utils.Assert(StringArrayOne.ToList().SequenceEqual([]));
 	}
 
-	public static void TextArrayTest(Array<Text> TextArrayOne, Array<Text> TextArrayTwo)
+	public static void TextArrayTest(TArray<FText> TextArrayOne, TArray<FText> TextArrayTwo)
 	{
 		// ------------------------------------------
 		// Test FText array - Add
-		TextArrayOne.Add(new Text("one"));
-		TextArrayOne.Add(new Text("three"));
-		Utils.Assert(TextArrayOne.ToList().SequenceEqual([new Text("one"), new Text("three")]));
+		TextArrayOne.Add(new FText("one"));
+		TextArrayOne.Add(new FText("three"));
+		Utils.Assert(TextArrayOne.ToList().SequenceEqual([new FText("one"), new FText("three")]));
 
 		// Test FText array - Insert
-		TextArrayOne.Insert(1, new Text("two"));
-		Utils.Assert(TextArrayOne.ToList().SequenceEqual([new Text("one"), new Text("two"), new Text("three")]));
+		TextArrayOne.Insert(1, new FText("two"));
+		Utils.Assert(TextArrayOne.ToList().SequenceEqual([new FText("one"), new FText("two"), new FText("three")]));
 
 		// Test FText array - Query
-		Utils.Assert(TextArrayOne.Contains(new Text("one")));
-		Utils.Assert(TextArrayOne.IndexOf(new Text("two")) == 1);
-		Utils.Assert(TextArrayOne[2] == new Text("three"));
-		Utils.Assert(!TextArrayOne.Contains(new Text("four")));
+		Utils.Assert(TextArrayOne.Contains(new FText("one")));
+		Utils.Assert(TextArrayOne.IndexOf(new FText("two")) == 1);
+		Utils.Assert(TextArrayOne[2] == new FText("three"));
+		Utils.Assert(!TextArrayOne.Contains(new FText("four")));
 
 		// Test FText array - Assignment
-		TextArrayOne[2] = new Text("four");
-		Utils.Assert(TextArrayOne[2] == new Text("four"));
-		Utils.Assert(TextArrayOne.ToList().SequenceEqual([new Text("one"), new Text("two"), new Text("four")]));
+		TextArrayOne[2] = new FText("four");
+		Utils.Assert(TextArrayOne[2] == new FText("four"));
+		Utils.Assert(TextArrayOne.ToList().SequenceEqual([new FText("one"), new FText("two"), new FText("four")]));
 
 		// Test FText array - Binary equality
-		TextArrayTwo.CopyFrom(new List<Text> { new Text("one"), new Text("two"), new Text("four") });
+		TextArrayTwo.CopyFrom(new List<FText> { new FText("one"), new FText("two"), new FText("four") });
 		Utils.Assert(TextArrayTwo.SequenceEqual(TextArrayOne));
 		TextArrayTwo.Clear();
 		Utils.Assert(TextArrayTwo.ToList().SequenceEqual([]));
@@ -208,15 +207,15 @@ public class ArrayTest : IUnitTestInterface
 		Utils.Assert(TextArrayTwo.SequenceEqual(TextArrayOne));
 
 		// Test FText array - Remove
-		TextArrayOne.Remove(new Text("two"));
-		Utils.Assert(TextArrayOne.ToList().SequenceEqual([new Text("one"), new Text("four")]));
+		TextArrayOne.Remove(new FText("two"));
+		Utils.Assert(TextArrayOne.ToList().SequenceEqual([new FText("one"), new FText("four")]));
 		TextArrayOne.RemoveAt(0);
-		Utils.Assert(TextArrayOne.ToList().SequenceEqual([new Text("four")]));
+		Utils.Assert(TextArrayOne.ToList().SequenceEqual([new FText("four")]));
 		TextArrayOne.Clear();
 		Utils.Assert(TextArrayOne.ToList().SequenceEqual([]));
 	}
 
-	public static void EnumArrayTest(Array<ESsTestEnum> EnumArrayOne, Array<ESsTestEnum> EnumArrayTwo)
+	public static void EnumArrayTest(TArray<ESsTestEnum> EnumArrayOne, TArray<ESsTestEnum> EnumArrayTwo)
 	{
 		// ------------------------------------------
 		// Test FEnum array - Add
@@ -256,7 +255,7 @@ public class ArrayTest : IUnitTestInterface
 		Utils.Assert(EnumArrayOne.ToList().SequenceEqual([]));
 	}
 
-	public static void LongEnumArrayTest(Array<ESsTestLongEnum> LongEnumArrayOne, Array<ESsTestLongEnum> LongEnumArrayTwo)
+	public static void LongEnumArrayTest(TArray<ESsTestLongEnum> LongEnumArrayOne, TArray<ESsTestLongEnum> LongEnumArrayTwo)
 	{
 		// ------------------------------------------
 		// Test FLongEnum array - Add
@@ -296,12 +295,12 @@ public class ArrayTest : IUnitTestInterface
 		Utils.Assert(LongEnumArrayOne.ToList().SequenceEqual([]));
 	}
 
-	public static void ObjectArrayTest(Array<Object?> ObjectArrayOne, Array<Object?> ObjectArrayTwo)
+	public static void ObjectArrayTest(TArray<UObject?> ObjectArrayOne, TArray<UObject?> ObjectArrayTwo)
 	{
-		SsTestObject objOne = NewObject<SsTestObject>();
-		SsTestObject objTwo = NewObject<SsTestObject>();
-		SsTestObject objThree = NewObject<SsTestObject>();
-		SsTestObject objFour = NewObject<SsTestObject>();
+		USsTestObject objOne = NewObject<USsTestObject>();
+		USsTestObject objTwo = NewObject<USsTestObject>();
+		USsTestObject objThree = NewObject<USsTestObject>();
+		USsTestObject objFour = NewObject<USsTestObject>();
 
 		// ------------------------------------------
 		// Test UObject array - Add
@@ -325,7 +324,7 @@ public class ArrayTest : IUnitTestInterface
 		Utils.Assert(ObjectArrayOne.ToList().SequenceEqual([objOne, objTwo, objFour]));
 
 		// Test UObject array - Binary equality
-		ObjectArrayTwo.CopyFrom(new List<Object> { objOne, objTwo, objFour });
+		ObjectArrayTwo.CopyFrom(new List<UObject> { objOne, objTwo, objFour });
 		Utils.Assert(ObjectArrayTwo.SequenceEqual(ObjectArrayOne));
 		ObjectArrayTwo.Clear();
 		Utils.Assert(ObjectArrayTwo.ToList().SequenceEqual([]));
@@ -341,12 +340,12 @@ public class ArrayTest : IUnitTestInterface
 		Utils.Assert(ObjectArrayOne.ToList().SequenceEqual([]));
 	}
 
-	public static void SoftObjectPtrArrayTest(Array<SoftObjectPtr<Object>> SoftObjectPtrArrayOne, Array<SoftObjectPtr<Object>> SoftObjectPtrArrayTwo)
+	public static void SoftObjectPtrArrayTest(TArray<TSoftObjectPtr<UObject>> SoftObjectPtrArrayOne, TArray<TSoftObjectPtr<UObject>> SoftObjectPtrArrayTwo)
 	{
-		SoftObjectPtr<Object> objOne = NewObject<SsTestObject>();
-		SoftObjectPtr<Object> objTwo = NewObject<SsTestObject>();
-		SoftObjectPtr<Object> objThree = NewObject<SsTestObject>();
-		SoftObjectPtr<Object> objFour = NewObject<SsTestObject>();
+		TSoftObjectPtr<UObject> objOne = NewObject<USsTestObject>();
+		TSoftObjectPtr<UObject> objTwo = NewObject<USsTestObject>();
+		TSoftObjectPtr<UObject> objThree = NewObject<USsTestObject>();
+		TSoftObjectPtr<UObject> objFour = NewObject<USsTestObject>();
 
 		// ------------------------------------------
 		// Test UObject array - Add
@@ -370,7 +369,7 @@ public class ArrayTest : IUnitTestInterface
 		Utils.Assert(SoftObjectPtrArrayOne.ToList().SequenceEqual([objOne, objTwo, objFour]));
 
 		// Test UObject array - Binary equality
-		SoftObjectPtrArrayTwo.CopyFrom(new List<SoftObjectPtr<Object>> { objOne, objTwo, objFour });
+		SoftObjectPtrArrayTwo.CopyFrom(new List<TSoftObjectPtr<UObject>> { objOne, objTwo, objFour });
 		Utils.Assert(SoftObjectPtrArrayTwo.SequenceEqual(SoftObjectPtrArrayOne));
 		SoftObjectPtrArrayTwo.Clear();
 		Utils.Assert(SoftObjectPtrArrayTwo.ToList().SequenceEqual([]));
@@ -386,12 +385,12 @@ public class ArrayTest : IUnitTestInterface
 		Utils.Assert(SoftObjectPtrArrayOne.ToList().SequenceEqual([]));
 	}
 
-	public static void LazyObjectPtrArrayTest(Array<LazyObjectPtr<Object>> LazyObjectPtrArrayOne, Array<LazyObjectPtr<Object>> LazyObjectPtrArrayTwo)
+	public static void LazyObjectPtrArrayTest(TArray<TLazyObjectPtr<UObject>> LazyObjectPtrArrayOne, TArray<TLazyObjectPtr<UObject>> LazyObjectPtrArrayTwo)
 	{
-		LazyObjectPtr<Object> objOne = NewObject<SsTestObject>();
-		LazyObjectPtr<Object> objTwo = NewObject<SsTestObject>();
-		LazyObjectPtr<Object> objThree = NewObject<SsTestObject>();
-		LazyObjectPtr<Object> objFour = NewObject<SsTestObject>();
+		TLazyObjectPtr<UObject> objOne = NewObject<USsTestObject>();
+		TLazyObjectPtr<UObject> objTwo = NewObject<USsTestObject>();
+		TLazyObjectPtr<UObject> objThree = NewObject<USsTestObject>();
+		TLazyObjectPtr<UObject> objFour = NewObject<USsTestObject>();
 
 		// ------------------------------------------
 		// Test UObject array - Add
@@ -415,7 +414,7 @@ public class ArrayTest : IUnitTestInterface
 		Utils.Assert(LazyObjectPtrArrayOne.ToList().SequenceEqual([objOne, objTwo, objFour]));
 
 		// Test UObject array - Binary equality
-		LazyObjectPtrArrayTwo.CopyFrom(new List<LazyObjectPtr<Object>> { objOne, objTwo, objFour });
+		LazyObjectPtrArrayTwo.CopyFrom(new List<TLazyObjectPtr<UObject>> { objOne, objTwo, objFour });
 		Utils.Assert(LazyObjectPtrArrayTwo.SequenceEqual(LazyObjectPtrArrayOne));
 		LazyObjectPtrArrayTwo.Clear();
 		Utils.Assert(LazyObjectPtrArrayTwo.ToList().SequenceEqual([]));
@@ -431,12 +430,12 @@ public class ArrayTest : IUnitTestInterface
 		Utils.Assert(LazyObjectPtrArrayOne.ToList().SequenceEqual([]));
 	}
 
-	public static void ClassArrayTest(Array<SubclassOf<Object>> ClassArrayOne, Array<SubclassOf<Object>> ClassArrayTwo)
+	public static void ClassArrayTest(TArray<TSubclassOf<UObject>> ClassArrayOne, TArray<TSubclassOf<UObject>> ClassArrayTwo)
 	{
-		Class clsOne = Object.StaticClass!;
-		Class clsTwo = Actor.StaticClass!;
-		Class clsThree = Pawn.StaticClass!;
-		Class clsFour = Character.StaticClass!;
+		UClass clsOne = UObject.StaticClass!;
+		UClass clsTwo = AActor.StaticClass!;
+		UClass clsThree = APawn.StaticClass!;
+		UClass clsFour = ACharacter.StaticClass!;
 
 		// ------------------------------------------
 		// Test UObject array - Add
@@ -460,7 +459,7 @@ public class ArrayTest : IUnitTestInterface
 		Utils.Assert(ClassArrayOne.ToList().SequenceEqual([clsOne, clsTwo, clsFour]));
 
 		// Test UObject array - Binary equality
-		ClassArrayTwo.CopyFrom(new List<SubclassOf<Object>> { clsOne, clsTwo, clsFour });
+		ClassArrayTwo.CopyFrom(new List<TSubclassOf<UObject>> { clsOne, clsTwo, clsFour });
 		Utils.Assert(ClassArrayTwo.SequenceEqual(ClassArrayOne));
 		ClassArrayTwo.Clear();
 		Utils.Assert(ClassArrayTwo.ToList().SequenceEqual([]));
@@ -476,12 +475,12 @@ public class ArrayTest : IUnitTestInterface
 		Utils.Assert(ClassArrayOne.ToList().SequenceEqual([]));
 	}
 
-	public static void SoftClassPtrArrayTest(Array<SoftClassPtr<Object>> SoftClassPtrArrayOne, Array<SoftClassPtr<Object>> SoftClassPtrArrayTwo)
+	public static void SoftClassPtrArrayTest(TArray<TSoftClassPtr<UObject>> SoftClassPtrArrayOne, TArray<TSoftClassPtr<UObject>> SoftClassPtrArrayTwo)
 	{
-		Class clsOne = Object.StaticClass!;
-		Class clsTwo = Actor.StaticClass!;
-		Class clsThree = Pawn.StaticClass!;
-		Class clsFour = Character.StaticClass!;
+		UClass clsOne = UObject.StaticClass!;
+		UClass clsTwo = AActor.StaticClass!;
+		UClass clsThree = APawn.StaticClass!;
+		UClass clsFour = ACharacter.StaticClass!;
 
 		// ------------------------------------------
 		// Test UObject array - Add
@@ -505,7 +504,7 @@ public class ArrayTest : IUnitTestInterface
 		Utils.Assert(SoftClassPtrArrayOne.ToList().SequenceEqual([clsOne, clsTwo, clsFour]));
 
 		// Test UObject array - Binary equality
-		SoftClassPtrArrayTwo.CopyFrom(new List<SoftClassPtr<Object>> { clsOne, clsTwo, clsFour });
+		SoftClassPtrArrayTwo.CopyFrom(new List<TSoftClassPtr<UObject>> { clsOne, clsTwo, clsFour });
 		Utils.Assert(SoftClassPtrArrayTwo.SequenceEqual(SoftClassPtrArrayOne));
 		SoftClassPtrArrayTwo.Clear();
 		Utils.Assert(SoftClassPtrArrayTwo.ToList().SequenceEqual([]));
@@ -521,23 +520,23 @@ public class ArrayTest : IUnitTestInterface
 		Utils.Assert(SoftClassPtrArrayOne.ToList().SequenceEqual([]));
 	}
 
-	public static void StructArrayTest(Array<SsArrayTestInnerStruct, SsArrayTestInnerStructNativeRef> StructArrayOne, Array<SsArrayTestInnerStruct, SsArrayTestInnerStructNativeRef> StructArrayTwo)
+	public static void StructArrayTest(TArray<FSsArrayTestInnerStruct, FSsArrayTestInnerStructNativeRef> StructArrayOne, TArray<FSsArrayTestInnerStruct, FSsArrayTestInnerStructNativeRef> StructArrayTwo)
 	{
 		// ------------------------------------------
 		// Test struct array
-		SsArrayTestInnerStruct innerStructA = new SsArrayTestInnerStruct
+		FSsArrayTestInnerStruct innerStructA = new FSsArrayTestInnerStruct
 		{
 			IntArray = [1, 2, 3]
 		};
-		SsArrayTestInnerStruct innerStructB = new SsArrayTestInnerStruct
+		FSsArrayTestInnerStruct innerStructB = new FSsArrayTestInnerStruct
 		{
 			IntArray = [4, 5, 6]
 		};
-		SsArrayTestInnerStruct innerStructC = new SsArrayTestInnerStruct
+		FSsArrayTestInnerStruct innerStructC = new FSsArrayTestInnerStruct
 		{
 			IntArray = [7, 8, 9]
 		};
-		SsArrayTestInnerStruct innerStructD = new SsArrayTestInnerStruct
+		FSsArrayTestInnerStruct innerStructD = new FSsArrayTestInnerStruct
 		{
 			IntArray = [10, 11, 12]
 		};
@@ -569,7 +568,7 @@ public class ArrayTest : IUnitTestInterface
 		]));
 
 		// Test struct array - Binary equality
-		StructArrayTwo.CopyFrom(new List<SsArrayTestInnerStruct> { innerStructA, innerStructB, innerStructD });
+		StructArrayTwo.CopyFrom(new List<FSsArrayTestInnerStruct> { innerStructA, innerStructB, innerStructD });
 		Utils.Assert(StructArrayTwo.SequenceEqual(StructArrayOne));
 		StructArrayTwo.Clear();
 		Utils.Assert(StructArrayTwo.ToList().SequenceEqual([]));
@@ -595,26 +594,26 @@ public class ArrayTest : IUnitTestInterface
 		Utils.Assert(StructArrayOne.ToList().SequenceEqual([]));
 	}
 
-	public static void BlittableStructArrayTest(Array<SsTestBlittableStruct, SsTestBlittableStructNativeRef> BlittableStructArrayOne, Array<SsTestBlittableStruct, SsTestBlittableStructNativeRef> BlittableStructArrayTwo)
+	public static void BlittableStructArrayTest(TArray<FSsTestBlittableStruct, FSsTestBlittableStructNativeRef> BlittableStructArrayOne, TArray<FSsTestBlittableStruct, FSsTestBlittableStructNativeRef> BlittableStructArrayTwo)
 	{
 		// ------------------------------------------
 		// Test struct array
-		SsTestBlittableStruct innerBlittableStructA = new SsTestBlittableStruct
+		FSsTestBlittableStruct innerBlittableStructA = new FSsTestBlittableStruct
 		{
 			X = 10,
 			Y = 10,
 		};
-		SsTestBlittableStruct innerBlittableStructB = new SsTestBlittableStruct
+		FSsTestBlittableStruct innerBlittableStructB = new FSsTestBlittableStruct
 		{
 			X = 20,
 			Y = 20,
 		};
-		SsTestBlittableStruct innerBlittableStructC = new SsTestBlittableStruct
+		FSsTestBlittableStruct innerBlittableStructC = new FSsTestBlittableStruct
 		{
 			X = 30,
 			Y = 30,
 		};
-		SsTestBlittableStruct innerBlittableStructD = new SsTestBlittableStruct
+		FSsTestBlittableStruct innerBlittableStructD = new FSsTestBlittableStruct
 		{
 			X = 40,
 			Y = 40,
@@ -647,7 +646,7 @@ public class ArrayTest : IUnitTestInterface
 		]));
 
 		// Test struct array - Binary equality
-		BlittableStructArrayTwo.CopyFrom(new List<SsTestBlittableStruct> { innerBlittableStructA, innerBlittableStructB, innerBlittableStructD });
+		BlittableStructArrayTwo.CopyFrom(new List<FSsTestBlittableStruct> { innerBlittableStructA, innerBlittableStructB, innerBlittableStructD });
 		Utils.Assert(BlittableStructArrayTwo.SequenceEqual(BlittableStructArrayOne));
 		BlittableStructArrayTwo.Clear();
 		Utils.Assert(BlittableStructArrayTwo.ToList().SequenceEqual([]));
@@ -671,14 +670,14 @@ public class ArrayTest : IUnitTestInterface
 		Utils.Assert(BlittableStructArrayOne.ToList().SequenceEqual([]));
 	}
 
-	public static void InterfaceArrayTest(Array<ISsTestChildInterface?> InterfaceArrayOne, Array<ISsTestChildInterface?> InterfaceArrayTwo)
+	public static void InterfaceArrayTest(TArray<ISsTestChildInterface?> InterfaceArrayOne, TArray<ISsTestChildInterface?> InterfaceArrayTwo)
 	{
 		// ------------------------------------------
 		// Test interface array
-		ISsTestChildInterface objA = NewObject<SsTestObject>();
-		ISsTestChildInterface objB = NewObject<SsTestObject>();
-		ISsTestChildInterface objC = NewObject<SsTestObject>();
-		ISsTestChildInterface objD = NewObject<SsTestObject>();
+		ISsTestChildInterface objA = NewObject<USsTestObject>();
+		ISsTestChildInterface objB = NewObject<USsTestObject>();
+		ISsTestChildInterface objC = NewObject<USsTestObject>();
+		ISsTestChildInterface objD = NewObject<USsTestObject>();
 
 		// Test interface array - Add
 		InterfaceArrayOne.Add(objA);
@@ -728,15 +727,15 @@ public class ArrayTest : IUnitTestInterface
 		Utils.Assert(InterfaceArrayOne.ToList().SequenceEqual([]));
 	}
 
-	public static void DelegateArrayTest(DelegateArray<SsTestDelegate, Delegate<SsTestDelegate>> DelegateArrayOne, DelegateArray<SsTestDelegate, Delegate<SsTestDelegate>> DelegateArrayTwo)
+	public static void DelegateArrayTest(TDelegateArray<FSsTestDelegate, Delegate<FSsTestDelegate>> DelegateArrayOne, TDelegateArray<FSsTestDelegate, Delegate<FSsTestDelegate>> DelegateArrayTwo)
 	{
 		// ------------------------------------------
 		// Test delegate array
-		SsTestObject obj = NewObject<SsTestObject>();
-		SsTestDelegate delegateA = obj.FuncBlueprintImplementable;
-		SsTestDelegate delegateB = obj.FuncBlueprintNative;
-		SsTestDelegate delegateC = obj.CallFuncBlueprintImplementable;
-		SsTestDelegate delegateD = obj.CallFuncBlueprintNative;
+		USsTestObject obj = NewObject<USsTestObject>();
+		FSsTestDelegate delegateA = obj.FuncBlueprintImplementable;
+		FSsTestDelegate delegateB = obj.FuncBlueprintNative;
+		FSsTestDelegate delegateC = obj.CallFuncBlueprintImplementable;
+		FSsTestDelegate delegateD = obj.CallFuncBlueprintNative;
 
 		// Test delegate array - Add
 		DelegateArrayOne.Add(delegateA);
@@ -765,7 +764,7 @@ public class ArrayTest : IUnitTestInterface
 		]));
 
 		// Test delegate array - Binary equality
-		DelegateArrayTwo.CopyFrom(new List<SsTestDelegate> { delegateA, delegateB, delegateD });
+		DelegateArrayTwo.CopyFrom(new List<FSsTestDelegate> { delegateA, delegateB, delegateD });
 		Utils.Assert(DelegateArrayTwo.SequenceEqual(DelegateArrayOne));
 		DelegateArrayTwo.Clear();
 		Utils.Assert(DelegateArrayTwo.ToList().SequenceEqual([]));

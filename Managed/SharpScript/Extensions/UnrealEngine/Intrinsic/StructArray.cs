@@ -11,7 +11,7 @@ namespace UnrealEngine.Intrinsic;
 /// <param name="arrayProp">FArrayProperty pointer</param>
 /// <typeparam name="T">Array element type</typeparam>
 /// <typeparam name="TRef">Array element reference type</typeparam>
-public abstract unsafe class ArrayBase<T, TRef>(IntPtr nativeBuffer, IntPtr arrayProp) : IEnumerable<T>
+public abstract unsafe class TArrayBase<T, TRef>(IntPtr nativeBuffer, IntPtr arrayProp) : IEnumerable<T>
 	where TRef : IStructNativeRef<T> where T : struct
 {
 	/// <summary>
@@ -78,7 +78,7 @@ public abstract unsafe class ArrayBase<T, TRef>(IntPtr nativeBuffer, IntPtr arra
 
 	public bool SequenceEqual(IEnumerable<T> other)
 	{
-		if (other is ArrayBase<T, TRef> otherArray)
+		if (other is TArrayBase<T, TRef> otherArray)
 		{
 			if (NativeBuffer == otherArray.NativeBuffer)
 			{
@@ -100,9 +100,9 @@ public abstract unsafe class ArrayBase<T, TRef>(IntPtr nativeBuffer, IntPtr arra
 	}
 
 	/// <summary>
-	/// Implicit converter from <see cref="ArrayBase{T,TRef}"/> to <see cref="List{T}"/>
+	/// Implicit converter from <see cref="TArrayBase{T,TRef}"/> to <see cref="List{T}"/>
 	/// </summary>
-	public static implicit operator List<T>(ArrayBase<T, TRef> array)
+	public static implicit operator List<T>(TArrayBase<T, TRef> array)
 	{
 		return array.ToList();
 	}
@@ -110,7 +110,7 @@ public abstract unsafe class ArrayBase<T, TRef>(IntPtr nativeBuffer, IntPtr arra
 	/// <summary>
 	/// List enumerator.
 	/// </summary>
-	public struct Enumerator(ArrayBase<T, TRef> array) : IEnumerator<T>
+	public struct Enumerator(TArrayBase<T, TRef> array) : IEnumerator<T>
 	{
 		private int _index = -1;
 
@@ -148,9 +148,9 @@ public abstract unsafe class ArrayBase<T, TRef>(IntPtr nativeBuffer, IntPtr arra
 /// <summary>
 /// Read-only wrapper for TArray.
 /// </summary>
-/// <inheritdoc cref="ArrayBase{T,TRef}"/>
-public class ArrayReadOnly<T, TRef>(IntPtr nativeBuffer, IntPtr arrayProp)
-	: ArrayBase<T, TRef>(nativeBuffer, arrayProp)
+/// <inheritdoc cref="TArrayBase{T,TRef}"/>
+public class TArrayReadOnly<T, TRef>(IntPtr nativeBuffer, IntPtr arrayProp)
+	: TArrayBase<T, TRef>(nativeBuffer, arrayProp)
 	where TRef : IStructNativeRef<T> where T : struct
 {
 	public TRef this[int index] => Get(index);
@@ -159,9 +159,9 @@ public class ArrayReadOnly<T, TRef>(IntPtr nativeBuffer, IntPtr arrayProp)
 /// <summary>
 /// Wrapper for TArray.
 /// </summary>
-/// <inheritdoc cref="ArrayBase{T,TRef}"/>
-public unsafe class Array<T, TRef>(IntPtr nativeBuffer, IntPtr arrayProp)
-	: ArrayBase<T, TRef>(nativeBuffer, arrayProp), ICollection<T>
+/// <inheritdoc cref="TArrayBase{T,TRef}"/>
+public unsafe class TArray<T, TRef>(IntPtr nativeBuffer, IntPtr arrayProp)
+	: TArrayBase<T, TRef>(nativeBuffer, arrayProp), ICollection<T>
 	where TRef : IStructNativeRef<T> where T : struct
 {
 	public bool IsReadOnly => false;
@@ -230,7 +230,7 @@ public unsafe class Array<T, TRef>(IntPtr nativeBuffer, IntPtr arrayProp)
 			return;
 		}
 
-		if (other is ArrayBase<T, TRef> otherArray)
+		if (other is TArrayBase<T, TRef> otherArray)
 		{
 			if (!SequenceEqual(otherArray))
 			{

@@ -43,9 +43,9 @@ public class MapPropertyTranslator : ContainerPropertyTranslator
 		string valueManagedType = valueTranslator.GetParamManagedType(valueProperty);
 		return valueTranslator switch
 		{
-			StructPropertyTranslator => $"Map<{keyManagedType}, {valueManagedType}, {valueTranslator.GetPropManagedType(valueProperty)}>",
-			DelegatePropertyTranslator => $"DelegateMap<{keyManagedType}, {valueManagedType}, {valueTranslator.GetPropManagedType(valueProperty)}>",
-			_ => $"Map<{keyManagedType}, {valueManagedType}>"
+			StructPropertyTranslator => $"TMap<{keyManagedType}, {valueManagedType}, {valueTranslator.GetPropManagedType(valueProperty)}>",
+			DelegatePropertyTranslator => $"TDelegateMap<{keyManagedType}, {valueManagedType}, {valueTranslator.GetPropManagedType(valueProperty)}>",
+			_ => $"TMap<{keyManagedType}, {valueManagedType}>"
 		};
 	}
 
@@ -62,9 +62,9 @@ public class MapPropertyTranslator : ContainerPropertyTranslator
 		string valueManagedType = valueTranslator.GetParamManagedType(valueProperty);
 		return valueTranslator switch
 		{
-			StructPropertyTranslator => $"Map<{typeArgument}, {valueManagedType}, {valueTranslator.GetPropManagedType(valueProperty)}>",
-			DelegatePropertyTranslator => $"DelegateMap<{typeArgument}, {valueManagedType}, {valueTranslator.GetPropManagedType(valueProperty)}>",
-			_ => $"Map<{typeArgument}, {valueManagedType}>"
+			StructPropertyTranslator => $"TMap<{typeArgument}, {valueManagedType}, {valueTranslator.GetPropManagedType(valueProperty)}>",
+			DelegatePropertyTranslator => $"TDelegateMap<{typeArgument}, {valueManagedType}, {valueTranslator.GetPropManagedType(valueProperty)}>",
+			_ => $"TMap<{typeArgument}, {valueManagedType}>"
 		};
 	}
 

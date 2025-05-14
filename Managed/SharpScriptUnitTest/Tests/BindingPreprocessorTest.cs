@@ -13,7 +13,7 @@ public class BindingPreprocessorTest : IUnitTestInterface
 	public bool RunTest()
 	{
 #if WITH_EDITOR
-		int result = SsBindingPreprocessorTest.FuncWithEditor();
+		int result = USsBindingPreprocessorTest.FuncWithEditor();
 		Utils.Assert(result == 10);
 #endif
 

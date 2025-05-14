@@ -1,7 +1,5 @@
 ﻿using SharpScript;
-using SharpScript.Interop;
 using UnrealEngine.CoreUObject;
-using Object = UnrealEngine.CoreUObject.Object;
 
 namespace UnrealEngine.Intrinsic;
 
@@ -9,40 +7,25 @@ namespace UnrealEngine.Intrinsic;
 /// Template to allow UClass types to be passed around with type safety
 /// </summary>
 /// <typeparam name="T">The base class that the subclass must inherit from.</typeparam>
-public readonly struct SubclassOf<T> : IEquatable<Class?>, IComparable<SubclassOf<T>>
-	where T : Object
+public readonly struct TSubclassOf<T>(UClass? Cls) : IEquatable<UClass?>, IComparable<TSubclassOf<T>>
+	where T : UObject
 {
-	public SubclassOf() : this(typeof(T))
+	public TSubclassOf()
+		: this(null)
 	{
 	}
 
-	public SubclassOf(Class? cls)
+	public TSubclassOf(IntPtr nativeClass)
+		: this(HouseKeeper.GetManagedObject<UClass>(nativeClass))
 	{
-		Class = cls;
 	}
 
-	public SubclassOf(Type type)
+	public static implicit operator TSubclassOf<T>(UClass? cls)
 	{
-		IntPtr nativeClass = TypeInterop.FindClass(type.Name);
-		Class = HouseKeeper.GetManagedObject<Class>(nativeClass);
+		return new TSubclassOf<T>(cls);
 	}
 
-	public SubclassOf(IntPtr nativeClass)
-	{
-		Class = HouseKeeper.GetManagedObject<Class>(nativeClass);
-	}
-
-	public static implicit operator SubclassOf<T>(Type type)
-	{
-		return new SubclassOf<T>(type);
-	}
-
-	public static implicit operator SubclassOf<T>(Class? cls)
-	{
-		return new SubclassOf<T>(cls);
-	}
-
-	public static implicit operator Class?(SubclassOf<T> subclass)
+	public static implicit operator UClass?(TSubclassOf<T> subclass)
 	{
 		return subclass.Class;
 	}
@@ -69,31 +52,31 @@ public readonly struct SubclassOf<T> : IEquatable<Class?>, IComparable<SubclassO
 	/// <summary>
 	/// UClass object.
 	/// </summary>
-	public Class? Class { get; }
+	public UClass? Class { get; } = Cls;
 
 	/// <summary>
 	/// Return the native class pointer.
 	/// </summary>
 	public IntPtr NativeClass => Class?.NativeObject ?? IntPtr.Zero;
 
-	public bool Equals(Class? other)
+	public bool Equals(UClass? other)
 	{
 		return Class == other;
 	}
 
-	public int CompareTo(SubclassOf<T> other)
+	public int CompareTo(TSubclassOf<T> other)
 	{
 		return (int)NativeClass - (int)other.NativeClass;
 	}
 
 	public override bool Equals(object? obj)
 	{
-		if (obj is SubclassOf<T> other)
+		if (obj is TSubclassOf<T> other)
 		{
 			return Equals(other.Class);
 		}
 
-		if (obj is Class otherPtr)
+		if (obj is UClass otherPtr)
 		{
 			return Equals(otherPtr);
 		}
@@ -111,12 +94,12 @@ public readonly struct SubclassOf<T> : IEquatable<Class?>, IComparable<SubclassO
 		return (Class != null ? Class.GetHashCode() : 0);
 	}
 
-	public static bool operator ==(SubclassOf<T> lhs, Class? rhs)
+	public static bool operator ==(TSubclassOf<T> lhs, UClass? rhs)
 	{
 		return lhs.Equals(rhs);
 	}
 
-	public static bool operator !=(SubclassOf<T> lhs, Class? rhs)
+	public static bool operator !=(TSubclassOf<T> lhs, UClass? rhs)
 	{
 		return !(lhs == rhs);
 	}

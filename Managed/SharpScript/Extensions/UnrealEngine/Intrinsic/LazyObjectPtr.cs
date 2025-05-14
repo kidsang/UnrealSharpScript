@@ -1,18 +1,17 @@
 ﻿using System.Runtime.InteropServices;
 using SharpScript.Interop;
 using UnrealEngine.CoreUObject;
-using Object = UnrealEngine.CoreUObject.Object;
 
 namespace UnrealEngine.Intrinsic;
 
 [StructLayout(LayoutKind.Sequential)]
-public struct LazyObjectPtr<T> : IEquatable<T?>, IComparable<LazyObjectPtr<T>>
-	where T : Object
+public struct TLazyObjectPtr<T> : IEquatable<T?>, IComparable<TLazyObjectPtr<T>>
+	where T : UObject
 {
-	internal WeakObjectPtr<T> WeakPtr;
-	internal UniqueObjectGuid ObjectId;
+	internal TWeakObjectPtr<T> WeakPtr;
+	internal FUniqueObjectGuid ObjectId;
 
-	public LazyObjectPtr(T? obj)
+	public TLazyObjectPtr(T? obj)
 	{
 		if (obj is not null)
 		{
@@ -28,9 +27,9 @@ public struct LazyObjectPtr<T> : IEquatable<T?>, IComparable<LazyObjectPtr<T>>
 		}
 	}
 
-	public static implicit operator LazyObjectPtr<T>(T? value) => new(value);
+	public static implicit operator TLazyObjectPtr<T>(T? value) => new(value);
 
-	public static implicit operator T?(LazyObjectPtr<T> value) => value.Get();
+	public static implicit operator T?(TLazyObjectPtr<T> value) => value.Get();
 
 	/// <summary>
 	/// Reset the lazy pointer back to the null state
@@ -105,7 +104,7 @@ public struct LazyObjectPtr<T> : IEquatable<T?>, IComparable<LazyObjectPtr<T>>
 	/// Gets the unique object identifier associated with this lazy pointer. Valid even if pointer is not currently valid
 	/// </summary>
 	/// <returns>Unique ID for this object, or an invalid FUniqueObjectID if this pointer isn't set to anything</returns>
-	public UniqueObjectGuid GetUniqueId()
+	public FUniqueObjectGuid GetUniqueId()
 	{
 		return ObjectId;
 	}
@@ -122,7 +121,7 @@ public struct LazyObjectPtr<T> : IEquatable<T?>, IComparable<LazyObjectPtr<T>>
 
 	public override bool Equals(object? obj)
 	{
-		if (obj is LazyObjectPtr<T> other)
+		if (obj is TLazyObjectPtr<T> other)
 		{
 			return other.ObjectId == ObjectId;
 		}
@@ -145,17 +144,17 @@ public struct LazyObjectPtr<T> : IEquatable<T?>, IComparable<LazyObjectPtr<T>>
 		return ObjectId.GetHashCode();
 	}
 
-	public int CompareTo(LazyObjectPtr<T> other)
+	public int CompareTo(TLazyObjectPtr<T> other)
 	{
 		return ObjectId.CompareTo(other.ObjectId);
 	}
 
-	public static bool operator ==(LazyObjectPtr<T> lhs, T? rhs)
+	public static bool operator ==(TLazyObjectPtr<T> lhs, T? rhs)
 	{
 		return lhs.Equals(rhs);
 	}
 
-	public static bool operator !=(LazyObjectPtr<T> lhs, T? rhs)
+	public static bool operator !=(TLazyObjectPtr<T> lhs, T? rhs)
 	{
 		return !(lhs == rhs);
 	}

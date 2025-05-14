@@ -1,12 +1,12 @@
 using SharpScript;
 using SharpScript.Interop;
+using UnrealEngine.CoreUObject;
 using UnrealEngine.Intrinsic;
-using Object = UnrealEngine.CoreUObject.Object;
 
 namespace SharpScriptUnitTest.Types;
 
-public class SsMapTestStructNativeRef(IntPtr nativePtr)
-	: IStructNativeRef<SsMapTestStruct>
+public class FSsMapTestStructNativeRef(IntPtr nativePtr)
+	: IStructNativeRef<FSsMapTestStruct>
 {
 	// ReSharper disable InconsistentNaming
 	public static readonly IntPtr NativeType;
@@ -37,7 +37,7 @@ public class SsMapTestStructNativeRef(IntPtr nativePtr)
 	internal static readonly int IntDelegateMap_Offset;
 	// ReSharper restore InconsistentNaming
 
-	static SsMapTestStructNativeRef()
+	static FSsMapTestStructNativeRef()
 	{
 		NativeType = TypeInterop.FindStruct("SsMapTestStruct");
 		NativeDataSize = TypeInterop.GetStructureSize(NativeType);
@@ -80,51 +80,51 @@ public class SsMapTestStructNativeRef(IntPtr nativePtr)
 		IntDelegateMap_Offset = TypeInterop.GetPropertyOffset(IntDelegateMap_NativeProp);
 	}
 
-	private Map<string, Text>? _stringTextMap;
-	public Map<string, Text> StringTextMap => _stringTextMap ??= new(nativePtr + StringTextMap_Offset, StringTextMap_NativeProp, StringMarshaller.Instance, TextMarshaller.Instance);
+	private TMap<string, FText>? _stringTextMap;
+	public TMap<string, FText> StringTextMap => _stringTextMap ??= new(nativePtr + StringTextMap_Offset, StringTextMap_NativeProp, StringMarshaller.Instance, TextMarshaller.Instance);
 
-	private Map<int, bool>? _intBoolMap;
-	public Map<int, bool> IntBoolMap => _intBoolMap ??= new(nativePtr + IntBoolMap_Offset, IntBoolMap_NativeProp, BlittableMarshaller<int>.Instance, BoolMarshaller.Instance);
+	private TMap<int, bool>? _intBoolMap;
+	public TMap<int, bool> IntBoolMap => _intBoolMap ??= new(nativePtr + IntBoolMap_Offset, IntBoolMap_NativeProp, BlittableMarshaller<int>.Instance, BoolMarshaller.Instance);
 
-	private Map<ESsTestEnum, ESsTestEnum>? _enumMap;
-	public Map<ESsTestEnum, ESsTestEnum> EnumMap => _enumMap ??= new(nativePtr + EnumMap_Offset, EnumMap_NativeProp, EnumMarshaller<ESsTestEnum>.Instance, EnumMarshaller<ESsTestEnum>.Instance);
+	private TMap<ESsTestEnum, ESsTestEnum>? _enumMap;
+	public TMap<ESsTestEnum, ESsTestEnum> EnumMap => _enumMap ??= new(nativePtr + EnumMap_Offset, EnumMap_NativeProp, EnumMarshaller<ESsTestEnum>.Instance, EnumMarshaller<ESsTestEnum>.Instance);
 
-	private Map<ESsTestLongEnum, ESsTestLongEnum>? _longEnumMap;
-	public Map<ESsTestLongEnum, ESsTestLongEnum> LongEnumMap => _longEnumMap ??= new(nativePtr + LongEnumMap_Offset, LongEnumMap_NativeProp, EnumMarshaller<ESsTestLongEnum>.Instance, EnumMarshaller<ESsTestLongEnum>.Instance);
+	private TMap<ESsTestLongEnum, ESsTestLongEnum>? _longEnumMap;
+	public TMap<ESsTestLongEnum, ESsTestLongEnum> LongEnumMap => _longEnumMap ??= new(nativePtr + LongEnumMap_Offset, LongEnumMap_NativeProp, EnumMarshaller<ESsTestLongEnum>.Instance, EnumMarshaller<ESsTestLongEnum>.Instance);
 
-	private Map<int, SsMapTestInnerStruct, SsMapTestInnerStructNativeRef>? _intStructMap;
+	private TMap<int, FSsMapTestInnerStruct, FSsMapTestInnerStructNativeRef>? _intStructMap;
 
-	public Map<int, SsMapTestInnerStruct, SsMapTestInnerStructNativeRef> IntStructMap
+	public TMap<int, FSsMapTestInnerStruct, FSsMapTestInnerStructNativeRef> IntStructMap
 		=> _intStructMap ??= new(nativePtr + IntStructMap_Offset, IntStructMap_NativeProp, BlittableMarshaller<int>.Instance);
 
-	private Map<SsTestBlittableStruct, SsTestBlittableStruct, SsTestBlittableStructNativeRef>? _blittableStructMap;
+	private TMap<FSsTestBlittableStruct, FSsTestBlittableStruct, FSsTestBlittableStructNativeRef>? _blittableStructMap;
 
-	public Map<SsTestBlittableStruct, SsTestBlittableStruct, SsTestBlittableStructNativeRef> BlittableStructMap
-		=> _blittableStructMap ??= new(nativePtr + BlittableStructMap_Offset, BlittableStructMap_NativeProp, BlittableMarshaller<SsTestBlittableStruct>.Instance);
+	public TMap<FSsTestBlittableStruct, FSsTestBlittableStruct, FSsTestBlittableStructNativeRef> BlittableStructMap
+		=> _blittableStructMap ??= new(nativePtr + BlittableStructMap_Offset, BlittableStructMap_NativeProp, BlittableMarshaller<FSsTestBlittableStruct>.Instance);
 
-	private Map<Object, Object?>? _objectMap;
-	public Map<Object, Object?> ObjectMap => _objectMap ??= new(nativePtr + ObjectMap_Offset, ObjectMap_NativeProp, ObjectMarshaller<Object>.Instance!, ObjectMarshaller<Object>.Instance);
+	private TMap<UObject, UObject?>? _objectMap;
+	public TMap<UObject, UObject?> ObjectMap => _objectMap ??= new(nativePtr + ObjectMap_Offset, ObjectMap_NativeProp, ObjectMarshaller<UObject>.Instance!, ObjectMarshaller<UObject>.Instance);
 
-	private Map<SoftObjectPtr<Object>, SoftObjectPtr<Object>>? _softObjectPtrMap;
-	public Map<SoftObjectPtr<Object>, SoftObjectPtr<Object>> SoftObjectPtrMap => _softObjectPtrMap ??= new(nativePtr + SoftObjectPtrMap_Offset, SoftObjectPtrMap_NativeProp, SoftObjectPtrMarshaller<Object>.Instance, SoftObjectPtrMarshaller<Object>.Instance);
+	private TMap<TSoftObjectPtr<UObject>, TSoftObjectPtr<UObject>>? _softObjectPtrMap;
+	public TMap<TSoftObjectPtr<UObject>, TSoftObjectPtr<UObject>> SoftObjectPtrMap => _softObjectPtrMap ??= new(nativePtr + SoftObjectPtrMap_Offset, SoftObjectPtrMap_NativeProp, SoftObjectPtrMarshaller<UObject>.Instance, SoftObjectPtrMarshaller<UObject>.Instance);
 
-	private Map<SubclassOf<Object>, SubclassOf<Object>>? _classMap;
-	public Map<SubclassOf<Object>, SubclassOf<Object>> ClassMap => _classMap ??= new(nativePtr + ClassMap_Offset, ClassMap_NativeProp, SubclassOfMarshaller<Object>.Instance, SubclassOfMarshaller<Object>.Instance);
+	private TMap<TSubclassOf<UObject>, TSubclassOf<UObject>>? _classMap;
+	public TMap<TSubclassOf<UObject>, TSubclassOf<UObject>> ClassMap => _classMap ??= new(nativePtr + ClassMap_Offset, ClassMap_NativeProp, SubclassOfMarshaller<UObject>.Instance, SubclassOfMarshaller<UObject>.Instance);
 
-	private Map<SoftClassPtr<Object>, SoftClassPtr<Object>>? _softClassPtrMap;
-	public Map<SoftClassPtr<Object>, SoftClassPtr<Object>> SoftClassPtrMap => _softClassPtrMap ??= new(nativePtr + SoftClassPtrMap_Offset, SoftClassPtrMap_NativeProp, SoftClassPtrMarshaller<Object>.Instance, SoftClassPtrMarshaller<Object>.Instance);
+	private TMap<TSoftClassPtr<UObject>, TSoftClassPtr<UObject>>? _softClassPtrMap;
+	public TMap<TSoftClassPtr<UObject>, TSoftClassPtr<UObject>> SoftClassPtrMap => _softClassPtrMap ??= new(nativePtr + SoftClassPtrMap_Offset, SoftClassPtrMap_NativeProp, SoftClassPtrMarshaller<UObject>.Instance, SoftClassPtrMarshaller<UObject>.Instance);
 
-	private Map<int, ISsTestChildInterface?>? _intInterfaceMap;
-	public Map<int, ISsTestChildInterface?> IntInterfaceMap => _intInterfaceMap ??= new(nativePtr + IntInterfaceMap_Offset, IntInterfaceMap_NativeProp, BlittableMarshaller<int>.Instance, InterfaceMarshaller<ISsTestChildInterface>.Instance);
+	private TMap<int, ISsTestChildInterface?>? _intInterfaceMap;
+	public TMap<int, ISsTestChildInterface?> IntInterfaceMap => _intInterfaceMap ??= new(nativePtr + IntInterfaceMap_Offset, IntInterfaceMap_NativeProp, BlittableMarshaller<int>.Instance, InterfaceMarshaller<ISsTestChildInterface>.Instance);
 
-	private DelegateMap<int, SsTestDelegate, Delegate<SsTestDelegate>>? _intDelegateMap;
+	private TDelegateMap<int, FSsTestDelegate, Delegate<FSsTestDelegate>>? _intDelegateMap;
 
-	public DelegateMap<int, SsTestDelegate, Delegate<SsTestDelegate>> IntDelegateMap
-		=> _intDelegateMap ??= new(nativePtr + IntDelegateMap_Offset, IntDelegateMap_NativeProp, BlittableMarshaller<int>.Instance, DelegateMarshaller<SsTestDelegate>.Instance);
+	public TDelegateMap<int, FSsTestDelegate, Delegate<FSsTestDelegate>> IntDelegateMap
+		=> _intDelegateMap ??= new(nativePtr + IntDelegateMap_Offset, IntDelegateMap_NativeProp, BlittableMarshaller<int>.Instance, DelegateMarshaller<FSsTestDelegate>.Instance);
 
-	public SsMapTestStruct ToManaged()
+	public FSsMapTestStruct ToManaged()
 	{
-		return new SsMapTestStruct()
+		return new FSsMapTestStruct()
 		{
 			StringTextMap = StringTextMap,
 			IntBoolMap = IntBoolMap,
@@ -140,7 +140,7 @@ public class SsMapTestStructNativeRef(IntPtr nativePtr)
 		};
 	}
 
-	public void FromManaged(in SsMapTestStruct value)
+	public void FromManaged(in FSsMapTestStruct value)
 	{
 		StringTextMap.CopyFrom(value.StringTextMap);
 		IntBoolMap.CopyFrom(value.IntBoolMap);
@@ -155,9 +155,9 @@ public class SsMapTestStructNativeRef(IntPtr nativePtr)
 		IntDelegateMap.CopyFrom(value.IntDelegateMap);
 	}
 
-	public static IStructNativeRef<SsMapTestStruct> CreateInstance(IntPtr valuePtr)
+	public static IStructNativeRef<FSsMapTestStruct> CreateInstance(IntPtr valuePtr)
 	{
-		return new SsMapTestStructNativeRef(valuePtr);
+		return new FSsMapTestStructNativeRef(valuePtr);
 	}
 
 	public static int GetNativeDataSize()
@@ -165,15 +165,15 @@ public class SsMapTestStructNativeRef(IntPtr nativePtr)
 		return NativeDataSize;
 	}
 
-	public static implicit operator SsMapTestStruct(SsMapTestStructNativeRef nativeRef)
+	public static implicit operator FSsMapTestStruct(FSsMapTestStructNativeRef nativeRef)
 	{
 		return nativeRef.ToManaged();
 	}
 }
 
-public struct SsMapTestStruct
+public struct FSsMapTestStruct
 {
-	public Dictionary<string, Text> StringTextMap;
+	public Dictionary<string, FText> StringTextMap;
 
 	public Dictionary<int, bool> IntBoolMap;
 
@@ -181,17 +181,17 @@ public struct SsMapTestStruct
 
 	public Dictionary<ESsTestLongEnum, ESsTestLongEnum> LongEnumMap;
 
-	public Dictionary<int, SsMapTestInnerStruct> IntStructMap;
+	public Dictionary<int, FSsMapTestInnerStruct> IntStructMap;
 
-	public Dictionary<SsTestBlittableStruct, SsTestBlittableStruct> BlittableStructMap;
+	public Dictionary<FSsTestBlittableStruct, FSsTestBlittableStruct> BlittableStructMap;
 
-	public Dictionary<Object, Object?> ObjectMap;
+	public Dictionary<UObject, UObject?> ObjectMap;
 
-	public Dictionary<SubclassOf<Object>, SubclassOf<Object>> ClassMap;
+	public Dictionary<TSubclassOf<UObject>, TSubclassOf<UObject>> ClassMap;
 
-	public Dictionary<SoftClassPtr<Object>, SoftClassPtr<Object>> SoftClassPtrMap;
+	public Dictionary<TSoftClassPtr<UObject>, TSoftClassPtr<UObject>> SoftClassPtrMap;
 
 	public Dictionary<int, ISsTestChildInterface?> IntInterfaceMap;
 
-	public Dictionary<int, SsTestDelegate> IntDelegateMap;
+	public Dictionary<int, FSsTestDelegate> IntDelegateMap;
 }

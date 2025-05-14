@@ -139,7 +139,7 @@ public class FunctionExporter
 
 				break;
 			}
-			// override ObjectBase.IsValid()
+			// override UObjectBase.IsValid()
 			case "IsValid":
 			{
 				if (function is { Outer: UhtClass, Children.Count: 1, ReturnProperty: UhtBoolProperty })
@@ -837,7 +837,7 @@ public class FunctionExporter
 		if (selfParam is UhtClassProperty classProperty)
 		{
 			UhtClass metaClass = classProperty.MetaClass!;
-			paramString = $"new SubclassOf<{metaClass.GetFullManagedName()}>(this)";
+			paramString = $"new TSubclassOf<{metaClass.GetFullManagedName()}>(this)";
 		}
 
 		int commaIndex = paramStringCall.IndexOf(",", StringComparison.Ordinal);

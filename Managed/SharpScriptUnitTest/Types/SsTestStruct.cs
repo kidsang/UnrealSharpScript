@@ -2,12 +2,11 @@ using SharpScript;
 using SharpScript.Interop;
 using UnrealEngine.CoreUObject;
 using UnrealEngine.Intrinsic;
-using Object = UnrealEngine.CoreUObject.Object;
 
 namespace SharpScriptUnitTest.Types;
 
-public class SsTestStructNativeRef(IntPtr nativePtr)
-	: IStructNativeRef<SsTestStruct>
+public class FSsTestStructNativeRef(IntPtr nativePtr)
+	: IStructNativeRef<FSsTestStruct>
 {
 	// ReSharper disable InconsistentNaming
 	public static readonly IntPtr NativeType;
@@ -66,7 +65,7 @@ public class SsTestStructNativeRef(IntPtr nativePtr)
 	internal static readonly int Interface_Offset;
 	// ReSharper restore InconsistentNaming
 
-	static SsTestStructNativeRef()
+	static FSsTestStructNativeRef()
 	{
 		NativeType = TypeInterop.FindStruct("SsTestStruct");
 		NativeDataSize = TypeInterop.GetStructureSize(NativeType);
@@ -198,88 +197,88 @@ public class SsTestStructNativeRef(IntPtr nativePtr)
 		set => StringMarshaller.ToNative(nativePtr + String_Offset, value);
 	}
 
-	public Name Name
+	public FName Name
 	{
 		get => NameMarshaller.FromNative(nativePtr + Name_Offset);
 		set => NameMarshaller.ToNative(nativePtr + Name_Offset, value);
 	}
 
-	public Text Text
+	public FText Text
 	{
 		get => TextMarshaller.FromNative(nativePtr + Text_Offset);
 		set => TextMarshaller.ToNative(nativePtr + Text_Offset, value);
 	}
 
-	public FieldPath FieldPath
+	public FFieldPath FieldPath
 	{
 		get => FieldPathMarshaller.FromNative(nativePtr + FieldPath_Offset);
 		set => FieldPathMarshaller.ToNative(nativePtr + FieldPath_Offset, value);
 	}
 
-	public FieldPath StructFieldPath
+	public FFieldPath StructFieldPath
 	{
 		get => FieldPathMarshaller.FromNative(nativePtr + StructFieldPath_Offset);
 		set => FieldPathMarshaller.ToNative(nativePtr + StructFieldPath_Offset, value);
 	}
 
-	private Array<string>? _stringArray;
-	public Array<string> StringArray => _stringArray ??= new(nativePtr + StringArray_Offset, StringArray_NativeProp, StringMarshaller.Instance);
+	private TArray<string>? _stringArray;
+	public TArray<string> StringArray => _stringArray ??= new(nativePtr + StringArray_Offset, StringArray_NativeProp, StringMarshaller.Instance);
 
-	private Set<string>? _stringSet;
-	public Set<string> StringSet => _stringSet ??= new(nativePtr + StringSet_Offset, StringSet_NativeProp, StringMarshaller.Instance);
+	private TSet<string>? _stringSet;
+	public TSet<string> StringSet => _stringSet ??= new(nativePtr + StringSet_Offset, StringSet_NativeProp, StringMarshaller.Instance);
 
-	private Map<string, int>? _stringIntMap;
-	public Map<string, int> StringIntMap => _stringIntMap ??= new(nativePtr + StringIntMap_Offset, StringIntMap_NativeProp, StringMarshaller.Instance, BlittableMarshaller<int>.Instance);
+	private TMap<string, int>? _stringIntMap;
+	public TMap<string, int> StringIntMap => _stringIntMap ??= new(nativePtr + StringIntMap_Offset, StringIntMap_NativeProp, StringMarshaller.Instance, BlittableMarshaller<int>.Instance);
 
-	private SsArrayTestInnerStructNativeRef? _struct;
-	public SsArrayTestInnerStructNativeRef Struct => _struct ??= new(nativePtr + Struct_Offset);
+	private FSsArrayTestInnerStructNativeRef? _struct;
+	public FSsArrayTestInnerStructNativeRef Struct => _struct ??= new(nativePtr + Struct_Offset);
 
-	public Object? Object
+	public UObject? Object
 	{
-		get => ObjectMarshaller<Object>.FromNative(nativePtr + Object_Offset);
-		set => ObjectMarshaller<Object>.ToNative(nativePtr + Object_Offset, value);
+		get => ObjectMarshaller<UObject>.FromNative(nativePtr + Object_Offset);
+		set => ObjectMarshaller<UObject>.ToNative(nativePtr + Object_Offset, value);
 	}
 
-	public Object? ObjectPtr
+	public UObject? ObjectPtr
 	{
-		get => ObjectMarshaller<Object>.FromNative(nativePtr + ObjectPtr_Offset);
-		set => ObjectMarshaller<Object>.ToNative(nativePtr + ObjectPtr_Offset, value);
+		get => ObjectMarshaller<UObject>.FromNative(nativePtr + ObjectPtr_Offset);
+		set => ObjectMarshaller<UObject>.ToNative(nativePtr + ObjectPtr_Offset, value);
 	}
 
-	public SoftObjectPtr<Object> SoftObjectPtr
+	public TSoftObjectPtr<UObject> SoftObjectPtr
 	{
-		get => SoftObjectPtrMarshaller<Object>.FromNative(nativePtr + SoftObjectPtr_Offset);
-		set => SoftObjectPtrMarshaller<Object>.ToNative(nativePtr + SoftObjectPtr_Offset, value);
+		get => SoftObjectPtrMarshaller<UObject>.FromNative(nativePtr + SoftObjectPtr_Offset);
+		set => SoftObjectPtrMarshaller<UObject>.ToNative(nativePtr + SoftObjectPtr_Offset, value);
 	}
 
-	public Object? WeakObjectPtr
+	public UObject? WeakObjectPtr
 	{
-		get => ObjectMarshaller<Object>.FromNative(nativePtr + WeakObjectPtr_Offset);
-		set => ObjectMarshaller<Object>.ToNative(nativePtr + WeakObjectPtr_Offset, value);
+		get => ObjectMarshaller<UObject>.FromNative(nativePtr + WeakObjectPtr_Offset);
+		set => ObjectMarshaller<UObject>.ToNative(nativePtr + WeakObjectPtr_Offset, value);
 	}
 
-	public LazyObjectPtr<Object> LazyObjectPtr
+	public TLazyObjectPtr<UObject> LazyObjectPtr
 	{
-		get => LazyObjectPtrMarshaller<Object>.FromNative(nativePtr + LazyObjectPtr_Offset);
-		set => LazyObjectPtrMarshaller<Object>.ToNative(nativePtr + LazyObjectPtr_Offset, value);
+		get => LazyObjectPtrMarshaller<UObject>.FromNative(nativePtr + LazyObjectPtr_Offset);
+		set => LazyObjectPtrMarshaller<UObject>.ToNative(nativePtr + LazyObjectPtr_Offset, value);
 	}
 
-	public SubclassOf<Object> Class
+	public TSubclassOf<UObject> Class
 	{
-		get => SubclassOfMarshaller<Object>.FromNative(nativePtr + Class_Offset);
-		set => SubclassOfMarshaller<Object>.ToNative(nativePtr + Class_Offset, value);
+		get => SubclassOfMarshaller<UObject>.FromNative(nativePtr + Class_Offset);
+		set => SubclassOfMarshaller<UObject>.ToNative(nativePtr + Class_Offset, value);
 	}
 
-	public Class? ClassPtr
+	public UClass? ClassPtr
 	{
-		get => ObjectMarshaller<Class>.FromNative(nativePtr + ClassPtr_Offset);
-		set => ObjectMarshaller<Class>.ToNative(nativePtr + ClassPtr_Offset, value);
+		get => ObjectMarshaller<UClass>.FromNative(nativePtr + ClassPtr_Offset);
+		set => ObjectMarshaller<UClass>.ToNative(nativePtr + ClassPtr_Offset, value);
 	}
 
-	public SoftClassPtr<Object> SoftClassPtr
+	public TSoftClassPtr<UObject> SoftClassPtr
 	{
-		get => SoftClassPtrMarshaller<Object>.FromNative(nativePtr + SoftClassPtr_Offset);
-		set => SoftClassPtrMarshaller<Object>.ToNative(nativePtr + SoftClassPtr_Offset, value);
+		get => SoftClassPtrMarshaller<UObject>.FromNative(nativePtr + SoftClassPtr_Offset);
+		set => SoftClassPtrMarshaller<UObject>.ToNative(nativePtr + SoftClassPtr_Offset, value);
 	}
 
 	public ISsTestChildInterface? Interface
@@ -288,9 +287,9 @@ public class SsTestStructNativeRef(IntPtr nativePtr)
 		set => InterfaceMarshaller<ISsTestChildInterface>.ToNative(nativePtr + Interface_Offset, value);
 	}
 
-	public SsTestStruct ToManaged()
+	public FSsTestStruct ToManaged()
 	{
-		return new SsTestStruct()
+		return new FSsTestStruct()
 		{
 			Bool = Bool,
 			BitfieldBoolA = BitfieldBoolA,
@@ -320,7 +319,7 @@ public class SsTestStructNativeRef(IntPtr nativePtr)
 		};
 	}
 
-	public void FromManaged(in SsTestStruct value)
+	public void FromManaged(in FSsTestStruct value)
 	{
 		Bool = value.Bool;
 		BitfieldBoolA = value.BitfieldBoolA;
@@ -349,9 +348,9 @@ public class SsTestStructNativeRef(IntPtr nativePtr)
 		Interface = value.Interface;
 	}
 
-	public static IStructNativeRef<SsTestStruct> CreateInstance(IntPtr valuePtr)
+	public static IStructNativeRef<FSsTestStruct> CreateInstance(IntPtr valuePtr)
 	{
-		return new SsTestStructNativeRef(valuePtr);
+		return new FSsTestStructNativeRef(valuePtr);
 	}
 
 	public static int GetNativeDataSize()
@@ -359,13 +358,13 @@ public class SsTestStructNativeRef(IntPtr nativePtr)
 		return NativeDataSize;
 	}
 
-	public static implicit operator SsTestStruct(SsTestStructNativeRef nativeRef)
+	public static implicit operator FSsTestStruct(FSsTestStructNativeRef nativeRef)
 	{
 		return nativeRef.ToManaged();
 	}
 }
 
-public struct SsTestStruct : IStructMarshallerHelper<SsTestStruct>
+public struct FSsTestStruct : IStructMarshallerHelper<FSsTestStruct>
 {
 	public bool Bool;
 
@@ -383,13 +382,13 @@ public struct SsTestStruct : IStructMarshallerHelper<SsTestStruct>
 
 	public string String;
 
-	public Name Name;
+	public FName Name;
 
-	public Text Text;
+	public FText Text;
 
-	public FieldPath FieldPath;
+	public FFieldPath FieldPath;
 
-	public FieldPath StructFieldPath;
+	public FFieldPath StructFieldPath;
 
 	public List<string> StringArray;
 
@@ -397,33 +396,33 @@ public struct SsTestStruct : IStructMarshallerHelper<SsTestStruct>
 
 	public Dictionary<string, int> StringIntMap;
 
-	public SsArrayTestInnerStruct Struct;
+	public FSsArrayTestInnerStruct Struct;
 
-	public Object? Object;
+	public UObject? Object;
 
-	public Object? ObjectPtr;
+	public UObject? ObjectPtr;
 
-	public SoftObjectPtr<Object> SoftObjectPtr;
+	public TSoftObjectPtr<UObject> SoftObjectPtr;
 
-	public Object? WeakObjectPtr;
+	public UObject? WeakObjectPtr;
 
-	public LazyObjectPtr<Object> LazyObjectPtr;
+	public TLazyObjectPtr<UObject> LazyObjectPtr;
 
-	public SubclassOf<Object> Class;
+	public TSubclassOf<UObject> Class;
 
-	public Class? ClassPtr;
+	public UClass? ClassPtr;
 
-	public SoftClassPtr<Object> SoftClassPtr;
+	public TSoftClassPtr<UObject> SoftClassPtr;
 
 	public ISsTestChildInterface? Interface;
 
 	public static int GetNativeDataSize()
 	{
-		return SsTestStructNativeRef.GetNativeDataSize();
+		return FSsTestStructNativeRef.GetNativeDataSize();
 	}
 
-	public static IStructNativeRef<SsTestStruct> CreateStructNativeRef(IntPtr valuePtr)
+	public static IStructNativeRef<FSsTestStruct> CreateStructNativeRef(IntPtr valuePtr)
 	{
-		return new SsTestStructNativeRef(valuePtr);
+		return new FSsTestStructNativeRef(valuePtr);
 	}
 }

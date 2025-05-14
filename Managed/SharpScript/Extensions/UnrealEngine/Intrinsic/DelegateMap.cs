@@ -13,7 +13,7 @@ namespace UnrealEngine.Intrinsic;
 /// <typeparam name="TKey">Dictionary key type</typeparam>
 /// <typeparam name="TValue">Dictionary value type</typeparam>
 /// <typeparam name="TValueRef">Dictionary value reference type</typeparam>
-public abstract unsafe class DelegateMapBase<TKey, TValue, TValueRef>(IntPtr mapPtr, IntPtr mapProp, IMarshaller<TKey> keyMarshaller, DelegateMarshaller<TValue> valueMarshaller)
+public abstract unsafe class TDelegateMapBase<TKey, TValue, TValueRef>(IntPtr mapPtr, IntPtr mapProp, IMarshaller<TKey> keyMarshaller, DelegateMarshaller<TValue> valueMarshaller)
 	: IEnumerable<KeyValuePair<TKey, TValue>>
 	where TKey : notnull where TValueRef : Delegate<TValue> where TValue : Delegate
 {
@@ -180,14 +180,14 @@ public abstract unsafe class DelegateMapBase<TKey, TValue, TValueRef>(IntPtr map
 	}
 
 	/// <summary>
-	/// Implicit converter from <see cref="DelegateMapBase{TKey,TValue,TValueRef}"/> to <see cref="Dictionary{TKey,TValue}"/>
+	/// Implicit converter from <see cref="TDelegateMapBase{TKey,TValue,TValueRef}"/> to <see cref="Dictionary{TKey,TValue}"/>
 	/// </summary>
-	public static implicit operator Dictionary<TKey, TValue>(DelegateMapBase<TKey, TValue, TValueRef> map)
+	public static implicit operator Dictionary<TKey, TValue>(TDelegateMapBase<TKey, TValue, TValueRef> map)
 	{
 		return map.ToDictionary();
 	}
 
-	public struct Enumerator(DelegateMapBase<TKey, TValue, TValueRef> map) : IEnumerator<KeyValuePair<TKey, TValue>>
+	public struct Enumerator(TDelegateMapBase<TKey, TValue, TValueRef> map) : IEnumerator<KeyValuePair<TKey, TValue>>
 	{
 		private int _index = -1;
 
@@ -232,9 +232,9 @@ public abstract unsafe class DelegateMapBase<TKey, TValue, TValueRef>(IntPtr map
 		return GetEnumerator();
 	}
 
-	public readonly struct KeyCollection(DelegateMapBase<TKey, TValue, TValueRef> map) : ICollection<TKey>
+	public readonly struct KeyCollection(TDelegateMapBase<TKey, TValue, TValueRef> map) : ICollection<TKey>
 	{
-		public struct KeyEnumerator(DelegateMapBase<TKey, TValue, TValueRef> map) : IEnumerator<TKey>
+		public struct KeyEnumerator(TDelegateMapBase<TKey, TValue, TValueRef> map) : IEnumerator<TKey>
 		{
 			private int _index = -1;
 
@@ -310,9 +310,9 @@ public abstract unsafe class DelegateMapBase<TKey, TValue, TValueRef>(IntPtr map
 		public bool IsReadOnly => true;
 	}
 
-	public readonly struct ValueCollection(DelegateMapBase<TKey, TValue, TValueRef> map) : ICollection<TValue>
+	public readonly struct ValueCollection(TDelegateMapBase<TKey, TValue, TValueRef> map) : ICollection<TValue>
 	{
-		public struct ValueEnumerator(DelegateMapBase<TKey, TValue, TValueRef> map) : IEnumerator<TValue>
+		public struct ValueEnumerator(TDelegateMapBase<TKey, TValue, TValueRef> map) : IEnumerator<TValue>
 		{
 			private int _index = -1;
 
@@ -392,9 +392,9 @@ public abstract unsafe class DelegateMapBase<TKey, TValue, TValueRef>(IntPtr map
 /// <summary>
 /// Read-only wrapper for TMap.
 /// </summary>
-/// <inheritdoc cref="DelegateMapBase{TKey,TValue,TValueRef}"/>
-public class DelegateMapReadOnly<TKey, TValue, TValueRef>(IntPtr mapPtr, IntPtr mapProp, IMarshaller<TKey> keyMarshaller, DelegateMarshaller<TValue> valueMarshaller)
-	: DelegateMapBase<TKey, TValue, TValueRef>(mapPtr, mapProp, keyMarshaller, valueMarshaller)
+/// <inheritdoc cref="TDelegateMapBase{TKey,TValue,TValueRef}"/>
+public class TDelegateMapReadOnly<TKey, TValue, TValueRef>(IntPtr mapPtr, IntPtr mapProp, IMarshaller<TKey> keyMarshaller, DelegateMarshaller<TValue> valueMarshaller)
+	: TDelegateMapBase<TKey, TValue, TValueRef>(mapPtr, mapProp, keyMarshaller, valueMarshaller)
 	where TKey : notnull where TValueRef : Delegate<TValue> where TValue : Delegate
 {
 	public bool TryGetValue(TKey key, out TValueRef value)
@@ -420,9 +420,9 @@ public class DelegateMapReadOnly<TKey, TValue, TValueRef>(IntPtr mapPtr, IntPtr 
 /// <summary>
 /// Wrapper for TMap.
 /// </summary>
-/// <inheritdoc cref="DelegateMapBase{TKey,TValue,TValueRef}"/>
-public unsafe class DelegateMap<TKey, TValue, TValueRef>(IntPtr mapPtr, IntPtr mapProp, IMarshaller<TKey> keyMarshaller, DelegateMarshaller<TValue> valueMarshaller)
-	: DelegateMapBase<TKey, TValue, TValueRef>(mapPtr, mapProp, keyMarshaller, valueMarshaller)
+/// <inheritdoc cref="TDelegateMapBase{TKey,TValue,TValueRef}"/>
+public unsafe class TDelegateMap<TKey, TValue, TValueRef>(IntPtr mapPtr, IntPtr mapProp, IMarshaller<TKey> keyMarshaller, DelegateMarshaller<TValue> valueMarshaller)
+	: TDelegateMapBase<TKey, TValue, TValueRef>(mapPtr, mapProp, keyMarshaller, valueMarshaller)
 	where TKey : notnull where TValueRef : Delegate<TValue> where TValue : Delegate
 {
 	public void Add(KeyValuePair<TKey, TValue> item)
@@ -525,7 +525,7 @@ public unsafe class DelegateMap<TKey, TValue, TValueRef>(IntPtr mapPtr, IntPtr m
 			return;
 		}
 
-		if (other is DelegateMapBase<TKey, TValue, TValueRef> otherMap)
+		if (other is TDelegateMapBase<TKey, TValue, TValueRef> otherMap)
 		{
 			if (MapPtr != otherMap.MapPtr)
 			{

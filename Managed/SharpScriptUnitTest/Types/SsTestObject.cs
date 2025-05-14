@@ -1,14 +1,15 @@
 using SharpScript.Interop;
 using UnrealEngine.CoreUObject;
 using UnrealEngine.Intrinsic;
-using Object = UnrealEngine.CoreUObject.Object;
 
 namespace SharpScriptUnitTest.Types;
 
-public class SsTestObject : Object, IStaticClass<SsTestObject>, ISsTestChildInterface, ISsTestOtherInterface
+[UnrealTypeName("SsTestObject")]
+public class USsTestObject : UObject, IStaticClass<USsTestObject>, ISsTestChildInterface, ISsTestOtherInterface
 {
-	public new static SubclassOf<SsTestObject> StaticClass { get; }
-	public static Class InterfaceClass => null!;
+	public new static TSubclassOf<USsTestObject> StaticClass { get; }
+
+	public static UClass InterfaceClass => null!;
 
 	// ReSharper disable InconsistentNaming
 	public new static readonly IntPtr NativeType;
@@ -140,10 +141,10 @@ public class SsTestObject : Object, IStaticClass<SsTestObject>, ISsTestChildInte
 	internal static readonly int FuncInterfaceOther_ReturnValue_Offset;
 	// ReSharper restore InconsistentNaming
 
-	static SsTestObject()
+	static USsTestObject()
 	{
 		NativeType = TypeInterop.FindClass("SsTestObject");
-		StaticClass = new SubclassOf<SsTestObject>(NativeType);
+		StaticClass = new TSubclassOf<USsTestObject>(NativeType);
 		PropertyIterator propIter = new PropertyIterator(NativeType);
 
 		Bool_NativeProp = propIter.FindNext("Bool");
@@ -195,11 +196,11 @@ public class SsTestObject : Object, IStaticClass<SsTestObject>, ISsTestChildInte
 
 		Delegate_NativeProp = propIter.FindNext("Delegate");
 		Delegate_Offset = TypeInterop.GetPropertyOffset(Delegate_NativeProp);
-		SsTestDelegateInvoker.Initialize(Delegate_NativeProp);
+		FSsTestDelegateInvoker.Initialize(Delegate_NativeProp);
 
 		MulticastDelegate_NativeProp = propIter.FindNext("MulticastDelegate");
 		MulticastDelegate_Offset = TypeInterop.GetPropertyOffset(MulticastDelegate_NativeProp);
-		SsTestMulticastDelegateInvoker.Initialize(MulticastDelegate_NativeProp);
+		FSsTestMulticastDelegateInvoker.Initialize(MulticastDelegate_NativeProp);
 
 		Struct_NativeProp = propIter.FindNext("Struct");
 		Struct_Offset = TypeInterop.GetPropertyOffset(Struct_NativeProp);
@@ -434,7 +435,7 @@ public class SsTestObject : Object, IStaticClass<SsTestObject>, ISsTestChildInte
 		}
 	}
 
-	public Name Name
+	public FName Name
 	{
 		get
 		{
@@ -448,7 +449,7 @@ public class SsTestObject : Object, IStaticClass<SsTestObject>, ISsTestChildInte
 		}
 	}
 
-	public Text Text
+	public FText Text
 	{
 		get
 		{
@@ -462,7 +463,7 @@ public class SsTestObject : Object, IStaticClass<SsTestObject>, ISsTestChildInte
 		}
 	}
 
-	public FieldPath FieldPath
+	public FFieldPath FieldPath
 	{
 		get
 		{
@@ -476,7 +477,7 @@ public class SsTestObject : Object, IStaticClass<SsTestObject>, ISsTestChildInte
 		}
 	}
 
-	public FieldPath StructFieldPath
+	public FFieldPath StructFieldPath
 	{
 		get
 		{
@@ -490,9 +491,9 @@ public class SsTestObject : Object, IStaticClass<SsTestObject>, ISsTestChildInte
 		}
 	}
 
-	private Array<string>? _stringArray;
+	private TArray<string>? _stringArray;
 
-	public Array<string> StringArray
+	public TArray<string> StringArray
 	{
 		get
 		{
@@ -501,9 +502,9 @@ public class SsTestObject : Object, IStaticClass<SsTestObject>, ISsTestChildInte
 		}
 	}
 
-	private Set<string>? _stringSet;
+	private TSet<string>? _stringSet;
 
-	public Set<string> StringSet
+	public TSet<string> StringSet
 	{
 		get
 		{
@@ -512,9 +513,9 @@ public class SsTestObject : Object, IStaticClass<SsTestObject>, ISsTestChildInte
 		}
 	}
 
-	private Map<string, int>? _stringIntMap;
+	private TMap<string, int>? _stringIntMap;
 
-	public Map<string, int> StringIntMap
+	public TMap<string, int> StringIntMap
 	{
 		get
 		{
@@ -523,9 +524,9 @@ public class SsTestObject : Object, IStaticClass<SsTestObject>, ISsTestChildInte
 		}
 	}
 
-	private Delegate<SsTestDelegate>? _delegate;
+	private Delegate<FSsTestDelegate>? _delegate;
 
-	public Delegate<SsTestDelegate> Delegate
+	public Delegate<FSsTestDelegate> Delegate
 	{
 		get
 		{
@@ -534,9 +535,9 @@ public class SsTestObject : Object, IStaticClass<SsTestObject>, ISsTestChildInte
 		}
 	}
 
-	private MulticastDelegate<SsTestMulticastDelegate>? _multicastDelegate;
+	private MulticastDelegate<FSsTestMulticastDelegate>? _multicastDelegate;
 
-	public MulticastDelegate<SsTestMulticastDelegate> MulticastDelegate
+	public MulticastDelegate<FSsTestMulticastDelegate> MulticastDelegate
 	{
 		get
 		{
@@ -545,9 +546,9 @@ public class SsTestObject : Object, IStaticClass<SsTestObject>, ISsTestChildInte
 		}
 	}
 
-	private SsTestStructNativeRef? _struct;
+	private FSsTestStructNativeRef? _struct;
 
-	public SsTestStructNativeRef Struct
+	public FSsTestStructNativeRef Struct
 	{
 		get
 		{
@@ -556,9 +557,9 @@ public class SsTestObject : Object, IStaticClass<SsTestObject>, ISsTestChildInte
 		}
 	}
 
-	private Array<SsTestStruct, SsTestStructNativeRef>? _structArray;
+	private TArray<FSsTestStruct, FSsTestStructNativeRef>? _structArray;
 
-	public Array<SsTestStruct, SsTestStructNativeRef> StructArray
+	public TArray<FSsTestStruct, FSsTestStructNativeRef> StructArray
 	{
 		get
 		{
@@ -567,127 +568,127 @@ public class SsTestObject : Object, IStaticClass<SsTestObject>, ISsTestChildInte
 		}
 	}
 
-	public ref SsTestBlittableStruct BlittableStruct
+	public ref FSsTestBlittableStruct BlittableStruct
 	{
 		get
 		{
 			unsafe
 			{
 				ThrowIfNotValid();
-				return ref *(SsTestBlittableStruct*)(NativeObject + BlittableStruct_Offset);
+				return ref *(FSsTestBlittableStruct*)(NativeObject + BlittableStruct_Offset);
 			}
 		}
 	}
 
-	public Object? Object
+	public UObject? Object
 	{
 		get
 		{
 			ThrowIfNotValid();
-			return ObjectMarshaller<Object>.FromNative(NativeObject + Object_Offset);
+			return ObjectMarshaller<UObject>.FromNative(NativeObject + Object_Offset);
 		}
 		set
 		{
 			ThrowIfNotValid();
-			ObjectMarshaller<Object>.ToNative(NativeObject + Object_Offset, value);
+			ObjectMarshaller<UObject>.ToNative(NativeObject + Object_Offset, value);
 		}
 	}
 
-	public Object? ObjectPtr
+	public UObject? ObjectPtr
 	{
 		get
 		{
 			ThrowIfNotValid();
-			return ObjectMarshaller<Object>.FromNative(NativeObject + ObjectPtr_Offset);
+			return ObjectMarshaller<UObject>.FromNative(NativeObject + ObjectPtr_Offset);
 		}
 		set
 		{
 			ThrowIfNotValid();
-			ObjectMarshaller<Object>.ToNative(NativeObject + ObjectPtr_Offset, value);
+			ObjectMarshaller<UObject>.ToNative(NativeObject + ObjectPtr_Offset, value);
 		}
 	}
 
-	public SoftObjectPtr<Object> SoftObjectPtr
+	public TSoftObjectPtr<UObject> SoftObjectPtr
 	{
 		get
 		{
 			ThrowIfNotValid();
-			return SoftObjectPtrMarshaller<Object>.FromNative(NativeObject + SoftObjectPtr_Offset);
+			return SoftObjectPtrMarshaller<UObject>.FromNative(NativeObject + SoftObjectPtr_Offset);
 		}
 		set
 		{
 			ThrowIfNotValid();
-			SoftObjectPtrMarshaller<Object>.ToNative(NativeObject + SoftObjectPtr_Offset, value);
+			SoftObjectPtrMarshaller<UObject>.ToNative(NativeObject + SoftObjectPtr_Offset, value);
 		}
 	}
 
-	public Object? WeakObjectPtr
+	public UObject? WeakObjectPtr
 	{
 		get
 		{
 			ThrowIfNotValid();
-			return ObjectMarshaller<Object>.FromNative(NativeObject + WeakObjectPtr_Offset);
+			return ObjectMarshaller<UObject>.FromNative(NativeObject + WeakObjectPtr_Offset);
 		}
 		set
 		{
 			ThrowIfNotValid();
-			ObjectMarshaller<Object>.ToNative(NativeObject + WeakObjectPtr_Offset, value);
+			ObjectMarshaller<UObject>.ToNative(NativeObject + WeakObjectPtr_Offset, value);
 		}
 	}
 
-	public LazyObjectPtr<Object> LazyObjectPtr
+	public TLazyObjectPtr<UObject> LazyObjectPtr
 	{
 		get
 		{
 			ThrowIfNotValid();
-			return LazyObjectPtrMarshaller<Object>.FromNative(NativeObject + LazyObjectPtr_Offset);
+			return LazyObjectPtrMarshaller<UObject>.FromNative(NativeObject + LazyObjectPtr_Offset);
 		}
 		set
 		{
 			ThrowIfNotValid();
-			LazyObjectPtrMarshaller<Object>.ToNative(NativeObject + LazyObjectPtr_Offset, value);
+			LazyObjectPtrMarshaller<UObject>.ToNative(NativeObject + LazyObjectPtr_Offset, value);
 		}
 	}
 
-	public SubclassOf<Object> Class
+	public TSubclassOf<UObject> Class
 	{
 		get
 		{
 			ThrowIfNotValid();
-			return SubclassOfMarshaller<Object>.FromNative(NativeObject + Class_Offset);
+			return SubclassOfMarshaller<UObject>.FromNative(NativeObject + Class_Offset);
 		}
 		set
 		{
 			ThrowIfNotValid();
-			SubclassOfMarshaller<Object>.ToNative(NativeObject + Class_Offset, value);
+			SubclassOfMarshaller<UObject>.ToNative(NativeObject + Class_Offset, value);
 		}
 	}
 
-	public Class? ClassPtr
+	public UClass? ClassPtr
 	{
 		get
 		{
 			ThrowIfNotValid();
-			return ObjectMarshaller<Class>.FromNative(NativeObject + ClassPtr_Offset);
+			return ObjectMarshaller<UClass>.FromNative(NativeObject + ClassPtr_Offset);
 		}
 		set
 		{
 			ThrowIfNotValid();
-			ObjectMarshaller<Class>.ToNative(NativeObject + ClassPtr_Offset, value);
+			ObjectMarshaller<UClass>.ToNative(NativeObject + ClassPtr_Offset, value);
 		}
 	}
 
-	public SoftClassPtr<Object> SoftClassPtr
+	public TSoftClassPtr<UObject> SoftClassPtr
 	{
 		get
 		{
 			ThrowIfNotValid();
-			return SoftClassPtrMarshaller<Object>.FromNative(NativeObject + SoftClassPtr_Offset);
+			return SoftClassPtrMarshaller<UObject>.FromNative(NativeObject + SoftClassPtr_Offset);
 		}
 		set
 		{
 			ThrowIfNotValid();
-			SoftClassPtrMarshaller<Object>.ToNative(NativeObject + SoftClassPtr_Offset, value);
+			SoftClassPtrMarshaller<UObject>.ToNative(NativeObject + SoftClassPtr_Offset, value);
 		}
 	}
 
@@ -735,17 +736,17 @@ public class SsTestObject : Object, IStaticClass<SsTestObject>, ISsTestChildInte
 		// ReSharper restore InconsistentNaming
 	}
 
-	public unsafe void FuncBlueprintNativeRef(ref SsTestStruct InOutStruct)
+	public unsafe void FuncBlueprintNativeRef(ref FSsTestStruct InOutStruct)
 	{
 		// ReSharper disable InconsistentNaming
 		byte* _paramsBuffer = stackalloc byte[FuncBlueprintNativeRef_ParamsSize];
 		using ScopedFuncParams _params = new ScopedFuncParams(FuncBlueprintNativeRef_NativeFunc, _paramsBuffer);
 
-		StructMarshaller<SsTestStruct>.ToNative(_params.Buffer + FuncBlueprintNativeRef_InOutStruct_Offset, InOutStruct);
+		StructMarshaller<FSsTestStruct>.ToNative(_params.Buffer + FuncBlueprintNativeRef_InOutStruct_Offset, InOutStruct);
 
 		InvokeFunctionCall(FuncBlueprintNativeRef_NativeFunc, _params.Buffer);
 
-		InOutStruct = StructMarshaller<SsTestStruct>.FromNative(_params.Buffer + FuncBlueprintNativeRef_InOutStruct_Offset);
+		InOutStruct = StructMarshaller<FSsTestStruct>.FromNative(_params.Buffer + FuncBlueprintNativeRef_InOutStruct_Offset);
 		// ReSharper restore InconsistentNaming
 	}
 
@@ -779,27 +780,27 @@ public class SsTestObject : Object, IStaticClass<SsTestObject>, ISsTestChildInte
 		// ReSharper restore InconsistentNaming
 	}
 
-	public unsafe void CallFuncBlueprintNativeRef(ref SsTestStruct InOutStruct)
+	public unsafe void CallFuncBlueprintNativeRef(ref FSsTestStruct InOutStruct)
 	{
 		// ReSharper disable InconsistentNaming
 		byte* _paramsBuffer = stackalloc byte[CallFuncBlueprintNativeRef_ParamsSize];
 		using ScopedFuncParams _params = new ScopedFuncParams(CallFuncBlueprintNativeRef_NativeFunc, _paramsBuffer);
 
-		StructMarshaller<SsTestStruct>.ToNative(_params.Buffer + CallFuncBlueprintNativeRef_InOutStruct_Offset, InOutStruct);
+		StructMarshaller<FSsTestStruct>.ToNative(_params.Buffer + CallFuncBlueprintNativeRef_InOutStruct_Offset, InOutStruct);
 
 		InvokeFunctionCall(CallFuncBlueprintNativeRef_NativeFunc, _params.Buffer);
 
-		InOutStruct = StructMarshaller<SsTestStruct>.FromNative(_params.Buffer + CallFuncBlueprintNativeRef_InOutStruct_Offset);
+		InOutStruct = StructMarshaller<FSsTestStruct>.FromNative(_params.Buffer + CallFuncBlueprintNativeRef_InOutStruct_Offset);
 		// ReSharper restore InconsistentNaming
 	}
 
-	public unsafe int FuncTakingSsTestDelegate(SsTestDelegate InDelegate, int InValue)
+	public unsafe int FuncTakingSsTestDelegate(FSsTestDelegate InDelegate, int InValue)
 	{
 		// ReSharper disable InconsistentNaming
 		byte* _paramsBuffer = stackalloc byte[FuncTakingSsTestDelegate_ParamsSize];
 		using ScopedFuncParams _params = new ScopedFuncParams(FuncTakingSsTestDelegate_NativeFunc, _paramsBuffer);
 
-		DelegateMarshaller<SsTestDelegate>.ToNative(_params.Buffer + FuncTakingSsTestDelegate_InDelegate_Offset, InDelegate);
+		DelegateMarshaller<FSsTestDelegate>.ToNative(_params.Buffer + FuncTakingSsTestDelegate_InDelegate_Offset, InDelegate);
 		BlittableMarshaller<int>.ToNative(_params.Buffer + FuncTakingSsTestDelegate_InValue_Offset, InValue);
 
 		InvokeFunctionCall(FuncTakingSsTestDelegate_NativeFunc, _params.Buffer);
@@ -809,7 +810,7 @@ public class SsTestObject : Object, IStaticClass<SsTestObject>, ISsTestChildInte
 		// ReSharper restore InconsistentNaming
 	}
 
-	public unsafe void FuncTakingFieldPath(in FieldPath InFieldPath)
+	public unsafe void FuncTakingFieldPath(in FFieldPath InFieldPath)
 	{
 		// ReSharper disable InconsistentNaming
 		byte* _paramsBuffer = stackalloc byte[FuncTakingFieldPath_ParamsSize];
@@ -841,7 +842,7 @@ public class SsTestObject : Object, IStaticClass<SsTestObject>, ISsTestChildInte
 
 		InvokeFunctionCall(ReturnArray_NativeFunc, _params.Buffer);
 
-		List<int> returnValue = new Array<int>(_params.Buffer + ReturnArray_ReturnValue_Offset,
+		List<int> returnValue = new TArray<int>(_params.Buffer + ReturnArray_ReturnValue_Offset,
 			ReturnArray_ReturnValue_NativeProp, BlittableMarshaller<int>.Instance);
 		return returnValue;
 		// ReSharper restore InconsistentNaming
@@ -855,7 +856,7 @@ public class SsTestObject : Object, IStaticClass<SsTestObject>, ISsTestChildInte
 
 		InvokeFunctionCall(ReturnSet_NativeFunc, _params.Buffer);
 
-		HashSet<int> returnValue = new Set<int>(_params.Buffer + ReturnSet_ReturnValue_Offset,
+		HashSet<int> returnValue = new TSet<int>(_params.Buffer + ReturnSet_ReturnValue_Offset,
 			ReturnSet_ReturnValue_NativeProp, BlittableMarshaller<int>.Instance);
 		return returnValue;
 		// ReSharper restore InconsistentNaming
@@ -869,13 +870,13 @@ public class SsTestObject : Object, IStaticClass<SsTestObject>, ISsTestChildInte
 
 		InvokeFunctionCall(ReturnMap_NativeFunc, _params.Buffer);
 
-		Dictionary<int, bool> returnValue = new Map<int, bool>(_params.Buffer + ReturnMap_ReturnValue_Offset,
+		Dictionary<int, bool> returnValue = new TMap<int, bool>(_params.Buffer + ReturnMap_ReturnValue_Offset,
 			ReturnMap_ReturnValue_NativeProp, BlittableMarshaller<int>.Instance, BoolMarshaller.Instance);
 		return returnValue;
 		// ReSharper restore InconsistentNaming
 	}
 
-	public unsafe FieldPath ReturnFieldPath()
+	public unsafe FFieldPath ReturnFieldPath()
 	{
 		// ReSharper disable InconsistentNaming
 		byte* _paramsBuffer = stackalloc byte[ReturnFieldPath_ParamsSize];
@@ -883,7 +884,7 @@ public class SsTestObject : Object, IStaticClass<SsTestObject>, ISsTestChildInte
 
 		InvokeFunctionCall(ReturnFieldPath_NativeFunc, _params.Buffer);
 
-		FieldPath returnValue = FieldPathMarshaller.FromNative(_params.Buffer + ReturnFieldPath_ReturnValue_Offset);
+		FFieldPath returnValue = FieldPathMarshaller.FromNative(_params.Buffer + ReturnFieldPath_ReturnValue_Offset);
 		return returnValue;
 		// ReSharper restore InconsistentNaming
 	}

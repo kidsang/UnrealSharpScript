@@ -9,9 +9,9 @@ namespace SharpScript.Interop;
 static unsafe class WeakObjectPtrInterop
 {
 #pragma warning disable CS0649
-	public static delegate* unmanaged<WeakObjectData, IntPtr> GetObject;
-	public static delegate* unmanaged<ref WeakObjectData, IntPtr, void> SetObject;
-	public static delegate* unmanaged<WeakObjectData, int> IsValid;
-	public static delegate* unmanaged<WeakObjectData, int> IsStale;
+	public static delegate* unmanaged<FWeakObjectPtr, IntPtr> GetObject;
+	public static delegate* unmanaged<ref FWeakObjectPtr, IntPtr, void> SetObject;
+	public static delegate* unmanaged<FWeakObjectPtr, int> IsValid;
+	public static delegate* unmanaged<FWeakObjectPtr, int> IsStale;
 #pragma warning restore CS0649
 }

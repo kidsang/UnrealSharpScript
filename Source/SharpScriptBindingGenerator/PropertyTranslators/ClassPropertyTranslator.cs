@@ -24,7 +24,7 @@ public class ClassPropertyTranslator : SimpleTypePropertyTranslator
 	{
 		UhtClassProperty classProperty = (UhtClassProperty)property;
 		string managedType = classProperty.MetaClass!.GetFullManagedName();
-		return $"SubclassOf<{managedType}>";
+		return $"TSubclassOf<{managedType}>";
 	}
 
 	public override string GetParamManagedType(UhtProperty property)
@@ -34,7 +34,7 @@ public class ClassPropertyTranslator : SimpleTypePropertyTranslator
 
 	public override string GetGenericParamManagedType(UhtProperty property, string typeArgument)
 	{
-		return $"SubclassOf<{typeArgument}>";
+		return $"TSubclassOf<{typeArgument}>";
 	}
 
 	public override string GetMarshaller(UhtProperty property)
@@ -57,7 +57,7 @@ public class ClassPropertyTranslator : SimpleTypePropertyTranslator
 		string funcEngineName = function.StrippedFunctionName;
 		string paramSourceName = property.SourceName;
 		string marshaller = $"SubclassOfMarshaller<{typeArgument}>";
-		string declaration = needDeclaration ? $"SubclassOf<{typeArgument}> " : "";
+		string declaration = needDeclaration ? $"TSubclassOf<{typeArgument}> " : "";
 		codeBuilder.AppendLine($"{declaration}{paramName} = {marshaller}.FromNative({nativeBufferName} + {funcEngineName}_{paramSourceName}_Offset);");
 	}
 }

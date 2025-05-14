@@ -3,20 +3,20 @@
 /// <summary>
 /// Encapsulation of FText.
 /// </summary>
-public readonly struct Text(string? data) : IEquatable<Text>
+public readonly struct FText(string? data) : IEquatable<FText>
 {
 	internal string Data => data ?? string.Empty;
 
-	public static readonly Text None = default;
+	public static readonly FText None = default;
 
-	public bool Equals(Text other)
+	public bool Equals(FText other)
 	{
 		return Data == other.Data;
 	}
 
 	public override bool Equals(object? obj)
 	{
-		return obj is Text other && Equals(other);
+		return obj is FText other && Equals(other);
 	}
 
 	public override int GetHashCode()
@@ -29,17 +29,17 @@ public readonly struct Text(string? data) : IEquatable<Text>
 		return Data;
 	}
 
-	public static bool operator ==(Text left, Text right)
+	public static bool operator ==(FText left, FText right)
 	{
 		return left.Equals(right);
 	}
 
-	public static bool operator !=(Text left, Text right)
+	public static bool operator !=(FText left, FText right)
 	{
 		return !(left == right);
 	}
 
-	public static implicit operator string(Text text)
+	public static implicit operator string(FText text)
 	{
 		return text.Data;
 	}

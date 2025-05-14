@@ -4,7 +4,7 @@ using SharpScript.Interop;
 namespace UnrealEngine.Intrinsic;
 
 [StructLayout(LayoutKind.Sequential)]
-public struct Name : IEquatable<Name>, IComparable<Name>
+public struct FName : IEquatable<FName>, IComparable<FName>
 {
     private uint ComparisonIndex;
     private uint Number;
@@ -14,9 +14,9 @@ public struct Name : IEquatable<Name>, IComparable<Name>
 #endif
 
 	// Special zero value, meaning no name.
-	public static readonly Name None = default;
+	public static readonly FName None = default;
 
-	public Name(string? name)
+	public FName(string? name)
 	{
 		unsafe
 		{
@@ -50,34 +50,34 @@ public struct Name : IEquatable<Name>, IComparable<Name>
 	/// <returns>True if the name is None, false otherwise.</returns>
 	public bool IsNone => this == None;
 
-	public static bool operator ==(Name lhs, Name rhs)
+	public static bool operator ==(FName lhs, FName rhs)
 	{
 		return lhs.ComparisonIndex == rhs.ComparisonIndex && lhs.Number == rhs.Number;
 	}
 
-	public static bool operator !=(Name lhs, Name rhs)
+	public static bool operator !=(FName lhs, FName rhs)
 	{
 		return !(lhs == rhs);
 	}
 
-	public static implicit operator Name(string name)
+	public static implicit operator FName(string name)
 	{
-		return name.Length != 0 ? new Name(name) : None;
+		return name.Length != 0 ? new FName(name) : None;
 	}
 
-	public static implicit operator string(Name name)
+	public static implicit operator string(FName name)
 	{
 		return name.IsNone ? string.Empty : name.ToString();
 	}
 
-	public bool Equals(Name other)
+	public bool Equals(FName other)
 	{
 		return this == other;
 	}
 
 	public override bool Equals(object? obj)
 	{
-		if (obj is Name name)
+		if (obj is FName name)
 		{
 			return this == name;
 		}
@@ -90,7 +90,7 @@ public struct Name : IEquatable<Name>, IComparable<Name>
 		return (int)ComparisonIndex;
 	}
 
-	public int CompareTo(Name other)
+	public int CompareTo(FName other)
 	{
 		uint diff = ComparisonIndex - other.ComparisonIndex;
 		if (diff != 0)

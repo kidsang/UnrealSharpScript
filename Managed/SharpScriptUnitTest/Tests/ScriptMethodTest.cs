@@ -1,5 +1,5 @@
 using UnrealEngine.CoreUObject;
-using TestStruct = UnrealEngine.SharpScriptUnitTest.SsTestNumericStruct;
+using TestStruct = UnrealEngine.SharpScriptUnitTest.FSsTestNumericStruct;
 
 namespace SharpScriptUnitTest.Tests;
 
@@ -25,12 +25,12 @@ public class ScriptMethodTest : IUnitTestInterface
 		Utils.Assert(testStruct.X == 1);
 		Utils.Assert(testStruct.Y == 0);
 
-		testStruct.TestDefaultValue(new Vector { X = 10, Y = 20 });
+		testStruct.TestDefaultValue(new FVector { X = 10, Y = 20 });
 		Utils.Assert(testStruct.X == 10);
 		Utils.Assert(testStruct.Y == 20);
 
 		// test auto cast
-		IntPoint testPoint = testStruct;
+		FIntPoint testPoint = testStruct;
 		Utils.Assert(testPoint.X == 10);
 		Utils.Assert(testPoint.Y == 20);
 

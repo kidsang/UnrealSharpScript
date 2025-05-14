@@ -3,7 +3,7 @@ using UnrealEngine.Intrinsic;
 
 namespace UnrealEngine.CoreUObject;
 
-public partial class Package
+public partial class UPackage
 {
 	/// <summary>
 	/// Gets the package flags.
@@ -34,7 +34,7 @@ public partial class Package
 	/// Returning a valid name is possible only for MountedPath and PackageOnly internal types.
 	/// Will attempt to mount before returning NAME_None
 	/// </remarks>
-	public Name GetPackageName()
+	public FName GetPackageName()
 	{
 		unsafe
 		{

@@ -4,8 +4,8 @@ using UnrealEngine.Intrinsic;
 
 namespace SharpScriptUnitTest.Types;
 
-public class SsMapTestInnerStructNativeRef(IntPtr nativePtr)
-	: IStructNativeRef<SsMapTestInnerStruct>
+public class FSsMapTestInnerStructNativeRef(IntPtr nativePtr)
+	: IStructNativeRef<FSsMapTestInnerStruct>
 {
 	// ReSharper disable InconsistentNaming
 	public static readonly IntPtr NativeType;
@@ -14,7 +14,7 @@ public class SsMapTestInnerStructNativeRef(IntPtr nativePtr)
 	internal static readonly int IntIntMap_Offset;
 	// ReSharper restore InconsistentNaming
 
-	static SsMapTestInnerStructNativeRef()
+	static FSsMapTestInnerStructNativeRef()
 	{
 		NativeType = TypeInterop.FindStruct("SsMapTestInnerStruct");
 		NativeDataSize = TypeInterop.GetStructureSize(NativeType);
@@ -24,25 +24,25 @@ public class SsMapTestInnerStructNativeRef(IntPtr nativePtr)
 		IntIntMap_Offset = TypeInterop.GetPropertyOffset(IntIntMap_NativeProp);
 	}
 
-	private Map<int, int>? _intIntMap;
-	public Map<int, int> IntIntMap => _intIntMap ??= new(nativePtr + IntIntMap_Offset, IntIntMap_NativeProp, BlittableMarshaller<int>.Instance, BlittableMarshaller<int>.Instance);
+	private TMap<int, int>? _intIntMap;
+	public TMap<int, int> IntIntMap => _intIntMap ??= new(nativePtr + IntIntMap_Offset, IntIntMap_NativeProp, BlittableMarshaller<int>.Instance, BlittableMarshaller<int>.Instance);
 
-	public SsMapTestInnerStruct ToManaged()
+	public FSsMapTestInnerStruct ToManaged()
 	{
-		return new SsMapTestInnerStruct()
+		return new FSsMapTestInnerStruct()
 		{
 			IntIntMap = IntIntMap,
 		};
 	}
 
-	public void FromManaged(in SsMapTestInnerStruct value)
+	public void FromManaged(in FSsMapTestInnerStruct value)
 	{
 		IntIntMap.CopyFrom(value.IntIntMap);
 	}
 
-	public static IStructNativeRef<SsMapTestInnerStruct> CreateInstance(IntPtr valuePtr)
+	public static IStructNativeRef<FSsMapTestInnerStruct> CreateInstance(IntPtr valuePtr)
 	{
-		return new SsMapTestInnerStructNativeRef(valuePtr);
+		return new FSsMapTestInnerStructNativeRef(valuePtr);
 	}
 
 	public static int GetNativeDataSize()
@@ -50,15 +50,15 @@ public class SsMapTestInnerStructNativeRef(IntPtr nativePtr)
 		return NativeDataSize;
 	}
 
-	public static implicit operator SsMapTestInnerStruct(SsMapTestInnerStructNativeRef nativeRef)
+	public static implicit operator FSsMapTestInnerStruct(FSsMapTestInnerStructNativeRef nativeRef)
 	{
 		return nativeRef.ToManaged();
 	}
 }
 
-public struct SsMapTestInnerStruct
+public struct FSsMapTestInnerStruct
 {
-	public bool Equals(SsMapTestInnerStruct other)
+	public bool Equals(FSsMapTestInnerStruct other)
 	{
 		// ReSharper disable once UsageOfDefaultStructEquality
 		return IntIntMap.OrderBy(x => x.Key)
@@ -67,7 +67,7 @@ public struct SsMapTestInnerStruct
 
 	public override bool Equals(object? obj)
 	{
-		return obj is SsMapTestInnerStruct other && Equals(other);
+		return obj is FSsMapTestInnerStruct other && Equals(other);
 	}
 
 	public override int GetHashCode()

@@ -10,8 +10,8 @@ public class LifeCycleTest : IUnitTestInterface
 {
 	public bool RunTest()
 	{
-		SsTestObject obj = NewObject<SsTestObject>();
-		SsTestObject cdo = SsTestObject.StaticClass.GetDefaultObject()!;
+		USsTestObject obj = NewObject<USsTestObject>();
+		USsTestObject cdo = USsTestObject.StaticClass.GetDefaultObject()!;
 
 		// Newly created objects should be valid.
 		Utils.Assert(obj.IsValid());

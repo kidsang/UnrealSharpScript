@@ -3,9 +3,9 @@ using UnrealEngine.Intrinsic;
 
 namespace SharpScriptUnitTest.Types;
 
-public delegate void SsTestMulticastDelegate(string InStr);
+public delegate void FSsTestMulticastDelegate(string InStr);
 
-public static class SsTestMulticastDelegateInvoker
+public static class FSsTestMulticastDelegateInvoker
 {
 	// ReSharper disable InconsistentNaming
 	private static IntPtr SsTestMulticastDelegate_NativeFunc;
@@ -20,7 +20,7 @@ public static class SsTestMulticastDelegateInvoker
 		SsTestMulticastDelegate_InStr_Offset = TypeInterop.GetPropertyOffsetFromName(SsTestMulticastDelegate_NativeFunc, "InStr");
 	}
 
-	public static unsafe void Broadcast(this MulticastDelegate<SsTestMulticastDelegate> instance, string InStr)
+	public static unsafe void Broadcast(this MulticastDelegate<FSsTestMulticastDelegate> instance, string InStr)
 	{
 		// ReSharper disable InconsistentNaming
 		byte* _paramsBuffer = stackalloc byte[SsTestMulticastDelegate_ParamsSize];

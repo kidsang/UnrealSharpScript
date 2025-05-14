@@ -10,7 +10,7 @@ namespace UnrealEngine.Intrinsic;
 /// <param name="setProp">FSetProperty pointer.</param>
 /// <param name="elemMarshaller">Container element marshaller.</param>
 /// <typeparam name="T">Set element type</typeparam>
-public abstract unsafe class SetBase<T>(IntPtr setPtr, IntPtr setProp, IMarshaller<T> elemMarshaller) : IEnumerable<T>
+public abstract unsafe class TSetBase<T>(IntPtr setPtr, IntPtr setProp, IMarshaller<T> elemMarshaller) : IEnumerable<T>
 {
 	/// <summary>
 	/// C++ set pointer.
@@ -198,7 +198,7 @@ public abstract unsafe class SetBase<T>(IntPtr setPtr, IntPtr setProp, IMarshall
 
 	protected bool SetEqualsInternal(IEnumerable<T> other)
 	{
-		if (other is SetBase<T> otherSet)
+		if (other is TSetBase<T> otherSet)
 		{
 			if (SetPtr == otherSet.SetPtr)
 			{
@@ -230,14 +230,14 @@ public abstract unsafe class SetBase<T>(IntPtr setPtr, IntPtr setProp, IMarshall
 	}
 
 	/// <summary>
-	/// Implicit converter from <see cref="SetBase{T}"/> to <see cref="HashSet{T}"/>
+	/// Implicit converter from <see cref="TSetBase{T}"/> to <see cref="HashSet{T}"/>
 	/// </summary>
-	public static implicit operator HashSet<T>(SetBase<T> set)
+	public static implicit operator HashSet<T>(TSetBase<T> set)
 	{
 		return set.ToHashSet();
 	}
 
-	public struct Enumerator(SetBase<T> set) : IEnumerator<T>
+	public struct Enumerator(TSetBase<T> set) : IEnumerator<T>
 	{
 		private int _index = -1;
 
@@ -279,8 +279,8 @@ public abstract unsafe class SetBase<T>(IntPtr setPtr, IntPtr setProp, IMarshall
 /// <summary>
 /// Read-only wrapper for TSet.
 /// </summary>
-/// <inheritdoc cref="SetBase{T}"/>
-public class SetReadOnly<T>(IntPtr setPtr, IntPtr setProp, IMarshaller<T> elemMarshaller) : SetBase<T>(setPtr, setProp, elemMarshaller), IReadOnlySet<T>
+/// <inheritdoc cref="TSetBase{T}"/>
+public class TSetReadOnly<T>(IntPtr setPtr, IntPtr setProp, IMarshaller<T> elemMarshaller) : TSetBase<T>(setPtr, setProp, elemMarshaller), IReadOnlySet<T>
 {
 	public bool IsProperSubsetOf(IEnumerable<T> other)
 	{
@@ -316,8 +316,8 @@ public class SetReadOnly<T>(IntPtr setPtr, IntPtr setProp, IMarshaller<T> elemMa
 /// <summary>
 /// Wrapper for TSet.
 /// </summary>
-/// <inheritdoc cref="SetBase{T}"/>
-public unsafe class Set<T>(IntPtr setPtr, IntPtr setProp, IMarshaller<T> elemMarshaller) : SetBase<T>(setPtr, setProp, elemMarshaller), ISet<T>
+/// <inheritdoc cref="TSetBase{T}"/>
+public unsafe class TSet<T>(IntPtr setPtr, IntPtr setProp, IMarshaller<T> elemMarshaller) : TSetBase<T>(setPtr, setProp, elemMarshaller), ISet<T>
 {
 	public bool IsReadOnly => false;
 
@@ -485,7 +485,7 @@ public unsafe class Set<T>(IntPtr setPtr, IntPtr setProp, IMarshaller<T> elemMar
 			return;
 		}
 
-		if (other is SetBase<T> otherSet)
+		if (other is TSetBase<T> otherSet)
 		{
 			if (SetPtr != otherSet.SetPtr)
 			{

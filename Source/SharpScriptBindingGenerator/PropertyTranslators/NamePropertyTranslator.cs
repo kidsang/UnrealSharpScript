@@ -4,7 +4,7 @@ namespace SharpScriptBindingGenerator.PropertyTranslators;
 
 public class NamePropertyTranslator : BlittableTypePropertyTranslator
 {
-	public NamePropertyTranslator() : base(typeof(UhtNameProperty), "Name")
+	public NamePropertyTranslator() : base(typeof(UhtNameProperty), "FName")
 	{
 	}
 
@@ -17,6 +17,6 @@ public class NamePropertyTranslator : BlittableTypePropertyTranslator
 
 	public override void ExportCppDefaultParameterAsLocalVariable(CodeBuilder codeBuilder, UhtProperty property, string paramName, string defaultValue)
 	{
-		codeBuilder.AppendLine(defaultValue == "None" ? $"Name {paramName} = Name.None;" : $"Name {paramName} = new(\"{defaultValue}\");");
+		codeBuilder.AppendLine(defaultValue == "None" ? $"FName {paramName} = FName.None;" : $"FName {paramName} = new(\"{defaultValue}\");");
 	}
 }

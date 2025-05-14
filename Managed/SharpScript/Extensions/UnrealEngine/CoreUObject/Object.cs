@@ -4,12 +4,12 @@ using UnrealEngine.Intrinsic;
 
 namespace UnrealEngine.CoreUObject;
 
-public partial class Object
+public partial class UObject
 {
 	/// <summary>
 	/// Returns the logical name of this object
 	/// </summary>
-	public Name GetName()
+	public FName GetName()
 	{
 		if (IsValid())
 		{
@@ -18,7 +18,7 @@ public partial class Object
 				return ObjectInterop.GetName(NativeObject);
 			}
 		}
-		return Name.None;
+		return FName.None;
 	}
 
 	/// <summary>
@@ -37,26 +37,26 @@ public partial class Object
 	/// <summary>
 	/// Returns the UClass that defines the fields of this object
 	/// </summary>
-	public Class GetClass()
+	public UClass GetClass()
 	{
 		ThrowIfNotValid();
 		unsafe
 		{
 			IntPtr handlePtr = ObjectInterop.GetClass(NativeObject);
-			return (Class)GCHandle.FromIntPtr(handlePtr).Target!;
+			return (UClass)GCHandle.FromIntPtr(handlePtr).Target!;
 		}
 	}
 
 	/// <summary>
 	/// Returns the UObject this object resides in
 	/// </summary>
-	public Object GetOuter()
+	public UObject GetOuter()
 	{
 		ThrowIfNotValid();
 		unsafe
 		{
 			IntPtr handlePtr = ObjectInterop.GetOuter(NativeObject);
-			return (Object)GCHandle.FromIntPtr(handlePtr).Target!;
+			return (UObject)GCHandle.FromIntPtr(handlePtr).Target!;
 		}
 	}
 
@@ -75,13 +75,13 @@ public partial class Object
 	/// <summary>
 	///  Walks up the list of outers until it finds a package directly associated with the object.
 	/// </summary>
-	public Package GetPackage()
+	public UPackage GetPackage()
 	{
 		ThrowIfNotValid();
 		unsafe
 		{
 			IntPtr handlePtr = ObjectInterop.GetPackage(NativeObject);
-			return (Package)GCHandle.FromIntPtr(handlePtr).Target!;
+			return (UPackage)GCHandle.FromIntPtr(handlePtr).Target!;
 		}
 	}
 
@@ -91,7 +91,7 @@ public partial class Object
 		{
 			unsafe
 			{
-				Name name = ObjectInterop.GetName(NativeObject);
+				FName name = ObjectInterop.GetName(NativeObject);
 				return name.ToString();
 			}
 		}

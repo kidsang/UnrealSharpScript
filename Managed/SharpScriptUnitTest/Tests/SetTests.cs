@@ -16,10 +16,10 @@ public class SetTests : IUnitTestInterface
 		IntPtr testStructTwoNativePtr = 0;
 		try
 		{
-			testStructOneNativePtr = TypeInterop.CreateStructInstance(SsSetTestStructNativeRef.NativeType);
-			SsSetTestStructNativeRef testStructOneNativeRef = new SsSetTestStructNativeRef(testStructOneNativePtr);
-			testStructTwoNativePtr = TypeInterop.CreateStructInstance(SsSetTestStructNativeRef.NativeType);
-			SsSetTestStructNativeRef testStructTwoNativeRef = new SsSetTestStructNativeRef(testStructTwoNativePtr);
+			testStructOneNativePtr = TypeInterop.CreateStructInstance(FSsSetTestStructNativeRef.NativeType);
+			FSsSetTestStructNativeRef testStructOneNativeRef = new FSsSetTestStructNativeRef(testStructOneNativePtr);
+			testStructTwoNativePtr = TypeInterop.CreateStructInstance(FSsSetTestStructNativeRef.NativeType);
+			FSsSetTestStructNativeRef testStructTwoNativeRef = new FSsSetTestStructNativeRef(testStructTwoNativePtr);
 
 			IntSetTest(testStructOneNativeRef.IntSet, testStructTwoNativeRef.IntSet);
 			StructSetTest(testStructOneNativeRef.StructSet, testStructTwoNativeRef.StructSet);
@@ -28,19 +28,19 @@ public class SetTests : IUnitTestInterface
 		{
 			if (testStructOneNativePtr != 0)
 			{
-				TypeInterop.DestroyStructInstance(SsSetTestStructNativeRef.NativeType, ref testStructOneNativePtr);
+				TypeInterop.DestroyStructInstance(FSsSetTestStructNativeRef.NativeType, ref testStructOneNativePtr);
 			}
 
 			if (testStructTwoNativePtr != 0)
 			{
-				TypeInterop.DestroyStructInstance(SsSetTestStructNativeRef.NativeType, ref testStructTwoNativePtr);
+				TypeInterop.DestroyStructInstance(FSsSetTestStructNativeRef.NativeType, ref testStructTwoNativePtr);
 			}
 		}
 
 		return true;
 	}
 
-	public static void IntSetTest(Set<int> IntSetOne, Set<int> IntSetTwo)
+	public static void IntSetTest(TSet<int> IntSetOne, TSet<int> IntSetTwo)
 	{
 		// Test basic operations
 		Utils.Assert(IntSetOne.Add(1));
@@ -89,14 +89,14 @@ public class SetTests : IUnitTestInterface
 		Utils.Assert(IntSetTwo.SetEquals(IntSetOne));
 	}
 
-	public static void StructSetTest(Set<SsTestBlittableStruct> StructSetOne, Set<SsTestBlittableStruct> StructSetTwo)
+	public static void StructSetTest(TSet<FSsTestBlittableStruct> StructSetOne, TSet<FSsTestBlittableStruct> StructSetTwo)
 	{
-		SsTestBlittableStruct one = new SsTestBlittableStruct { X = 1, Y = 1 };
-		SsTestBlittableStruct two = new SsTestBlittableStruct { X = 2, Y = 2 };
-		SsTestBlittableStruct three = new SsTestBlittableStruct { X = 3, Y = 3 };
-		SsTestBlittableStruct four = new SsTestBlittableStruct { X = 4, Y = 4 };
-		SsTestBlittableStruct five = new SsTestBlittableStruct { X = 5, Y = 5 };
-		SsTestBlittableStruct six = new SsTestBlittableStruct { X = 6, Y = 6 };
+		FSsTestBlittableStruct one = new FSsTestBlittableStruct { X = 1, Y = 1 };
+		FSsTestBlittableStruct two = new FSsTestBlittableStruct { X = 2, Y = 2 };
+		FSsTestBlittableStruct three = new FSsTestBlittableStruct { X = 3, Y = 3 };
+		FSsTestBlittableStruct four = new FSsTestBlittableStruct { X = 4, Y = 4 };
+		FSsTestBlittableStruct five = new FSsTestBlittableStruct { X = 5, Y = 5 };
+		FSsTestBlittableStruct six = new FSsTestBlittableStruct { X = 6, Y = 6 };
 
 		// Test basic operations
 		Utils.Assert(StructSetOne.Add(one));
@@ -113,7 +113,7 @@ public class SetTests : IUnitTestInterface
 		Utils.Assert(StructSetOne.SetEquals([]));
 
 		// Test set read-only methods
-		StructSetOne.CopyFrom(new HashSet<SsTestBlittableStruct> { one, two, three });
+		StructSetOne.CopyFrom(new HashSet<FSsTestBlittableStruct> { one, two, three });
 		Utils.Assert(StructSetOne.SetEquals([one, two, three]));
 		Utils.Assert(StructSetOne.IsSubsetOf([one, two, three]));
 		Utils.Assert(!StructSetOne.IsProperSubsetOf([one, two, three]));
@@ -125,21 +125,21 @@ public class SetTests : IUnitTestInterface
 		Utils.Assert(!StructSetOne.Overlaps([four, five]));
 
 		// Test set read-write methods
-		StructSetOne.CopyFrom(new HashSet<SsTestBlittableStruct> { one, two, three });
+		StructSetOne.CopyFrom(new HashSet<FSsTestBlittableStruct> { one, two, three });
 		StructSetOne.ExceptWith([two, three, four]);
 		Utils.Assert(StructSetOne.SetEquals([one]));
-		StructSetOne.CopyFrom(new HashSet<SsTestBlittableStruct> { one, two, three });
+		StructSetOne.CopyFrom(new HashSet<FSsTestBlittableStruct> { one, two, three });
 		StructSetOne.IntersectWith([two, three, four]);
 		Utils.Assert(StructSetOne.SetEquals([two, three]));
-		StructSetOne.CopyFrom(new HashSet<SsTestBlittableStruct> { one, two, three });
+		StructSetOne.CopyFrom(new HashSet<FSsTestBlittableStruct> { one, two, three });
 		StructSetOne.SymmetricExceptWith([two, three, four]);
 		Utils.Assert(StructSetOne.SetEquals([one, four]));
-		StructSetOne.CopyFrom(new HashSet<SsTestBlittableStruct> { one, two, three });
+		StructSetOne.CopyFrom(new HashSet<FSsTestBlittableStruct> { one, two, three });
 		StructSetOne.UnionWith([two, three, four]);
 		Utils.Assert(StructSetOne.SetEquals([one, two, three, four]));
 
 		// Test set assignment and equality
-		StructSetOne.CopyFrom(new HashSet<SsTestBlittableStruct> { four, five, six });
+		StructSetOne.CopyFrom(new HashSet<FSsTestBlittableStruct> { four, five, six });
 		Utils.Assert(StructSetOne.SetEquals([four, five, six]));
 		StructSetTwo.CopyFrom(StructSetOne);
 		Utils.Assert(StructSetTwo.SetEquals(StructSetOne));
