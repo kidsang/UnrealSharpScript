@@ -11,6 +11,7 @@
 	</PropertyGroup>
 
 	<PropertyGroup Condition="'$(Configuration)'=='Debug_Editor'">
+		<DebugSymbols>true</DebugSymbols>
 		<DefineConstants>$(DefineConstants);WITH_EDITOR</DefineConstants>
 	</PropertyGroup>
 

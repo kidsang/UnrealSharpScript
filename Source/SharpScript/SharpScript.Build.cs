@@ -34,9 +34,11 @@ public class SharpScript : ModuleRules
 			}
 		);
 
+		string managedPath = Path.Combine(PluginDirectory, "Managed");
+		PublishSolution(Path.Combine(managedPath, "SharpScriptSourceGenerator"));
+
 		if (Target.bBuildEditor)
 		{
-			string managedPath = Path.Combine(PluginDirectory, "Managed");
 			PublishSolution(Path.Combine(managedPath, "SharpScriptPrograms"));
 		}
 	}

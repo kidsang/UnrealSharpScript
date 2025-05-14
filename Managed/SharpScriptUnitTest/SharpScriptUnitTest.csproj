@@ -8,9 +8,11 @@
 		<IsTrimmable>False</IsTrimmable>
 		<IsAotCompatible>True</IsAotCompatible>
 		<Configurations>Debug;Release;Debug_Editor;Release_Editor</Configurations>
+		<EmitCompilerGeneratedFiles>true</EmitCompilerGeneratedFiles>
 	</PropertyGroup>
 
 	<PropertyGroup Condition="'$(Configuration)'=='Debug_Editor'">
+		<DebugSymbols>true</DebugSymbols>
 		<DefineConstants>$(DefineConstants);WITH_EDITOR</DefineConstants>
 	</PropertyGroup>
 
@@ -27,6 +29,7 @@
 
 	<ItemGroup>
 		<ProjectReference Include="../SharpScript/SharpScript.csproj" />
+		<Analyzer Include="../../Binaries/Managed/SharpScriptSourceGenerator.dll" />
 	</ItemGroup>
 
 </Project>
