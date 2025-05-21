@@ -181,6 +181,78 @@ FProperty* USsSubclassingUtils::CreateProperty(FFieldVariant Owner, const FSsPro
 				return new FTextProperty(Owner, PropDef.PropName, InObjectFlags);
 			}
 		},
+		{
+			FindObject<UClass>(CoreUObjectPackage, TEXT("ObjectProperty")),
+			[](FFieldVariant Owner, const FSsPropertyDef& PropDef, EObjectFlags InObjectFlags) -> FProperty*
+			{
+				UClass* PropertyClass = Cast<UClass>(PropDef.UnderlyingType);
+				if (!IsValid(PropertyClass))
+				{
+					return nullptr;
+				}
+				auto Prop = new FObjectProperty(Owner, PropDef.PropName, InObjectFlags);
+				Prop->SetPropertyClass(PropertyClass);
+				return Prop;
+			}
+		},
+		{
+			FindObject<UClass>(CoreUObjectPackage, TEXT("SoftObjectProperty")),
+			[](FFieldVariant Owner, const FSsPropertyDef& PropDef, EObjectFlags InObjectFlags) -> FProperty*
+			{
+				UClass* PropertyClass = Cast<UClass>(PropDef.UnderlyingType);
+				if (!IsValid(PropertyClass))
+				{
+					return nullptr;
+				}
+				auto Prop = new FSoftObjectProperty(Owner, PropDef.PropName, InObjectFlags);
+				Prop->SetPropertyClass(PropertyClass);
+				return Prop;
+			}
+		},
+		{
+			FindObject<UClass>(CoreUObjectPackage, TEXT("LazyObjectProperty")),
+			[](FFieldVariant Owner, const FSsPropertyDef& PropDef, EObjectFlags InObjectFlags) -> FProperty*
+			{
+				UClass* PropertyClass = Cast<UClass>(PropDef.UnderlyingType);
+				if (!IsValid(PropertyClass))
+				{
+					return nullptr;
+				}
+				auto Prop = new FLazyObjectProperty(Owner, PropDef.PropName, InObjectFlags);
+				Prop->SetPropertyClass(PropertyClass);
+				return Prop;
+			}
+		},
+		{
+			FindObject<UClass>(CoreUObjectPackage, TEXT("ClassProperty")),
+			[](FFieldVariant Owner, const FSsPropertyDef& PropDef, EObjectFlags InObjectFlags) -> FProperty*
+			{
+				UClass* MetaClass = Cast<UClass>(PropDef.UnderlyingType);
+				if (!IsValid(MetaClass))
+				{
+					return nullptr;
+				}
+				auto Prop = new FClassProperty(Owner, PropDef.PropName, InObjectFlags);
+				Prop->SetPropertyClass(UClass::StaticClass());
+				Prop->SetMetaClass(MetaClass);
+				return Prop;
+			}
+		},
+		{
+			FindObject<UClass>(CoreUObjectPackage, TEXT("SoftClassProperty")),
+			[](FFieldVariant Owner, const FSsPropertyDef& PropDef, EObjectFlags InObjectFlags) -> FProperty*
+			{
+				UClass* MetaClass = Cast<UClass>(PropDef.UnderlyingType);
+				if (!IsValid(MetaClass))
+				{
+					return nullptr;
+				}
+				auto Prop = new FSoftClassProperty(Owner, PropDef.PropName, InObjectFlags);
+				Prop->SetPropertyClass(UClass::StaticClass());
+				Prop->SetMetaClass(MetaClass);
+				return Prop;
+			}
+		},
 	};
 
 	ConverterFun* ConverterPtr = ConverterMap.Find(PropDef.PropType);

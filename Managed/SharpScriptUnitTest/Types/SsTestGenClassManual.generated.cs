@@ -1,3 +1,4 @@
+#nullable enable
 using SharpScript;
 using SharpScript.Interop;
 using SharpScript.Subclassing;
@@ -27,6 +28,16 @@ public partial class USsTestGenClassManual : IStaticClass<USsTestGenClassManual>
 	private static readonly int Name_Offset;
 	private static readonly IntPtr Text_NativeProp;
 	private static readonly int Text_Offset;
+	private static readonly IntPtr Object_NativeProp;
+	private static readonly int Object_Offset;
+	private static readonly IntPtr SoftObjectPtr_NativeProp;
+	private static readonly int SoftObjectPtr_Offset;
+	private static readonly IntPtr LazyObjectPtr_NativeProp;
+	private static readonly int LazyObjectPtr_Offset;
+	private static readonly IntPtr Class_NativeProp;
+	private static readonly int Class_Offset;
+	private static readonly IntPtr SoftClassPtr_NativeProp;
+	private static readonly int SoftClassPtr_Offset;
 
 	static USsTestGenClassManual()
 	{
@@ -35,33 +46,63 @@ public partial class USsTestGenClassManual : IStaticClass<USsTestGenClassManual>
 			new()
 			{
 				PropName = "Bool",
-				PropType = UBoolProperty.StaticClass.NativeClass
+				PropType = UBoolProperty.StaticClass.NativeClass,
 			},
 			new()
 			{
 				PropName = "Int",
-				PropType = UIntProperty.StaticClass.NativeClass
+				PropType = UIntProperty.StaticClass.NativeClass,
 			},
 			new()
 			{
 				PropName = "Float",
-				PropType = UDoubleProperty.StaticClass.NativeClass
+				PropType = UDoubleProperty.StaticClass.NativeClass,
 			},
 			new()
 			{
 				PropName = "String",
-				PropType = UStrProperty.StaticClass.NativeClass
+				PropType = UStrProperty.StaticClass.NativeClass,
 			},
 			new()
 			{
 				PropName = "Name",
-				PropType = UNameProperty.StaticClass.NativeClass
+				PropType = UNameProperty.StaticClass.NativeClass,
 			},
 			new()
 			{
 				PropName = "Text",
-				PropType = UTextProperty.StaticClass.NativeClass
-			}
+				PropType = UTextProperty.StaticClass.NativeClass,
+			},
+			new()
+			{
+				PropName = "Object",
+				PropType = UObjectProperty.StaticClass.NativeClass,
+				UnderlyingType = UObject.StaticClass.NativeClass,
+			},
+			new()
+			{
+				PropName = "SoftObjectPtr",
+				PropType = USoftObjectProperty.StaticClass.NativeClass,
+				UnderlyingType = UObject.StaticClass.NativeClass,
+			},
+			new()
+			{
+				PropName = "LazyObjectPtr",
+				PropType = ULazyObjectProperty.StaticClass.NativeClass,
+				UnderlyingType = UObject.StaticClass.NativeClass,
+			},
+			new()
+			{
+				PropName = "Class",
+				PropType = UClassProperty.StaticClass.NativeClass,
+				UnderlyingType = UObject.StaticClass.NativeClass,
+			},
+			new()
+			{
+				PropName = "SoftClassPtr",
+				PropType = USoftClassProperty.StaticClass.NativeClass,
+				UnderlyingType = UObject.StaticClass.NativeClass,
+			},
 		];
 
 		unsafe
@@ -77,7 +118,7 @@ public partial class USsTestGenClassManual : IStaticClass<USsTestGenClassManual>
 		}
 
 		StaticClass = new TSubclassOf<USsTestGenClassManual>(NativeType);
-		HouseKeeper.AddBindedUnrealClass(StaticClass.Class, typeof(USsTestGenClassManual));
+		HouseKeeper.AddBindedUnrealClass(StaticClass.Class!, typeof(USsTestGenClassManual));
 
 		PropertyIterator propIter = new PropertyIterator(NativeType);
 		Bool_NativeProp = propIter.FindNext("Bool");
@@ -96,6 +137,16 @@ public partial class USsTestGenClassManual : IStaticClass<USsTestGenClassManual>
 		Name_Offset = TypeInterop.GetPropertyOffset(Name_NativeProp);
 		Text_NativeProp = propIter.FindNext("Text");
 		Text_Offset = TypeInterop.GetPropertyOffset(Text_NativeProp);
+		Object_NativeProp = propIter.FindNext("Object");
+		Object_Offset = TypeInterop.GetPropertyOffset(Object_NativeProp);
+		SoftObjectPtr_NativeProp = propIter.FindNext("SoftObjectPtr");
+		SoftObjectPtr_Offset = TypeInterop.GetPropertyOffset(SoftObjectPtr_NativeProp);
+		LazyObjectPtr_NativeProp = propIter.FindNext("LazyObjectPtr");
+		LazyObjectPtr_Offset = TypeInterop.GetPropertyOffset(LazyObjectPtr_NativeProp);
+		Class_NativeProp = propIter.FindNext("Class");
+		Class_Offset = TypeInterop.GetPropertyOffset(Class_NativeProp);
+		SoftClassPtr_NativeProp = propIter.FindNext("SoftClassPtr");
+		SoftClassPtr_Offset = TypeInterop.GetPropertyOffset(SoftClassPtr_NativeProp);
 	}
 
 	public partial bool Bool
@@ -179,6 +230,76 @@ public partial class USsTestGenClassManual : IStaticClass<USsTestGenClassManual>
 		{
 			ThrowIfNotValid();
 			TextMarshaller.ToNative(NativeObject + Text_Offset, value);
+		}
+	}
+
+	public partial UObject? Object
+	{
+		get
+		{
+			ThrowIfNotValid();
+			return ObjectMarshaller<UObject>.FromNative(NativeObject + Object_Offset);
+		}
+		set
+		{
+			ThrowIfNotValid();
+			ObjectMarshaller<UObject>.ToNative(NativeObject + Object_Offset, value);
+		}
+	}
+
+	public partial TSoftObjectPtr<UObject> SoftObjectPtr
+	{
+		get
+		{
+			ThrowIfNotValid();
+			return SoftObjectPtrMarshaller<UObject>.FromNative(NativeObject + SoftObjectPtr_Offset);
+		}
+		set
+		{
+			ThrowIfNotValid();
+			SoftObjectPtrMarshaller<UObject>.ToNative(NativeObject + SoftObjectPtr_Offset, value);
+		}
+	}
+
+	public partial TLazyObjectPtr<UObject> LazyObjectPtr
+	{
+		get
+		{
+			ThrowIfNotValid();
+			return LazyObjectPtrMarshaller<UObject>.FromNative(NativeObject + LazyObjectPtr_Offset);
+		}
+		set
+		{
+			ThrowIfNotValid();
+			LazyObjectPtrMarshaller<UObject>.ToNative(NativeObject + LazyObjectPtr_Offset, value);
+		}
+	}
+
+	public partial TSubclassOf<UObject> Class
+	{
+		get
+		{
+			ThrowIfNotValid();
+			return SubclassOfMarshaller<UObject>.FromNative(NativeObject + Class_Offset);
+		}
+		set
+		{
+			ThrowIfNotValid();
+			SubclassOfMarshaller<UObject>.ToNative(NativeObject + Class_Offset, value);
+		}
+	}
+
+	public partial TSoftClassPtr<UObject> SoftClassPtr
+	{
+		get
+		{
+			ThrowIfNotValid();
+			return SoftClassPtrMarshaller<UObject>.FromNative(NativeObject + SoftClassPtr_Offset);
+		}
+		set
+		{
+			ThrowIfNotValid();
+			SoftClassPtrMarshaller<UObject>.ToNative(NativeObject + SoftClassPtr_Offset, value);
 		}
 	}
 }

@@ -13,8 +13,8 @@ public class SubclassingObjectManualTest : IUnitTestInterface
 	public bool RunTest()
 	{
 		USsTestGenClassManual obj = NewObject<USsTestGenClassManual>();
-		// USsTestGenClassManual objValue = NewObject<USsTestGenClassManual>();
-		// UClass clsValue = USsTestGenClassManual.StaticClass!;
+		USsTestGenClassManual objValue = NewObject<USsTestGenClassManual>();
+		UClass clsValue = USsTestGenClassManual.StaticClass!;
 
 		// Test UObject base properties
 		Utils.Assert(obj.GetName() == obj.ToString());
@@ -40,19 +40,14 @@ public class SubclassingObjectManualTest : IUnitTestInterface
 		Utils.Assert(obj.String == string.Empty);
 		Utils.Assert(obj.Name == FName.None);
 		Utils.Assert(obj.Text == string.Empty);
-		// Utils.Assert(obj.FieldPath.Path == string.Empty);
-		// Utils.Assert(obj.StructFieldPath.Path == string.Empty);
 		// Utils.Assert(obj.StringArray.SequenceEqual([]));
 		// Utils.Assert(obj.StringSet.SequenceEqual([]));
 		// Utils.Assert(DictEquals(obj.StringIntMap, []));
-		// Utils.Assert(obj.Object == null);
-		// Utils.Assert(obj.ObjectPtr == null);
-		// Utils.Assert(obj.SoftObjectPtr == null);
-		// Utils.Assert(obj.WeakObjectPtr == null);
-		// Utils.Assert(obj.LazyObjectPtr == null);
-		// Utils.Assert(obj.Class == null);
-		// Utils.Assert(obj.ClassPtr == null);
-		// Utils.Assert(obj.SoftClassPtr == null);
+		Utils.Assert(obj.Object == null);
+		Utils.Assert(obj.SoftObjectPtr == null);
+		Utils.Assert(obj.LazyObjectPtr == null);
+		Utils.Assert(obj.Class == null);
+		Utils.Assert(obj.SoftClassPtr == null);
 		// Utils.Assert(obj.Interface == null);
 
 		// Test member assignment
@@ -73,10 +68,6 @@ public class SubclassingObjectManualTest : IUnitTestInterface
 		Utils.Assert(obj.Name == "Name");
 		obj.Text = new FText("Text");
 		Utils.Assert(obj.Text == "Text");
-		// obj.FieldPath = new FFieldPath("/Script/SharpScriptUnitTest.SsTestStruct:StringArray");
-		// Utils.Assert(obj.FieldPath.Path == "/Script/SharpScriptUnitTest.SsTestStruct:StringArray");
-		// obj.StructFieldPath = new FFieldPath("/Script/SharpScriptUnitTest.SsTestObject:Struct");
-		// Utils.Assert(obj.StructFieldPath.Path == "/Script/SharpScriptUnitTest.SsTestObject:Struct");
 		// obj.StringArray.CopyFrom(["String", "Array"]);
 		// Utils.Assert(obj.StringArray.SequenceEqual(["String", "Array"]));
 		// obj.StringSet.CopyFrom(["String", "Set"]);
@@ -84,38 +75,26 @@ public class SubclassingObjectManualTest : IUnitTestInterface
 		// Dictionary<string, int> testDict = new() { { "A", 1 }, { "B", 2 } };
 		// obj.StringIntMap.CopyFrom(testDict);
 		// Utils.Assert(DictEquals(obj.StringIntMap, testDict));
-		// obj.Object = objValue;
-		// Utils.Assert(obj.Object == objValue);
-		// obj.Object = null;
-		// Utils.Assert(obj.Object == null);
-		// obj.ObjectPtr = objValue;
-		// Utils.Assert(obj.ObjectPtr == objValue);
-		// obj.ObjectPtr = null;
-		// Utils.Assert(obj.ObjectPtr == null);
-		// obj.SoftObjectPtr = objValue;
-		// Utils.Assert(obj.SoftObjectPtr == objValue);
-		// obj.SoftObjectPtr = null;
-		// Utils.Assert(obj.SoftObjectPtr == null);
-		// obj.WeakObjectPtr = objValue;
-		// Utils.Assert(obj.WeakObjectPtr == objValue);
-		// obj.WeakObjectPtr = null;
-		// Utils.Assert(obj.WeakObjectPtr == null);
-		// obj.LazyObjectPtr = objValue;
-		// Utils.Assert(obj.LazyObjectPtr == objValue);
-		// obj.LazyObjectPtr = null;
-		// Utils.Assert(obj.LazyObjectPtr == null);
-		// obj.Class = clsValue;
-		// Utils.Assert(obj.Class == clsValue);
-		// obj.Class = null;
-		// Utils.Assert(obj.Class == null);
-		// obj.ClassPtr = clsValue;
-		// Utils.Assert(obj.ClassPtr == clsValue);
-		// obj.ClassPtr = null;
-		// Utils.Assert(obj.ClassPtr == null);
-		// obj.SoftClassPtr = clsValue;
-		// Utils.Assert(obj.SoftClassPtr == clsValue);
-		// obj.SoftClassPtr = null;
-		// Utils.Assert(obj.SoftClassPtr == null);
+		obj.Object = objValue;
+		Utils.Assert(obj.Object == objValue);
+		obj.Object = null;
+		Utils.Assert(obj.Object == null);
+		obj.SoftObjectPtr = objValue;
+		Utils.Assert(obj.SoftObjectPtr == objValue);
+		obj.SoftObjectPtr = null;
+		Utils.Assert(obj.SoftObjectPtr == null);
+		obj.LazyObjectPtr = objValue;
+		Utils.Assert(obj.LazyObjectPtr == objValue);
+		obj.LazyObjectPtr = null;
+		Utils.Assert(obj.LazyObjectPtr == null);
+		obj.Class = clsValue;
+		Utils.Assert(obj.Class == clsValue);
+		obj.Class = null;
+		Utils.Assert(obj.Class == null);
+		obj.SoftClassPtr = clsValue;
+		Utils.Assert(obj.SoftClassPtr == clsValue);
+		obj.SoftClassPtr = null;
+		Utils.Assert(obj.SoftClassPtr == null);
 		// obj.Interface = objValue;
 		// Utils.Assert(obj.Interface == objValue);
 		// obj.Interface = null;

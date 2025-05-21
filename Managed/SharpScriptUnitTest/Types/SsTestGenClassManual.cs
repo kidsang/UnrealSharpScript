@@ -26,4 +26,19 @@ public partial class USsTestGenClassManual : UObject
 
 	[UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "CSharp|Internal")]
 	public partial FText Text { get; set; }
+
+	[UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "CSharp|Internal")]
+	public partial UObject? Object { get; set; }
+
+	[UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "CSharp|Internal")]
+	public partial TSoftObjectPtr<UObject> SoftObjectPtr { get; set; }
+
+	[UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "CSharp|Internal")]
+	public partial TLazyObjectPtr<UObject> LazyObjectPtr { get; set; }
+
+	[UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "CSharp|Internal")]
+	public partial TSubclassOf<UObject> Class { get; set; }
+
+	[UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "CSharp|Internal")]
+	public partial TSoftClassPtr<UObject> SoftClassPtr { get; set; }
 }
