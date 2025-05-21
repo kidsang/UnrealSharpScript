@@ -186,10 +186,7 @@ FProperty* USsSubclassingUtils::CreateProperty(FFieldVariant Owner, const FSsPro
 			[](FFieldVariant Owner, const FSsPropertyDef& PropDef, EObjectFlags InObjectFlags) -> FProperty*
 			{
 				UClass* PropertyClass = Cast<UClass>(PropDef.UnderlyingType);
-				if (!IsValid(PropertyClass))
-				{
-					return nullptr;
-				}
+				check(IsValid(PropertyClass));
 				auto Prop = new FObjectProperty(Owner, PropDef.PropName, InObjectFlags);
 				Prop->SetPropertyClass(PropertyClass);
 				return Prop;
@@ -200,10 +197,7 @@ FProperty* USsSubclassingUtils::CreateProperty(FFieldVariant Owner, const FSsPro
 			[](FFieldVariant Owner, const FSsPropertyDef& PropDef, EObjectFlags InObjectFlags) -> FProperty*
 			{
 				UClass* PropertyClass = Cast<UClass>(PropDef.UnderlyingType);
-				if (!IsValid(PropertyClass))
-				{
-					return nullptr;
-				}
+				check(IsValid(PropertyClass));
 				auto Prop = new FSoftObjectProperty(Owner, PropDef.PropName, InObjectFlags);
 				Prop->SetPropertyClass(PropertyClass);
 				return Prop;
@@ -214,10 +208,7 @@ FProperty* USsSubclassingUtils::CreateProperty(FFieldVariant Owner, const FSsPro
 			[](FFieldVariant Owner, const FSsPropertyDef& PropDef, EObjectFlags InObjectFlags) -> FProperty*
 			{
 				UClass* PropertyClass = Cast<UClass>(PropDef.UnderlyingType);
-				if (!IsValid(PropertyClass))
-				{
-					return nullptr;
-				}
+				check(IsValid(PropertyClass));
 				auto Prop = new FLazyObjectProperty(Owner, PropDef.PropName, InObjectFlags);
 				Prop->SetPropertyClass(PropertyClass);
 				return Prop;
@@ -228,10 +219,7 @@ FProperty* USsSubclassingUtils::CreateProperty(FFieldVariant Owner, const FSsPro
 			[](FFieldVariant Owner, const FSsPropertyDef& PropDef, EObjectFlags InObjectFlags) -> FProperty*
 			{
 				UClass* MetaClass = Cast<UClass>(PropDef.UnderlyingType);
-				if (!IsValid(MetaClass))
-				{
-					return nullptr;
-				}
+				check(IsValid(MetaClass));
 				auto Prop = new FClassProperty(Owner, PropDef.PropName, InObjectFlags);
 				Prop->SetPropertyClass(UClass::StaticClass());
 				Prop->SetMetaClass(MetaClass);
@@ -243,13 +231,121 @@ FProperty* USsSubclassingUtils::CreateProperty(FFieldVariant Owner, const FSsPro
 			[](FFieldVariant Owner, const FSsPropertyDef& PropDef, EObjectFlags InObjectFlags) -> FProperty*
 			{
 				UClass* MetaClass = Cast<UClass>(PropDef.UnderlyingType);
-				if (!IsValid(MetaClass))
-				{
-					return nullptr;
-				}
+				check(IsValid(MetaClass));
 				auto Prop = new FSoftClassProperty(Owner, PropDef.PropName, InObjectFlags);
 				Prop->SetPropertyClass(UClass::StaticClass());
 				Prop->SetMetaClass(MetaClass);
+				return Prop;
+			}
+		},
+		{
+			FindObject<UClass>(CoreUObjectPackage, TEXT("ArrayProperty")),
+			[](FFieldVariant Owner, const FSsPropertyDef& PropDef, EObjectFlags InObjectFlags) -> FProperty*
+			{
+				FSsPropertyDef InnerPropDef;
+				InnerPropDef.PropName = FName(PropDef.PropName.ToString() + TEXT("_Inner"));
+				InnerPropDef.PropType = PropDef.InnerPropType;
+				InnerPropDef.UnderlyingType = PropDef.InnerUnderlyingType;
+
+				auto Prop = new FArrayProperty(Owner, PropDef.PropName, InObjectFlags);
+				Prop->Inner = CreateProperty(Prop, InnerPropDef);
+				if (!Prop->Inner)
+				{
+					UE_LOG(LogSharpScript, Error,
+					       TEXT("Subclassing error! Types in TArray for %s is not supported. Owner is %s"),
+					       *PropDef.PropName.ToString(), *Owner.GetName());
+					// There is no null testing in destructor ...
+					Prop->Inner = new FProperty(Prop, NAME_None, RF_NoFlags);
+					delete Prop;
+					return nullptr;
+				}
+
+				if (Prop->Inner->HasAnyPropertyFlags(CPF_ContainsInstancedReference | CPF_InstancedReference))
+				{
+					Prop->SetPropertyFlags(CPF_ContainsInstancedReference);
+				}
+
+				return Prop;
+			}
+		},
+		{
+			FindObject<UClass>(CoreUObjectPackage, TEXT("FSetProperty")),
+			[](FFieldVariant Owner, const FSsPropertyDef& PropDef, EObjectFlags InObjectFlags) -> FProperty*
+			{
+				FSsPropertyDef InnerPropDef;
+				InnerPropDef.PropName = FName(PropDef.PropName.ToString() + TEXT("_Elem"));
+				InnerPropDef.PropType = PropDef.InnerPropType;
+				InnerPropDef.UnderlyingType = PropDef.InnerUnderlyingType;
+
+				auto Prop = new FSetProperty(Owner, PropDef.PropName, InObjectFlags);
+				Prop->ElementProp = CreateProperty(Prop, InnerPropDef);
+				if (!Prop->ElementProp)
+				{
+					UE_LOG(LogSharpScript, Error,
+					       TEXT("Subclassing error! Elem type in TSet for %s is not supported. Owner is %s"),
+					       *PropDef.PropName.ToString(), *Owner.GetName());
+					// There is no null testing in destructor ...
+					Prop->ElementProp = new FProperty(Prop, NAME_None, RF_NoFlags);
+					delete Prop;
+					return nullptr;
+				}
+
+				if (Prop->ElementProp->HasAnyPropertyFlags(CPF_ContainsInstancedReference | CPF_InstancedReference))
+				{
+					Prop->SetPropertyFlags(CPF_ContainsInstancedReference);
+				}
+
+				return Prop;
+			}
+		},
+		{
+			FindObject<UClass>(CoreUObjectPackage, TEXT("FMapProperty")),
+			[](FFieldVariant Owner, const FSsPropertyDef& PropDef, EObjectFlags InObjectFlags) -> FProperty*
+			{
+				FSsPropertyDef KeyPropDef;
+				KeyPropDef.PropName = FName(PropDef.PropName.ToString() + TEXT("_Key"));
+				KeyPropDef.PropType = PropDef.KeyPropType;
+				KeyPropDef.UnderlyingType = PropDef.KeyUnderlyingType;
+
+				FSsPropertyDef ValuePropDef;
+				ValuePropDef.PropName = FName(PropDef.PropName.ToString() + TEXT("_Value"));
+				ValuePropDef.PropType = PropDef.InnerPropType;
+				ValuePropDef.UnderlyingType = PropDef.InnerUnderlyingType;
+
+				auto Prop = new FMapProperty(Owner, PropDef.PropName, InObjectFlags);
+				Prop->KeyProp = CreateProperty(Prop, KeyPropDef);
+				Prop->ValueProp = CreateProperty(Prop, ValuePropDef);
+
+				if (!Prop->KeyProp || !Prop->ValueProp)
+				{
+					if (!Prop->KeyProp)
+					{
+						UE_LOG(LogSharpScript, Error,
+						       TEXT("Subclassing error! Key type in TMap for %s is not supported. Owner is %s"),
+						       *PropDef.PropName.ToString(), *Owner.GetName());
+						// There is no null testing in destructor ...
+						Prop->KeyProp = new FProperty(Prop, NAME_None, RF_NoFlags);
+					}
+
+					if (!Prop->KeyProp)
+					{
+						UE_LOG(LogSharpScript, Error,
+						       TEXT("Subclassing error! Value type in TMap for %s is not supported. Owner is %s"),
+						       *PropDef.PropName.ToString(), *Owner.GetName());
+						// There is no null testing in destructor ...
+						Prop->ValueProp = new FProperty(Prop, NAME_None, RF_NoFlags);
+					}
+
+					delete Prop;
+					return nullptr;
+				}
+
+				if (Prop->KeyProp->HasAnyPropertyFlags(CPF_ContainsInstancedReference | CPF_InstancedReference)
+					|| Prop->ValueProp->HasAnyPropertyFlags(CPF_ContainsInstancedReference | CPF_InstancedReference))
+				{
+					Prop->SetPropertyFlags(CPF_ContainsInstancedReference);
+				}
+
 				return Prop;
 			}
 		},

@@ -28,6 +28,12 @@ public partial class USsTestGenClassManual : IStaticClass<USsTestGenClassManual>
 	private static readonly int Name_Offset;
 	private static readonly IntPtr Text_NativeProp;
 	private static readonly int Text_Offset;
+	private static readonly IntPtr StringArray_NativeProp;
+	private static readonly int StringArray_Offset;
+	private static readonly IntPtr StringSet_NativeProp;
+	private static readonly int StringSet_Offset;
+	private static readonly IntPtr StringIntMap_NativeProp;
+	private static readonly int StringIntMap_Offset;
 	private static readonly IntPtr Object_NativeProp;
 	private static readonly int Object_Offset;
 	private static readonly IntPtr SoftObjectPtr_NativeProp;
@@ -103,6 +109,25 @@ public partial class USsTestGenClassManual : IStaticClass<USsTestGenClassManual>
 				PropType = USoftClassProperty.StaticClass.NativeClass,
 				UnderlyingType = UObject.StaticClass.NativeClass,
 			},
+			new()
+			{
+				PropName = "StringArray",
+				PropType = UArrayProperty.StaticClass.NativeClass,
+				InnerPropType = UStrProperty.StaticClass.NativeClass,
+			},
+			new()
+			{
+				PropName = "StringSet",
+				PropType = UArrayProperty.StaticClass.NativeClass,
+				InnerPropType = UStrProperty.StaticClass.NativeClass,
+			},
+			new()
+			{
+				PropName = "StringIntMap",
+				PropType = UArrayProperty.StaticClass.NativeClass,
+				InnerPropType = UIntProperty.StaticClass.NativeClass,
+				KeyPropType = UStrProperty.StaticClass.NativeClass,
+			},
 		];
 
 		unsafe
@@ -137,6 +162,12 @@ public partial class USsTestGenClassManual : IStaticClass<USsTestGenClassManual>
 		Name_Offset = TypeInterop.GetPropertyOffset(Name_NativeProp);
 		Text_NativeProp = propIter.FindNext("Text");
 		Text_Offset = TypeInterop.GetPropertyOffset(Text_NativeProp);
+		StringArray_NativeProp = propIter.FindNext("StringArray");
+		StringArray_Offset = TypeInterop.GetPropertyOffset(StringArray_NativeProp);
+		StringSet_NativeProp = propIter.FindNext("StringSet");
+		StringSet_Offset = TypeInterop.GetPropertyOffset(StringSet_NativeProp);
+		StringIntMap_NativeProp = propIter.FindNext("StringIntMap");
+		StringIntMap_Offset = TypeInterop.GetPropertyOffset(StringIntMap_NativeProp);
 		Object_NativeProp = propIter.FindNext("Object");
 		Object_Offset = TypeInterop.GetPropertyOffset(Object_NativeProp);
 		SoftObjectPtr_NativeProp = propIter.FindNext("SoftObjectPtr");
@@ -230,6 +261,39 @@ public partial class USsTestGenClassManual : IStaticClass<USsTestGenClassManual>
 		{
 			ThrowIfNotValid();
 			TextMarshaller.ToNative(NativeObject + Text_Offset, value);
+		}
+	}
+
+	private TArray<string>? _stringArray;
+
+	public partial TArray<string> StringArray
+	{
+		get
+		{
+			ThrowIfNotValid();
+			return _stringArray ??= new(NativeObject + StringArray_Offset, StringArray_NativeProp, StringMarshaller.Instance);
+		}
+	}
+
+	private TSet<string>? _stringSet;
+
+	public partial TSet<string> StringSet
+	{
+		get
+		{
+			ThrowIfNotValid();
+			return _stringSet ??= new(NativeObject + StringSet_Offset, StringSet_NativeProp, StringMarshaller.Instance);
+		}
+	}
+
+	private TMap<string, int>? _stringIntMap;
+
+	public partial TMap<string, int> StringIntMap
+	{
+		get
+		{
+			ThrowIfNotValid();
+			return _stringIntMap ??= new(NativeObject + StringIntMap_Offset, StringIntMap_NativeProp, StringMarshaller.Instance, BlittableMarshaller<int>.Instance);
 		}
 	}
 

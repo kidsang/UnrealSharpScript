@@ -28,6 +28,15 @@ public partial class USsTestGenClassManual : UObject
 	public partial FText Text { get; set; }
 
 	[UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "CSharp|Internal")]
+	public partial TArray<string> StringArray { get; }
+
+	[UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "CSharp|Internal")]
+	public partial TSet<string> StringSet { get; }
+
+	[UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "CSharp|Internal")]
+	public partial TMap<string, int> StringIntMap { get; }
+
+	[UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "CSharp|Internal")]
 	public partial UObject? Object { get; set; }
 
 	[UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "CSharp|Internal")]

@@ -16,22 +16,22 @@ struct FSsPropertyDef
 	FName PropName;
 
 	/** Class of UProperty, eg. UObjectProperty::StaticClass. */
-	UClass* PropType;
+	UClass* PropType = nullptr;
 
 	/** Underlying type of this property, e.g. UObjectProperty::PropertyClass. */
-	UField* UnderlyingType;
+	UField* UnderlyingType = nullptr;
 
 	/** For UArrayProperty or USetProperty, this represents the type of inner property. */
-	UClass* InnerPropType;
+	UClass* InnerPropType = nullptr;
 
 	/** For UArrayProperty or USetProperty, this represents the underlying type of inner property. */
-	UField* InnerUnderlyingType;
+	UField* InnerUnderlyingType = nullptr;
 	
 	/** For UMapProperty, this represents the type of map key property. */
-	UClass* KeyPropType;
+	UClass* KeyPropType = nullptr;
 
 	/** For UMapProperty, this represents the underlying type of map key property. */
-	UField* KeyUnderlyingType;
+	UField* KeyUnderlyingType = nullptr;
 };
 
 /**
