@@ -40,6 +40,9 @@ private:
 	/** Called by C#, destroys all C# objects of a type at once (including the type itself) */
 	static void FreeManagedObjectsByClassName(const TCHAR* InClassName);
 
+	/** Called by C#, destroys all C# objects of a type at once (including the type itself) */
+	static void FreeManagedObjectsByClass(const UClass* InClass);
+
 	/** Internal call, releases a C# object */
 	static void FreeManagedObject(const UObject* InObject);
 

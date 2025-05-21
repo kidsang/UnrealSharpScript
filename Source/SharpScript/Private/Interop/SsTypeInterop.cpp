@@ -198,7 +198,7 @@ void USsTypeInterop::DoExportFunctions(FSsBindNativeCallbackFunc BindNativeCallb
 	BindNativeCallbackFunc(&DeinitializeFunctionParams, TEXT("TypeInterop.NativeDeinitializeFunctionParams"));
 	BindNativeCallbackFunc(&GetFirstProperty, TEXT("TypeInterop.NativeGetFirstProperty"));
 	BindNativeCallbackFunc(&GetNextProperty, TEXT("TypeInterop.NativeGetNextProperty"));
-	BindNativeCallbackFunc(&FindProperty, TEXT("TypeInterop.NativeFindProerty"));
+	BindNativeCallbackFunc(&FindProperty, TEXT("TypeInterop.NativeFindProperty"));
 	BindNativeCallbackFunc(&GetPropertyName, TEXT("TypeInterop.NativeGetPropertyName"));
 	BindNativeCallbackFunc(&GetPropertyOffset, TEXT("TypeInterop.NativeGetPropertyOffset"));
 	BindNativeCallbackFunc(&GetPropertyOffsetFromName, TEXT("TypeInterop.NativeGetPropertyOffsetFromName"));

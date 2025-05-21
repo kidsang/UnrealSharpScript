@@ -28,7 +28,6 @@ public:
 	 */
 	static const void* GetManagedClassType(const UClass* InClass);
 
-private:
 	/**
 	 * Called by C# to bind UE type with C# type.
 	 * @param InClass UClass pointer
@@ -55,6 +54,7 @@ private:
 	 */
 	static void UnregisterClassTypeByName(const TCHAR* InClassName);
 
+private:
 	virtual void DoExportFunctions(FSsBindNativeCallbackFunc BindNativeCallbackFunc) override;
 
 private:

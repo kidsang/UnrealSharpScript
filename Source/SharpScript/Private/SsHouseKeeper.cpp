@@ -99,26 +99,26 @@ void USsHouseKeeper::OnEnginePreExit()
 
 void USsHouseKeeper::FreeManagedObjectsByClassName(const TCHAR* InClassName)
 {
+	UClass* Class = FindFirstObject<UClass>(InClassName);
+	FreeManagedObjectsByClass(Class);
+}
+
+void USsHouseKeeper::FreeManagedObjectsByClass(const UClass* InClass)
+{
 	check(IsInGameThread());
-	FName ClassName(InClassName);
 	TArray<const UObject*> ObjectsToFree;
-	const UObject* ClassToFree = nullptr;
+	const UClass* ClassToFree = nullptr;
 	for (auto& Pair : NativeToManagedMap)
 	{
-		if (Pair.Key->GetClass()->GetName() == ClassName)
+		if (Pair.Key->GetClass() == InClass)
 		{
 			ObjectsToFree.Add(Pair.Key);
 		}
-		else if (Pair.Key->GetName() == ClassName)
+		else if (Pair.Key == InClass)
 		{
-			check(Pair.Key->GetClass() == UClass::StaticClass());
-			ClassToFree = Pair.Key;
+			check(Pair.Key->GetClass()->IsChildOf(UClass::StaticClass()));
+			ClassToFree = (const UClass*)Pair.Key;
 		}
-	}
-
-	if (ClassToFree)
-	{
-		ObjectsToFree.Add(ClassToFree);
 	}
 
 	for (const UObject* Object : ObjectsToFree)
@@ -126,6 +126,14 @@ void USsHouseKeeper::FreeManagedObjectsByClassName(const TCHAR* InClassName)
 		int32 ObjectIndex = GUObjectArray.ObjectToIndex(Object);
 		ManagedObjectArray.FreeManagedObject(ObjectIndex);
 		FreeManagedObject(Object);
+	}
+
+	if (ClassToFree)
+	{
+		int32 ObjectIndex = GUObjectArray.ObjectToIndex(ClassToFree);
+		ManagedObjectArray.FreeManagedObject(ObjectIndex);
+		FreeManagedObject(ClassToFree);
+		USsTypeRegistry::UnregisterClassType(ClassToFree);
 	}
 }
 
@@ -145,6 +153,7 @@ void USsHouseKeeper::DoExportFunctions(FSsBindNativeCallbackFunc BindNativeCallb
 {
 	BindNativeCallbackFunc(&GetManagedObject, TEXT("HouseKeeper.NativeGetManagedObject"));
 	BindNativeCallbackFunc(&FreeManagedObjectsByClassName, TEXT("HouseKeeper.NativeFreeManagedObjectsByClassName"));
+	BindNativeCallbackFunc(&FreeManagedObjectsByClass, TEXT("HouseKeeper.NativeFreeManagedObjectsByClass"));
 }
 
 void USsHouseKeeper::FObjectListener::NotifyUObjectDeleted(const UObjectBase* InObject, int32 InObjectIndex)

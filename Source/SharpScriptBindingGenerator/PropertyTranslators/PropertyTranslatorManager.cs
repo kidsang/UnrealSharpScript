@@ -31,8 +31,8 @@ public static class PropertyTranslatorManager
 		AddPropertyTranslator(typeof(UhtByteProperty), enumPropertyTranslator);
 
 		AddBlittablePropertyTranslator(typeof(UhtInt8Property), "sbyte");
-		AddBlittablePropertyTranslator(typeof(UhtIntProperty), "int");
 		AddBlittablePropertyTranslator(typeof(UhtInt16Property), "short");
+		AddBlittablePropertyTranslator(typeof(UhtIntProperty), "int");
 		AddBlittablePropertyTranslator(typeof(UhtInt64Property), "long");
 		AddBlittablePropertyTranslator(typeof(UhtByteProperty), "byte");
 		AddBlittablePropertyTranslator(typeof(UhtUInt16Property), "ushort");

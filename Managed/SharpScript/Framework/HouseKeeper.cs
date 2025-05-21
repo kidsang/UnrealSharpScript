@@ -2,6 +2,7 @@
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 using SharpScript.Interop;
+using UnrealEngine.CoreUObject;
 using UnrealEngine.Intrinsic;
 
 namespace SharpScript;
@@ -55,8 +56,8 @@ public static unsafe class HouseKeeper
 
 		// Call the constructor of the C# type through reflection to properly construct the C# object.
 		UObjectBase managedObject = (UObjectBase)RuntimeHelpers.GetUninitializedObject(type);
-		const BindingFlags bindingFlags = BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance;
-		var foundConstructor = (delegate*<object, void>) type.GetConstructor(bindingFlags, Type.EmptyTypes)!.MethodHandle.GetFunctionPointer();
+		const BindingFlags BindingFlags = BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance;
+		var foundConstructor = (delegate*<object, void>) type.GetConstructor(BindingFlags, Type.EmptyTypes)!.MethodHandle.GetFunctionPointer();
 		managedObject.NativeObject = nativeObject;
 		foundConstructor(managedObject);
 
@@ -101,11 +102,39 @@ public static unsafe class HouseKeeper
 				}
 			}
 		}
+
+		if (UnrealClassesByAssembly.Remove(assembly, out var unrealClasses))
+		{
+			foreach (UClass unrealClass in unrealClasses)
+			{
+				NativeFreeManagedObjectsByClass(unrealClass.NativeObject);
+			}
+		}
 	}
+
+	/// <summary>
+	/// Called when an unreal class is truely binded to a csharp type.
+	/// </summary>
+	public static void AddBindedUnrealClass(UClass unrealClass, Type bindedType)
+	{
+		if (!UnrealClassesByAssembly.TryGetValue(bindedType.Assembly, out var unrealClasses))
+		{
+			unrealClasses = new List<UClass>();
+			UnrealClassesByAssembly.Add(bindedType.Assembly, unrealClasses);
+		}
+
+		unrealClasses.Add(unrealClass);
+	}
+
+	/// <summary>
+	/// Unreal classes exported to csharp, organized by assemlby.
+	/// </summary>
+	internal static readonly Dictionary<Assembly, List<UClass>> UnrealClassesByAssembly = new();
 
 #pragma warning disable CS0649
 	internal static delegate* unmanaged[Cdecl]<IntPtr, IntPtr> NativeGetManagedObject;
 	internal static delegate* unmanaged[Cdecl]<char*, void> NativeFreeManagedObjectsByClassName;
+	internal static delegate* unmanaged[Cdecl]<IntPtr, void> NativeFreeManagedObjectsByClass;
 #pragma warning restore CS0649
 }
 

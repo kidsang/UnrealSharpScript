@@ -57,26 +57,6 @@ public static unsafe class TypeRegistry
 	}
 
 	/// <summary>
-	/// Binds UE type to C# type.
-	/// </summary>
-	/// <param name="nativeClass">UClass pointer</param>
-	/// <param name="type">C# type</param>
-	public static void RegisterClassType(IntPtr nativeClass, Type type)
-	{
-		RuntimeTypeHandle typeHandle = type.TypeHandle;
-		NativeRegisterClassType(nativeClass, RuntimeTypeHandle.ToIntPtr(typeHandle));
-	}
-
-	/// <summary>
-	/// Unbinds UE type from C# type.
-	/// </summary>
-	/// <param name="nativeClass">UClass pointer</param>
-	public static void UnregisterClassType(IntPtr nativeClass)
-	{
-		NativeUnregisterClassType(nativeClass);
-	}
-
-	/// <summary>
 	/// Returns the C# type corresponding to the UE type.
 	/// </summary>
 	/// <param name="nativeClass">UClass pointer</param>

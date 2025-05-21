@@ -5,6 +5,7 @@
 #include "SsFrameworkUtils.h"
 #include "SsHouseKeeper.h"
 #include "SsTypeRegistry.h"
+#include "Subclassing/SsSubclassingUtils.h"
 #include "Interfaces/IPluginManager.h"
 #include "Misc/Paths.h"
 
@@ -55,11 +56,18 @@ void FSharpScriptModule::StartupModule()
 		UE_LOG(LogSharpScript, Error, TEXT("TypeRegistry initialize failed!"));
 		return;
 	}
+
+	if (!USsSubclassingUtils::Initialize())
+	{
+		UE_LOG(LogSharpScript, Error, TEXT("SubclassingUtils initialize failed!"));
+	}
 }
 
 void FSharpScriptModule::ShutdownModule()
 {
 	ManagedShutdownFramework();
+	USsSubclassingUtils::Finalize();
+	USsTypeRegistry::Finalize();
 	USsHouseKeeper::Finalize();
 	FSsAssemblyManager::Finalize();
 }

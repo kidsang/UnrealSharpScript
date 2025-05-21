@@ -189,7 +189,7 @@ public static unsafe class TypeInterop
 	/// <returns>FProperty pointer</returns>
 	public static IntPtr FindProperty(IntPtr nativeStruct, FName propName)
 	{
-		return NativeFindProerty(nativeStruct, propName);
+		return NativeFindProperty(nativeStruct, propName);
 	}
 
 	/// <summary>
@@ -350,7 +350,7 @@ public static unsafe class TypeInterop
 	internal static delegate* unmanaged[Cdecl]<IntPtr, IntPtr, void> NativeDeinitializeFunctionParams;
 	internal static delegate* unmanaged[Cdecl]<IntPtr, IntPtr> NativeGetFirstProperty;
 	internal static delegate* unmanaged[Cdecl]<IntPtr, IntPtr> NativeGetNextProperty;
-	internal static delegate* unmanaged[Cdecl]<IntPtr, FName, IntPtr> NativeFindProerty;
+	internal static delegate* unmanaged[Cdecl]<IntPtr, FName, IntPtr> NativeFindProperty;
 	internal static delegate* unmanaged[Cdecl]<IntPtr, FName> NativeGetPropertyName;
 	internal static delegate* unmanaged[Cdecl]<IntPtr, int> NativeGetPropertyOffset;
 	internal static delegate* unmanaged[Cdecl]<IntPtr, FName, int> NativeGetPropertyOffsetFromName;
