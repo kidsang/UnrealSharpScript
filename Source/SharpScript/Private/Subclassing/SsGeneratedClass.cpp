@@ -29,12 +29,36 @@ private:
 	 */
 	void TransferClassMembers();
 
+private:
 	FName ClassName;
 	UClass* SuperClass;
 	USsGeneratedClass* OldClass;
 	USsGeneratedClass* NewClass;
 	USsGeneratedClass* FinalClass;
 };
+
+FSsGeneratedClassBuilder::FSsGeneratedClassBuilder(const FName& ClassName, UClass* SuperClass)
+	: ClassName(ClassName)
+	, SuperClass(SuperClass)
+{
+	check(SuperClass);
+	UPackage* ClassOuter = GetGenClassOuter(SuperClass);
+
+	// Find any existing class with the name we want to use
+	OldClass = FindOldClass(ClassName);
+
+	// Create a new class with a temporary name; we will rename it as part of Finalize
+	const FName NewClassName = MakeUniqueObjectName(ClassOuter, USsGeneratedClass::StaticClass(),
+													*FString::Printf(TEXT("%s_NEWINST"), *ClassName.ToString()));
+	NewClass = NewObject<USsGeneratedClass>(ClassOuter, *NewClassName.ToString(),
+											RF_Public | RF_MarkAsNative | RF_Transient);
+	NewClass->SetSuperStruct(SuperClass);
+	NewClass->ClassFlags = (SuperClass->ClassFlags & CLASS_ScriptInherit);
+
+	// If there are old class, reuse the old class as the final generated class.
+	// In this way, we don't need to fix the references to the old class.
+	FinalClass = OldClass ? OldClass : NewClass;
+}
 
 FSsGeneratedClassBuilder::~FSsGeneratedClassBuilder()
 {
@@ -99,29 +123,6 @@ USsGeneratedClass* FSsGeneratedClassBuilder::Finalize()
 	return FinalClass;
 }
 
-FSsGeneratedClassBuilder::FSsGeneratedClassBuilder(const FName& ClassName, UClass* SuperClass)
-	: ClassName(ClassName)
-	  , SuperClass(SuperClass)
-{
-	check(SuperClass);
-	UPackage* ClassOuter = GetGenClassOuter(SuperClass);
-
-	// Find any existing class with the name we want to use
-	OldClass = FindOldClass(ClassName);
-
-	// Create a new class with a temporary name; we will rename it as part of Finalize
-	const FName NewClassName = MakeUniqueObjectName(ClassOuter, USsGeneratedClass::StaticClass(),
-	                                                *FString::Printf(TEXT("%s_NEWINST"), *ClassName.ToString()));
-	NewClass = NewObject<USsGeneratedClass>(ClassOuter, *NewClassName.ToString(),
-	                                        RF_Public | RF_MarkAsNative | RF_Transient);
-	NewClass->SetSuperStruct(SuperClass);
-	NewClass->ClassFlags = (SuperClass->ClassFlags & CLASS_ScriptInherit);
-
-	// If there are old classes, reuse the old classes as the final generated classes.
-	// In this way, we don't need to fix the references to the old classes.
-	FinalClass = OldClass ? OldClass : NewClass;
-}
-
 bool FSsGeneratedClassBuilder::CreatePropertyFromDefinition(const FSsPropertyDef& PropDef)
 {
 	// Resolve the property name to match any previously exported properties from the parent type
@@ -129,7 +130,7 @@ bool FSsGeneratedClassBuilder::CreatePropertyFromDefinition(const FSsPropertyDef
 	if (SuperClass->FindPropertyByName(PropName))
 	{
 		UE_LOG(LogSharpScript, Error, TEXT("%s: Property %s cannot override a property from the base type"),
-		       *ClassName.ToString(), *USsSubclassingUtils::GetFriendlyName(PropDef));
+		       *ClassName.ToString(), *PropDef.GetFriendlyName());
 		return false;
 	}
 
@@ -138,7 +139,7 @@ bool FSsGeneratedClassBuilder::CreatePropertyFromDefinition(const FSsPropertyDef
 	if (!Prop)
 	{
 		UE_LOG(LogSharpScript, Error, TEXT("%s: Failed to create property for %s"),
-		       *ClassName.ToString(), *USsSubclassingUtils::GetFriendlyName(PropDef));
+		       *ClassName.ToString(), *PropDef.GetFriendlyName());
 		return false;
 	}
 

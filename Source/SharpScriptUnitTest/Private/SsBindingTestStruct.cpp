@@ -1,5 +1,11 @@
 #include "SsBindingTestStruct.h"
 
+FSsBindingTestStruct::FSsBindingTestStruct()
+	: BitfieldBoolA(false)
+	, BitfieldBoolB(false)
+{
+}
+
 void* USsBindingTestStructUtils::CreateNativeTestStructDefault()
 {
 	return new FSsBindingTestStruct();

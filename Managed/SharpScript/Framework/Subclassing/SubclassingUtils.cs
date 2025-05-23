@@ -57,5 +57,10 @@ public static unsafe class SubclassingUtils
 		IntPtr, /** PropertyDefines */
 		int, /** PropertyCount */
 		IntPtr> GenerateClass;
+	internal static delegate* unmanaged[Cdecl]<
+		FName, /** StructName */
+		IntPtr, /** PropertyDefines */
+		int, /** PropertyCount */
+		IntPtr> GenerateStruct;
 #pragma warning restore CS0649
 }

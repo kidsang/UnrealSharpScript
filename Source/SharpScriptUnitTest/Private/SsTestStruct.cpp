@@ -1,6 +1,12 @@
 #include "SsTestStruct.h"
 #include "SsTestObject.h"
 
+FSsTestStruct::FSsTestStruct()
+	: BitfieldBoolA(false)
+	, BitfieldBoolB(false)
+{
+}
+
 void* USsTestStructUtils::CreateNativeTestStructDefault()
 {
 	return new FSsTestStruct();

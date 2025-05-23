@@ -1,11 +1,12 @@
 using SharpScriptUnitTest.Types;
 using UnrealEngine.CoreUObject;
 using UnrealEngine.Intrinsic;
+using static SharpScriptUnitTest.Tests.MapTest;
 
 namespace SharpScriptUnitTest.Tests;
 
 /// <summary>
-///     Test automatically generated static export properties and methods of UObject.
+/// Test binding properties and methods of C# generated class.
 /// </summary>
 [RecordFilePath]
 public class SubclassingObjectManualTest : IUnitTestInterface
@@ -40,9 +41,9 @@ public class SubclassingObjectManualTest : IUnitTestInterface
 		Utils.Assert(obj.String == string.Empty);
 		Utils.Assert(obj.Name == FName.None);
 		Utils.Assert(obj.Text == string.Empty);
-		// Utils.Assert(obj.StringArray.SequenceEqual([]));
-		// Utils.Assert(obj.StringSet.SequenceEqual([]));
-		// Utils.Assert(DictEquals(obj.StringIntMap, []));
+		Utils.Assert(obj.StringArray.SequenceEqual([]));
+		Utils.Assert(obj.StringSet.SequenceEqual([]));
+		Utils.Assert(DictEquals(obj.StringIntMap, []));
 		Utils.Assert(obj.Object == null);
 		Utils.Assert(obj.SoftObjectPtr == null);
 		Utils.Assert(obj.LazyObjectPtr == null);
@@ -68,13 +69,13 @@ public class SubclassingObjectManualTest : IUnitTestInterface
 		Utils.Assert(obj.Name == "Name");
 		obj.Text = new FText("Text");
 		Utils.Assert(obj.Text == "Text");
-		// obj.StringArray.CopyFrom(["String", "Array"]);
-		// Utils.Assert(obj.StringArray.SequenceEqual(["String", "Array"]));
-		// obj.StringSet.CopyFrom(["String", "Set"]);
-		// Utils.Assert(obj.StringSet.SetEquals(["String", "Set"]));
-		// Dictionary<string, int> testDict = new() { { "A", 1 }, { "B", 2 } };
-		// obj.StringIntMap.CopyFrom(testDict);
-		// Utils.Assert(DictEquals(obj.StringIntMap, testDict));
+		obj.StringArray.CopyFrom(["String", "Array"]);
+		Utils.Assert(obj.StringArray.SequenceEqual(["String", "Array"]));
+		obj.StringSet.CopyFrom(["String", "Set"]);
+		Utils.Assert(obj.StringSet.SetEquals(["String", "Set"]));
+		Dictionary<string, int> testDict = new() { { "A", 1 }, { "B", 2 } };
+		obj.StringIntMap.CopyFrom(testDict);
+		Utils.Assert(DictEquals(obj.StringIntMap, testDict));
 		obj.Object = objValue;
 		Utils.Assert(obj.Object == objValue);
 		obj.Object = null;

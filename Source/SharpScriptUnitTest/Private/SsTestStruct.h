@@ -16,6 +16,8 @@ struct FSsTestStruct
 	GENERATED_BODY()
 
 public:
+	FSsTestStruct();
+	
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "CSharp|Internal")
 	bool Bool = false;
 
@@ -65,7 +67,7 @@ public:
 	FSsArrayTestInnerStruct Struct;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "CSharp|Internal")
-	UObject* Object;
+	UObject* Object = nullptr;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "CSharp|Internal")
 	TObjectPtr<UObject> ObjectPtr;

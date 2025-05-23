@@ -8,7 +8,7 @@ public enum PropSpecs : uint
 	BlueprintReadWrite = 1 << 1,
 }
 
-[AttributeUsage(AttributeTargets.Property)]
+[AttributeUsage(AttributeTargets.Property | AttributeTargets.Field)]
 // ReSharper disable once InconsistentNaming
 public class UPROPERTYAttribute : Attribute
 {

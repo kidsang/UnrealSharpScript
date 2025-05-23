@@ -84,8 +84,7 @@ public unsafe class BindingStructTest : IUnitTestInterface
 			Utils.Assert(testStructCustom.StructFieldPath.Path == "/Script/SharpScriptUnitTest.SsTestObject:Struct");
 			Utils.Assert(testStructCustom.StringArray.SequenceEqual(["String", "Array"]));
 			Utils.Assert(testStructCustom.StringSet.SetEquals(["String", "Set"]));
-			Dictionary<string, int> testDict = new() { { "A", 1 }, { "B", 2 } };
-			Utils.Assert(DictEquals(testStructCustom.StringIntMap, testDict));
+			Utils.Assert(DictEquals(testStructCustom.StringIntMap, new() { { "A", 1 }, { "B", 2 } }));
 			Utils.Assert(testStructCustom.Struct.IntArray.SequenceEqual([1, 2, 3]));
 			Utils.Assert(testStructCustom.Object == objValue);
 			Utils.Assert(testStructCustom.ObjectPtr == objValue);
@@ -97,7 +96,7 @@ public unsafe class BindingStructTest : IUnitTestInterface
 			Utils.Assert(testStructCustom.SoftClassPtr == clsValue);
 			Utils.Assert(testStructCustom.Interface == objValue);
 
-			// Fill the values of the C# struct back into the C++ struct and verify equality.
+			// Fill values of the C# struct back into the C++ struct and verify equality.
 			testStructDefaultNativeRef.FromManaged(testStructCustom);
 			TestFieldEquality(testStructDefaultNativeRef, testStructCustom);
 		}

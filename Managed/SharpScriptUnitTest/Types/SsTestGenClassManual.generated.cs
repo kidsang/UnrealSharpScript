@@ -81,6 +81,25 @@ public partial class USsTestGenClassManual : IStaticClass<USsTestGenClassManual>
 			},
 			new()
 			{
+				PropName = "StringArray",
+				PropType = UArrayProperty.StaticClass.NativeClass,
+				InnerPropType = UStrProperty.StaticClass.NativeClass,
+			},
+			new()
+			{
+				PropName = "StringSet",
+				PropType = USetProperty.StaticClass.NativeClass,
+				InnerPropType = UStrProperty.StaticClass.NativeClass,
+			},
+			new()
+			{
+				PropName = "StringIntMap",
+				PropType = UMapProperty.StaticClass.NativeClass,
+				InnerPropType = UIntProperty.StaticClass.NativeClass,
+				KeyPropType = UStrProperty.StaticClass.NativeClass,
+			},
+			new()
+			{
 				PropName = "Object",
 				PropType = UObjectProperty.StaticClass.NativeClass,
 				UnderlyingType = UObject.StaticClass.NativeClass,
@@ -108,25 +127,6 @@ public partial class USsTestGenClassManual : IStaticClass<USsTestGenClassManual>
 				PropName = "SoftClassPtr",
 				PropType = USoftClassProperty.StaticClass.NativeClass,
 				UnderlyingType = UObject.StaticClass.NativeClass,
-			},
-			new()
-			{
-				PropName = "StringArray",
-				PropType = UArrayProperty.StaticClass.NativeClass,
-				InnerPropType = UStrProperty.StaticClass.NativeClass,
-			},
-			new()
-			{
-				PropName = "StringSet",
-				PropType = UArrayProperty.StaticClass.NativeClass,
-				InnerPropType = UStrProperty.StaticClass.NativeClass,
-			},
-			new()
-			{
-				PropName = "StringIntMap",
-				PropType = UArrayProperty.StaticClass.NativeClass,
-				InnerPropType = UIntProperty.StaticClass.NativeClass,
-				KeyPropType = UStrProperty.StaticClass.NativeClass,
 			},
 		];
 

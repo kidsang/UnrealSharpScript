@@ -1,9 +1,53 @@
 #include "SsSubclassingUtils.h"
 #include "SsCommon.h"
 #include "SsGeneratedClass.h"
+#include "SsGeneratedStruct.h"
 #include "SsTypeRegistry.h"
 #include "UObject/Package.h"
+#include "UObject/Class.h"
 #include "UObject/TextProperty.h"
+
+FString FSsPropertyDef::GetFriendlyName() const
+{
+	const FString PropTypeName = GetFriendlyTypeName(*this);
+	return FString::Printf(TEXT("'%s'(%s)"), *PropName.ToString(), *PropTypeName);
+}
+
+FString FSsPropertyDef::GetFriendlyTypeName(const FSsPropertyDef& PropDef)
+{
+	const UClass* PropType = PropDef.PropType;
+	if (PropType->IsChildOf(USsSubclassingUtils::ObjectPropertyBaseClass))
+	{
+		return FString::Printf(TEXT("%s(%s)"), *PropType->GetName(), *PropDef.UnderlyingType->GetName());
+	}
+
+	if (PropType == USsSubclassingUtils::ArrayPropertyClass || PropType == USsSubclassingUtils::SetPropertyClass)
+	{
+		FSsPropertyDef InnerPropDef;
+		InnerPropDef.PropType = PropDef.InnerPropType;
+		InnerPropDef.UnderlyingType = PropDef.InnerUnderlyingType;
+
+		const FString InnerTypeName = GetFriendlyTypeName(InnerPropDef);
+		return FString::Printf(TEXT("%s(%s)"), *PropType->GetName(), *InnerTypeName);
+	}
+
+	if (PropType == USsSubclassingUtils::MapPropertyClass)
+	{
+		FSsPropertyDef KeyPropDef;
+		KeyPropDef.PropType = PropDef.KeyPropType;
+		KeyPropDef.UnderlyingType = PropDef.KeyUnderlyingType;
+
+		FSsPropertyDef ValuePropDef;
+		ValuePropDef.PropType = PropDef.InnerPropType;
+		ValuePropDef.UnderlyingType = PropDef.InnerUnderlyingType;
+
+		const FString KeyTypeName = GetFriendlyTypeName(KeyPropDef);
+		const FString ValueTypeName = GetFriendlyTypeName(ValuePropDef);
+		return FString::Printf(TEXT("%s(%s, %s)"), *PropType->GetName(), *KeyTypeName, *ValueTypeName);
+	}
+
+	return PropType->GetName();
+}
 
 bool USsSubclassingUtils::Initialize()
 {
@@ -39,6 +83,53 @@ bool USsSubclassingUtils::Initialize()
 	GeneratedPackageEditorOnly = CreatePackage(GeneratedEditorOnlyPackageName, PKG_EditorOnly);
 #endif
 
+	Int8PropertyClass = FindObject<UClass>(CoreUObjectPackage, TEXT("Int8Property"));
+	check(Int8PropertyClass);
+	Int16PropertyClass = FindObject<UClass>(CoreUObjectPackage, TEXT("Int16Property"));
+	check(Int16PropertyClass);
+	IntPropertyClass = FindObject<UClass>(CoreUObjectPackage, TEXT("IntProperty"));
+	check(IntPropertyClass);
+	Int64PropertyClass = FindObject<UClass>(CoreUObjectPackage, TEXT("Int64Property"));
+	check(Int64PropertyClass);
+	BytePropertyClass = FindObject<UClass>(CoreUObjectPackage, TEXT("ByteProperty"));
+	check(BytePropertyClass);
+	UInt16PropertyClass = FindObject<UClass>(CoreUObjectPackage, TEXT("UInt16Property"));
+	check(UInt16PropertyClass);
+	UInt32PropertyClass = FindObject<UClass>(CoreUObjectPackage, TEXT("UInt32Property"));
+	check(UInt32PropertyClass);
+	UInt64PropertyClass = FindObject<UClass>(CoreUObjectPackage, TEXT("UInt64Property"));
+	check(UInt64PropertyClass);
+	FloatPropertyClass = FindObject<UClass>(CoreUObjectPackage, TEXT("FloatProperty"));
+	check(FloatPropertyClass);
+	DoublePropertyClass = FindObject<UClass>(CoreUObjectPackage, TEXT("DoubleProperty"));
+	check(DoublePropertyClass);
+	BoolPropertyClass = FindObject<UClass>(CoreUObjectPackage, TEXT("BoolProperty"));
+	check(BoolPropertyClass);
+	StrPropertyClass = FindObject<UClass>(CoreUObjectPackage, TEXT("StrProperty"));
+	check(StrPropertyClass);
+	NamePropertyClass = FindObject<UClass>(CoreUObjectPackage, TEXT("NameProperty"));
+	check(NamePropertyClass);
+	TextPropertyClass = FindObject<UClass>(CoreUObjectPackage, TEXT("TextProperty"));
+	check(TextPropertyClass);
+	ObjectPropertyBaseClass = FindObject<UClass>(CoreUObjectPackage, TEXT("ObjectPropertyBase"));
+	check(ObjectPropertyBaseClass);
+	ObjectPropertyClass = FindObject<UClass>(CoreUObjectPackage, TEXT("ObjectProperty"));
+	check(ObjectPropertyClass);
+	SoftObjectPropertyClass = FindObject<UClass>(CoreUObjectPackage, TEXT("SoftObjectProperty"));
+	check(SoftObjectPropertyClass);
+	LazyObjectPropertyClass = FindObject<UClass>(CoreUObjectPackage, TEXT("LazyObjectProperty"));
+	check(LazyObjectPropertyClass);
+	ClassPropertyClass = FindObject<UClass>(CoreUObjectPackage, TEXT("ClassProperty"));
+	check(ClassPropertyClass);
+	SoftClassPropertyClass = FindObject<UClass>(CoreUObjectPackage, TEXT("SoftClassProperty"));
+	check(SoftClassPropertyClass);
+	ArrayPropertyClass = FindObject<UClass>(CoreUObjectPackage, TEXT("ArrayProperty"));
+	check(ArrayPropertyClass);
+	SetPropertyClass = FindObject<UClass>(CoreUObjectPackage, TEXT("SetProperty"));
+	check(SetPropertyClass);
+	MapPropertyClass = FindObject<UClass>(CoreUObjectPackage, TEXT("MapProperty"));
+	check(MapPropertyClass);
+
 	return true;
 }
 
@@ -72,117 +163,117 @@ USsGeneratedClass* USsSubclassingUtils::GenerateClass(const void* ManagedType, c
 	return GenClass;
 }
 
-FString USsSubclassingUtils::GetFriendlyName(const FSsPropertyDef& PropDef)
+USsGeneratedStruct* USsSubclassingUtils::GenerateStruct(const FName& StructName, const FSsPropertyDef* PropertyDefines,
+                                                        int PropertyCount)
 {
-	// todo: twx Support container types.
-	return FString::Printf(TEXT("'%s'(%s)"), *PropDef.PropName.ToString(), *PropDef.PropType->GetName());
+	check(IsInGameThread());
+	return USsGeneratedStruct::GenerateStruct(StructName, PropertyDefines, PropertyCount);
 }
 
 FProperty* USsSubclassingUtils::CreateProperty(FFieldVariant Owner, const FSsPropertyDef& PropDef)
 {
-	// todo: twx Support container types.
 	using ConverterFun = FProperty* (*)(FFieldVariant Owner, const FSsPropertyDef& PropDef, EObjectFlags InObjectFlags);
 	static TMap<UClass*, ConverterFun> ConverterMap = {
 		{
-			FindObject<UClass>(CoreUObjectPackage, TEXT("Int8Property")),
+			Int8PropertyClass,
 			[](FFieldVariant Owner, const FSsPropertyDef& PropDef, EObjectFlags InObjectFlags) -> FProperty*
 			{
 				return new FInt8Property(Owner, PropDef.PropName, InObjectFlags);
 			}
 		},
 		{
-			FindObject<UClass>(CoreUObjectPackage, TEXT("Int16Property")),
+			Int16PropertyClass,
 			[](FFieldVariant Owner, const FSsPropertyDef& PropDef, EObjectFlags InObjectFlags) -> FProperty*
 			{
 				return new FInt16Property(Owner, PropDef.PropName, InObjectFlags);
 			}
 		},
 		{
-			FindObject<UClass>(CoreUObjectPackage, TEXT("IntProperty")),
+			IntPropertyClass,
 			[](FFieldVariant Owner, const FSsPropertyDef& PropDef, EObjectFlags InObjectFlags) -> FProperty*
 			{
 				return new FIntProperty(Owner, PropDef.PropName, InObjectFlags);
 			}
 		},
 		{
-			FindObject<UClass>(CoreUObjectPackage, TEXT("Int64Property")),
+			Int64PropertyClass,
 			[](FFieldVariant Owner, const FSsPropertyDef& PropDef, EObjectFlags InObjectFlags) -> FProperty*
 			{
 				return new FInt64Property(Owner, PropDef.PropName, InObjectFlags);
 			}
 		},
 		{
-			FindObject<UClass>(CoreUObjectPackage, TEXT("ByteProperty")),
+			BytePropertyClass,
 			[](FFieldVariant Owner, const FSsPropertyDef& PropDef, EObjectFlags InObjectFlags) -> FProperty*
 			{
 				return new FByteProperty(Owner, PropDef.PropName, InObjectFlags);
 			}
 		},
 		{
-			FindObject<UClass>(CoreUObjectPackage, TEXT("UInt16Property")),
+			UInt16PropertyClass,
 			[](FFieldVariant Owner, const FSsPropertyDef& PropDef, EObjectFlags InObjectFlags) -> FProperty*
 			{
 				return new FUInt16Property(Owner, PropDef.PropName, InObjectFlags);
 			}
 		},
 		{
-			FindObject<UClass>(CoreUObjectPackage, TEXT("UInt32Property")),
+			UInt32PropertyClass,
 			[](FFieldVariant Owner, const FSsPropertyDef& PropDef, EObjectFlags InObjectFlags) -> FProperty*
 			{
 				return new FUInt32Property(Owner, PropDef.PropName, InObjectFlags);
 			}
 		},
 		{
-			FindObject<UClass>(CoreUObjectPackage, TEXT("UInt64Property")),
+			UInt64PropertyClass,
 			[](FFieldVariant Owner, const FSsPropertyDef& PropDef, EObjectFlags InObjectFlags) -> FProperty*
 			{
 				return new FUInt64Property(Owner, PropDef.PropName, InObjectFlags);
 			}
 		},
 		{
-			FindObject<UClass>(CoreUObjectPackage, TEXT("FloatProperty")),
+			FloatPropertyClass,
 			[](FFieldVariant Owner, const FSsPropertyDef& PropDef, EObjectFlags InObjectFlags) -> FProperty*
 			{
 				return new FFloatProperty(Owner, PropDef.PropName, InObjectFlags);
 			}
 		},
 		{
-			FindObject<UClass>(CoreUObjectPackage, TEXT("DoubleProperty")),
+			DoublePropertyClass,
 			[](FFieldVariant Owner, const FSsPropertyDef& PropDef, EObjectFlags InObjectFlags) -> FProperty*
 			{
 				return new FDoubleProperty(Owner, PropDef.PropName, InObjectFlags);
 			}
 		},
 		{
-			FindObject<UClass>(CoreUObjectPackage, TEXT("BoolProperty")),
+			BoolPropertyClass,
 			[](FFieldVariant Owner, const FSsPropertyDef& PropDef, EObjectFlags InObjectFlags) -> FProperty*
 			{
 				return new FBoolProperty(Owner, PropDef.PropName, InObjectFlags);
 			}
 		},
 		{
-			FindObject<UClass>(CoreUObjectPackage, TEXT("StrProperty")),
+			StrPropertyClass,
 			[](FFieldVariant Owner, const FSsPropertyDef& PropDef, EObjectFlags InObjectFlags) -> FProperty*
 			{
 				return new FStrProperty(Owner, PropDef.PropName, InObjectFlags);
 			}
 		},
 		{
-			FindObject<UClass>(CoreUObjectPackage, TEXT("NameProperty")),
+			NamePropertyClass,
 			[](FFieldVariant Owner, const FSsPropertyDef& PropDef, EObjectFlags InObjectFlags) -> FProperty*
 			{
 				return new FNameProperty(Owner, PropDef.PropName, InObjectFlags);
 			}
 		},
 		{
-			FindObject<UClass>(CoreUObjectPackage, TEXT("TextProperty")),
+			TextPropertyClass,
 			[](FFieldVariant Owner, const FSsPropertyDef& PropDef, EObjectFlags InObjectFlags) -> FProperty*
 			{
 				return new FTextProperty(Owner, PropDef.PropName, InObjectFlags);
 			}
 		},
 		{
-			FindObject<UClass>(CoreUObjectPackage, TEXT("ObjectProperty")),
+			ObjectPropertyClass,
 			[](FFieldVariant Owner, const FSsPropertyDef& PropDef, EObjectFlags InObjectFlags) -> FProperty*
 			{
 				UClass* PropertyClass = Cast<UClass>(PropDef.UnderlyingType);
@@ -193,7 +284,7 @@ FProperty* USsSubclassingUtils::CreateProperty(FFieldVariant Owner, const FSsPro
 			}
 		},
 		{
-			FindObject<UClass>(CoreUObjectPackage, TEXT("SoftObjectProperty")),
+			SoftObjectPropertyClass,
 			[](FFieldVariant Owner, const FSsPropertyDef& PropDef, EObjectFlags InObjectFlags) -> FProperty*
 			{
 				UClass* PropertyClass = Cast<UClass>(PropDef.UnderlyingType);
@@ -204,7 +295,7 @@ FProperty* USsSubclassingUtils::CreateProperty(FFieldVariant Owner, const FSsPro
 			}
 		},
 		{
-			FindObject<UClass>(CoreUObjectPackage, TEXT("LazyObjectProperty")),
+			LazyObjectPropertyClass,
 			[](FFieldVariant Owner, const FSsPropertyDef& PropDef, EObjectFlags InObjectFlags) -> FProperty*
 			{
 				UClass* PropertyClass = Cast<UClass>(PropDef.UnderlyingType);
@@ -215,7 +306,7 @@ FProperty* USsSubclassingUtils::CreateProperty(FFieldVariant Owner, const FSsPro
 			}
 		},
 		{
-			FindObject<UClass>(CoreUObjectPackage, TEXT("ClassProperty")),
+			ClassPropertyClass,
 			[](FFieldVariant Owner, const FSsPropertyDef& PropDef, EObjectFlags InObjectFlags) -> FProperty*
 			{
 				UClass* MetaClass = Cast<UClass>(PropDef.UnderlyingType);
@@ -227,7 +318,7 @@ FProperty* USsSubclassingUtils::CreateProperty(FFieldVariant Owner, const FSsPro
 			}
 		},
 		{
-			FindObject<UClass>(CoreUObjectPackage, TEXT("SoftClassProperty")),
+			SoftClassPropertyClass,
 			[](FFieldVariant Owner, const FSsPropertyDef& PropDef, EObjectFlags InObjectFlags) -> FProperty*
 			{
 				UClass* MetaClass = Cast<UClass>(PropDef.UnderlyingType);
@@ -239,7 +330,7 @@ FProperty* USsSubclassingUtils::CreateProperty(FFieldVariant Owner, const FSsPro
 			}
 		},
 		{
-			FindObject<UClass>(CoreUObjectPackage, TEXT("ArrayProperty")),
+			ArrayPropertyClass,
 			[](FFieldVariant Owner, const FSsPropertyDef& PropDef, EObjectFlags InObjectFlags) -> FProperty*
 			{
 				FSsPropertyDef InnerPropDef;
@@ -269,7 +360,7 @@ FProperty* USsSubclassingUtils::CreateProperty(FFieldVariant Owner, const FSsPro
 			}
 		},
 		{
-			FindObject<UClass>(CoreUObjectPackage, TEXT("FSetProperty")),
+			SetPropertyClass,
 			[](FFieldVariant Owner, const FSsPropertyDef& PropDef, EObjectFlags InObjectFlags) -> FProperty*
 			{
 				FSsPropertyDef InnerPropDef;
@@ -299,7 +390,7 @@ FProperty* USsSubclassingUtils::CreateProperty(FFieldVariant Owner, const FSsPro
 			}
 		},
 		{
-			FindObject<UClass>(CoreUObjectPackage, TEXT("FMapProperty")),
+			MapPropertyClass,
 			[](FFieldVariant Owner, const FSsPropertyDef& PropDef, EObjectFlags InObjectFlags) -> FProperty*
 			{
 				FSsPropertyDef KeyPropDef;
@@ -355,7 +446,7 @@ FProperty* USsSubclassingUtils::CreateProperty(FFieldVariant Owner, const FSsPro
 	if (!ConverterPtr)
 	{
 		UE_LOG(LogSharpScript, Error, TEXT("%s: Can't find converter when creating property %s"),
-		       *Owner.GetName(), *GetFriendlyName(PropDef));
+		       *Owner.GetName(), *PropDef.GetFriendlyName());
 		return nullptr;
 	}
 
@@ -367,6 +458,7 @@ FProperty* USsSubclassingUtils::CreateProperty(FFieldVariant Owner, const FSsPro
 void USsSubclassingUtils::DoExportFunctions(FSsBindNativeCallbackFunc BindNativeCallbackFunc)
 {
 	BindNativeCallbackFunc(&GenerateClass, TEXT("SubclassingUtils.GenerateClass"));
+	BindNativeCallbackFunc(&GenerateStruct, TEXT("SubclassingUtils.GenerateStruct"));
 }
 
 UPackage* USsSubclassingUtils::CoreUObjectPackage = nullptr;
@@ -374,3 +466,26 @@ UPackage* USsSubclassingUtils::GeneratedPackage = nullptr;
 #if WITH_EDITOR
 UPackage* USsSubclassingUtils::GeneratedPackageEditorOnly = nullptr;
 #endif
+UClass* USsSubclassingUtils::Int8PropertyClass = nullptr;
+UClass* USsSubclassingUtils::Int16PropertyClass = nullptr;
+UClass* USsSubclassingUtils::IntPropertyClass = nullptr;
+UClass* USsSubclassingUtils::Int64PropertyClass = nullptr;
+UClass* USsSubclassingUtils::BytePropertyClass = nullptr;
+UClass* USsSubclassingUtils::UInt16PropertyClass = nullptr;
+UClass* USsSubclassingUtils::UInt32PropertyClass = nullptr;
+UClass* USsSubclassingUtils::UInt64PropertyClass = nullptr;
+UClass* USsSubclassingUtils::FloatPropertyClass = nullptr;
+UClass* USsSubclassingUtils::DoublePropertyClass = nullptr;
+UClass* USsSubclassingUtils::BoolPropertyClass = nullptr;
+UClass* USsSubclassingUtils::StrPropertyClass = nullptr;
+UClass* USsSubclassingUtils::NamePropertyClass = nullptr;
+UClass* USsSubclassingUtils::TextPropertyClass = nullptr;
+UClass* USsSubclassingUtils::ObjectPropertyBaseClass = nullptr;
+UClass* USsSubclassingUtils::ObjectPropertyClass = nullptr;
+UClass* USsSubclassingUtils::SoftObjectPropertyClass = nullptr;
+UClass* USsSubclassingUtils::LazyObjectPropertyClass = nullptr;
+UClass* USsSubclassingUtils::ClassPropertyClass = nullptr;
+UClass* USsSubclassingUtils::SoftClassPropertyClass = nullptr;
+UClass* USsSubclassingUtils::ArrayPropertyClass = nullptr;
+UClass* USsSubclassingUtils::SetPropertyClass = nullptr;
+UClass* USsSubclassingUtils::MapPropertyClass = nullptr;

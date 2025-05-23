@@ -34,6 +34,16 @@ public class SharpScript : ModuleRules
 			}
 		);
 
+		if (Target.bBuildEditor)
+		{
+			PrivateDependencyModuleNames.AddRange(
+				new string[]
+				{
+					"UnrealEd",
+				}
+			);
+		}
+
 		string managedPath = Path.Combine(PluginDirectory, "Managed");
 		PublishSolution(Path.Combine(managedPath, "SharpScriptSourceGenerator"));
 

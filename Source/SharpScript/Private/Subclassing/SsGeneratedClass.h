@@ -6,6 +6,9 @@
 
 struct FSsPropertyDef;
 
+/**
+ * An Unreal class that was generated from a C# type.
+ */
 UCLASS()
 class USsGeneratedClass : public UBlueprintGeneratedClass
 {

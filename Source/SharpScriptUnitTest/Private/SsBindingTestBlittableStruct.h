@@ -11,10 +11,10 @@ struct FSsBindingTestBlittableStruct
 	GENERATED_BODY()
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "CSharp|Internal")
-	int X;
+	int X = 0;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "CSharp|Internal")
-	int Y;
+	int Y = 0;
 };
 
 inline uint32 GetTypeHash(const FSsBindingTestBlittableStruct& value)
