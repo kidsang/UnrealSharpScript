@@ -238,17 +238,6 @@ public class WrapperObjectTest : IUnitTestInterface
 		Utils.Assert(obj.StructArray[0].SoftClassPtr == null);
 		Utils.Assert(obj.StructArray[0].Interface == null);
 
-		// Test ref struct
-		Utils.Assert(obj.BlittableStruct.X == 0);
-		Utils.Assert(obj.BlittableStruct.Y == 0);
-		obj.BlittableStruct.X = 10;
-		Utils.Assert(obj.BlittableStruct.X == 10);
-		obj.BlittableStruct.Y = 20;
-		Utils.Assert(obj.BlittableStruct.Y == 20);
-		obj.BlittableStruct = new FSsTestBlittableStruct { X = 30, Y = 30 };
-		Utils.Assert(obj.BlittableStruct.X == 30);
-		Utils.Assert(obj.BlittableStruct.Y == 30);
-
 		// Test struct array reference member assignment
 		obj.StructArray[0].Bool = true;
 		Utils.Assert(obj.StructArray[0].Bool);
@@ -309,6 +298,17 @@ public class WrapperObjectTest : IUnitTestInterface
 		Utils.Assert(obj.StructArray[0].Interface == objValue);
 		obj.StructArray[0].Interface = null;
 		Utils.Assert(obj.StructArray[0].Interface == null);
+
+		// Test ref struct
+		Utils.Assert(obj.BlittableStruct.X == 0);
+		Utils.Assert(obj.BlittableStruct.Y == 0);
+		obj.BlittableStruct.X = 10;
+		Utils.Assert(obj.BlittableStruct.X == 10);
+		obj.BlittableStruct.Y = 20;
+		Utils.Assert(obj.BlittableStruct.Y == 20);
+		obj.BlittableStruct = new FSsTestBlittableStruct { X = 30, Y = 30 };
+		Utils.Assert(obj.BlittableStruct.X == 30);
+		Utils.Assert(obj.BlittableStruct.Y == 30);
 
 		// Test function calls
 		FSsTestStruct testStruct = new FSsTestStruct

@@ -7,7 +7,7 @@ using static SharpScriptUnitTest.Tests.MapTest;
 namespace SharpScriptUnitTest.Tests;
 
 /// <summary>
-///     Test binding properties of C# generated struct.
+/// Test binding properties of C# generated struct.
 /// </summary>
 [RecordFilePath]
 public class SubclassingStructManualTest : IUnitTestInterface
@@ -36,7 +36,7 @@ public class SubclassingStructManualTest : IUnitTestInterface
 			Utils.Assert(testStructDefault.StringArray.SequenceEqual([]));
 			Utils.Assert(testStructDefault.StringSet.SequenceEqual([]));
 			Utils.Assert(DictEquals(testStructDefault.StringIntMap, []));
-			// Utils.Assert(testStructDefault.Struct.IntArray.SequenceEqual([]));
+			Utils.Assert(testStructDefault.Struct.IntArray.SequenceEqual([]));
 			Utils.Assert(testStructDefault.Object == null);
 			Utils.Assert(testStructDefault.SoftObjectPtr == null);
 			Utils.Assert(testStructDefault.LazyObjectPtr == null);
@@ -59,7 +59,7 @@ public class SubclassingStructManualTest : IUnitTestInterface
 			testStructCustomNativeRef.StringArray.CopyFrom(["String", "Array"]);
 			testStructCustomNativeRef.StringSet.CopyFrom(["String", "Set"]);
 			testStructCustomNativeRef.StringIntMap.CopyFrom(new Dictionary<string, int> { { "A", 1 }, { "B", 2 } });
-			// testStructCustomNativeRef.Struct = 
+			testStructCustomNativeRef.Struct.IntArray.CopyFrom([1, 2, 3]);
 			testStructCustomNativeRef.Object = objValue;
 			testStructCustomNativeRef.SoftObjectPtr = objValue;
 			testStructCustomNativeRef.LazyObjectPtr = objValue;
@@ -82,7 +82,7 @@ public class SubclassingStructManualTest : IUnitTestInterface
 			Utils.Assert(testStructCustom.StringArray.SequenceEqual(["String", "Array"]));
 			Utils.Assert(testStructCustom.StringSet.SetEquals(["String", "Set"]));
 			Utils.Assert(DictEquals(testStructCustom.StringIntMap, new() { { "A", 1 }, { "B", 2 } }));
-			// Utils.Assert(testStructCustom.Struct.IntArray.SequenceEqual([1, 2, 3]));
+			Utils.Assert(testStructCustom.Struct.IntArray.SequenceEqual([1, 2, 3]));
 			Utils.Assert(testStructCustom.Object == objValue);
 			Utils.Assert(testStructCustom.SoftObjectPtr == objValue);
 			Utils.Assert(testStructCustom.LazyObjectPtr == objValue);
@@ -97,12 +97,14 @@ public class SubclassingStructManualTest : IUnitTestInterface
 		finally
 		{
 			if (testStructDefaultNativePtr != 0)
-				TypeInterop.DestroyStructInstance(FSsTestGenStructManualNativeRef.NativeType,
-					ref testStructDefaultNativePtr);
+			{
+				TypeInterop.DestroyStructInstance(FSsTestGenStructManualNativeRef.NativeType, ref testStructDefaultNativePtr);
+			}
 
 			if (testStructCustomNativePtr != 0)
-				TypeInterop.DestroyStructInstance(FSsTestGenStructManualNativeRef.NativeType,
-					ref testStructCustomNativePtr);
+			{
+				TypeInterop.DestroyStructInstance(FSsTestGenStructManualNativeRef.NativeType, ref testStructCustomNativePtr);
+			}
 		}
 
 		return true;
@@ -125,7 +127,7 @@ public class SubclassingStructManualTest : IUnitTestInterface
 		Utils.Assert(structRef.StringArray.SequenceEqual(structVal.StringArray));
 		Utils.Assert(structRef.StringSet.SetEquals(structVal.StringSet));
 		Utils.Assert(DictEquals(structRef.StringIntMap, structVal.StringIntMap));
-		// Utils.Assert(structRef.Struct.IntArray.SequenceEqual(structVal.Struct.IntArray));
+		Utils.Assert(structRef.Struct.IntArray.SequenceEqual(structVal.Struct.IntArray));
 		Utils.Assert(structRef.Object == structVal.Object);
 		Utils.Assert(structRef.SoftObjectPtr == structVal.SoftObjectPtr);
 		Utils.Assert(structRef.LazyObjectPtr == structVal.LazyObjectPtr);

@@ -34,6 +34,8 @@ public class FSsTestGenStructManualNativeRef(IntPtr nativePtr)
 	private static readonly int StringSet_Offset;
 	private static readonly IntPtr StringIntMap_NativeProp;
 	private static readonly int StringIntMap_Offset;
+	private static readonly IntPtr Struct_NativeProp;
+	private static readonly int Struct_Offset;
 	private static readonly IntPtr Object_NativeProp;
 	private static readonly int Object_Offset;
 	private static readonly IntPtr SoftObjectPtr_NativeProp;
@@ -100,6 +102,12 @@ public class FSsTestGenStructManualNativeRef(IntPtr nativePtr)
 			},
 			new()
 			{
+				PropName = "Struct",
+				PropType = UStructProperty.StaticClass.NativeClass,
+				UnderlyingType = FSsArrayTestInnerGenStructManualNativeRef.NativeType
+			},
+			new()
+			{
 				PropName = "Object",
 				PropType = UObjectProperty.StaticClass.NativeClass,
 				UnderlyingType = UObject.StaticClass.NativeClass
@@ -127,7 +135,7 @@ public class FSsTestGenStructManualNativeRef(IntPtr nativePtr)
 				PropName = "SoftClassPtr",
 				PropType = USoftClassProperty.StaticClass.NativeClass,
 				UnderlyingType = UObject.StaticClass.NativeClass
-			},
+			}
 		];
 
 		unsafe
@@ -164,6 +172,8 @@ public class FSsTestGenStructManualNativeRef(IntPtr nativePtr)
 		StringSet_Offset = TypeInterop.GetPropertyOffset(StringSet_NativeProp);
 		StringIntMap_NativeProp = propIter.FindNext("StringIntMap");
 		StringIntMap_Offset = TypeInterop.GetPropertyOffset(StringIntMap_NativeProp);
+		Struct_NativeProp = propIter.FindNext("Struct");
+		Struct_Offset = TypeInterop.GetPropertyOffset(Struct_NativeProp);
 		Object_NativeProp = propIter.FindNext("Object");
 		Object_Offset = TypeInterop.GetPropertyOffset(Object_NativeProp);
 		SoftObjectPtr_NativeProp = propIter.FindNext("SoftObjectPtr");
@@ -239,6 +249,10 @@ public class FSsTestGenStructManualNativeRef(IntPtr nativePtr)
 	public TMap<string, int> StringIntMap => _stringIntMap ??= new(nativePtr + StringIntMap_Offset,
 		StringIntMap_NativeProp, StringMarshaller.Instance, BlittableMarshaller<int>.Instance);
 
+	private FSsArrayTestInnerGenStructManualNativeRef? _struct;
+
+	public FSsArrayTestInnerGenStructManualNativeRef Struct => _struct ??= new(nativePtr + Struct_Offset);
+
 	public UObject? Object
 	{
 		get => ObjectMarshaller<UObject>.FromNative(nativePtr + Object_Offset);
@@ -284,11 +298,12 @@ public class FSsTestGenStructManualNativeRef(IntPtr nativePtr)
 			StringArray = StringArray,
 			StringSet = StringSet,
 			StringIntMap = StringIntMap,
+			Struct = Struct,
 			Object = Object,
 			SoftObjectPtr = SoftObjectPtr,
 			LazyObjectPtr = LazyObjectPtr,
 			Class = Class,
-			SoftClassPtr = SoftClassPtr,
+			SoftClassPtr = SoftClassPtr
 		};
 	}
 
@@ -305,6 +320,7 @@ public class FSsTestGenStructManualNativeRef(IntPtr nativePtr)
 		StringArray.CopyFrom(value.StringArray);
 		StringSet.CopyFrom(value.StringSet);
 		StringIntMap.CopyFrom(value.StringIntMap);
+		Struct.FromManaged(value.Struct);
 		Object = value.Object;
 		SoftObjectPtr = value.SoftObjectPtr;
 		LazyObjectPtr = value.LazyObjectPtr;
@@ -321,7 +337,7 @@ public class FSsTestGenStructManualNativeRef(IntPtr nativePtr)
 	{
 		return NativeDataSize;
 	}
-	
+
 	public static implicit operator FSsTestGenStructManual(FSsTestGenStructManualNativeRef nativeRef)
 	{
 		return nativeRef.ToManaged();

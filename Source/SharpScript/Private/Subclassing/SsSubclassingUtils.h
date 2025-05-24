@@ -113,6 +113,7 @@ private:
 	static UClass* StrPropertyClass;
 	static UClass* NamePropertyClass;
 	static UClass* TextPropertyClass;
+	static UClass* StructPropertyClass;
 	static UClass* ObjectPropertyBaseClass;
 	static UClass* ObjectPropertyClass;
 	static UClass* SoftObjectPropertyClass;

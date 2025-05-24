@@ -42,10 +42,9 @@ FSsGeneratedStructBuilder::FSsGeneratedStructBuilder(const FName& StructName)
 	OldStruct = FindObject<USsGeneratedStruct>(StructOuter, *StructName.ToString());
 
 	// Create a new struct with a temporary name; we will rename it as part of Finalize
-	const FName NewStructName = MakeUniqueObjectName(StructOuter, USsGeneratedStruct::StaticClass(),
-	                                                 *FString::Printf(TEXT("%s_NEWINST"), *StructName.ToString()));
-	NewStruct = NewObject<USsGeneratedStruct>(StructOuter, *NewStructName.ToString(),
-	                                          RF_Public | RF_MarkAsNative | RF_Transient);
+	const FName NewStructName = MakeUniqueObjectName(StructOuter, USsGeneratedStruct::StaticClass(), *FString::Printf(TEXT("%s_NEWINST"), *StructName.ToString()));
+	NewStruct = NewObject<USsGeneratedStruct>(StructOuter, *NewStructName.ToString(), RF_Public | RF_Standalone | RF_Transient);
+	NewStruct->AddToRoot();
 
 	// If there are old struct, reuse the old struct as the final generated struct.
 	// In this way, we don't need to fix the references to the old struct.
@@ -58,7 +57,7 @@ FSsGeneratedStructBuilder::~FSsGeneratedStructBuilder()
 	if (NewStruct)
 	{
 		NewStruct->ClearFlags(RF_AllFlags);
-		NewStruct->ClearInternalFlags(EInternalObjectFlags::Native);
+		NewStruct->RemoveFromRoot();
 		NewStruct = nullptr;
 
 		CollectGarbage(GARBAGE_COLLECTION_KEEPFLAGS);
@@ -82,6 +81,7 @@ USsGeneratedStruct* FSsGeneratedStructBuilder::Finalize()
 	FinalStruct->Bind();
 	FinalStruct->StaticLink(true);
 	FinalStruct->GenerateDefaultInstance();
+	FinalStruct->UpdateStructFlags();
 
 	FinalStruct->Status = UDSS_UpToDate;
 	if (!FinalStruct->Guid.IsValid())

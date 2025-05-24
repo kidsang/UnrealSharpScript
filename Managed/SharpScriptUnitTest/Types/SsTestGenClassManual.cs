@@ -37,6 +37,15 @@ public partial class USsTestGenClassManual : UObject
 	public partial TMap<string, int> StringIntMap { get; }
 
 	[UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "CSharp|Internal")]
+	public partial FSsTestGenStructManualNativeRef Struct { get; }
+
+	[UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "CSharp|Internal")]
+	public partial TArray<FSsTestGenStructManual, FSsTestGenStructManualNativeRef> StructArray { get; }
+
+	[UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "CSharp|Internal")]
+	public partial ref FSsTestBlittableGenStructManual BlittableStruct { get; }
+
+	[UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "CSharp|Internal")]
 	public partial UObject? Object { get; set; }
 
 	[UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "CSharp|Internal")]

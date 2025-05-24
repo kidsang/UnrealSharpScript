@@ -34,6 +34,12 @@ public partial class USsTestGenClassManual : IStaticClass<USsTestGenClassManual>
 	private static readonly int StringSet_Offset;
 	private static readonly IntPtr StringIntMap_NativeProp;
 	private static readonly int StringIntMap_Offset;
+	private static readonly IntPtr Struct_NativeProp;
+	private static readonly int Struct_Offset;
+	private static readonly IntPtr StructArray_NativeProp;
+	private static readonly int StructArray_Offset;
+	private static readonly IntPtr BlittableStruct_NativeProp;
+	private static readonly int BlittableStruct_Offset;
 	private static readonly IntPtr Object_NativeProp;
 	private static readonly int Object_Offset;
 	private static readonly IntPtr SoftObjectPtr_NativeProp;
@@ -97,6 +103,25 @@ public partial class USsTestGenClassManual : IStaticClass<USsTestGenClassManual>
 				PropType = UMapProperty.StaticClass.NativeClass,
 				InnerPropType = UIntProperty.StaticClass.NativeClass,
 				KeyPropType = UStrProperty.StaticClass.NativeClass,
+			},
+			new()
+			{
+				PropName = "Struct",
+				PropType = UStructProperty.StaticClass.NativeClass,
+				UnderlyingType = FSsTestGenStructManualNativeRef.NativeType,
+			},
+			new()
+			{
+				PropName = "StructArray",
+				PropType = UArrayProperty.StaticClass.NativeClass,
+				InnerPropType = UStructProperty.StaticClass.NativeClass,
+				InnerUnderlyingType = FSsTestGenStructManualNativeRef.NativeType,
+			},
+			new()
+			{
+				PropName = "BlittableStruct",
+				PropType = UStructProperty.StaticClass.NativeClass,
+				UnderlyingType = FSsTestBlittableGenStructManualNativeRef.NativeType,
 			},
 			new()
 			{
@@ -168,6 +193,12 @@ public partial class USsTestGenClassManual : IStaticClass<USsTestGenClassManual>
 		StringSet_Offset = TypeInterop.GetPropertyOffset(StringSet_NativeProp);
 		StringIntMap_NativeProp = propIter.FindNext("StringIntMap");
 		StringIntMap_Offset = TypeInterop.GetPropertyOffset(StringIntMap_NativeProp);
+		Struct_NativeProp = propIter.FindNext("Struct");
+		Struct_Offset = TypeInterop.GetPropertyOffset(Struct_NativeProp);
+		StructArray_NativeProp = propIter.FindNext("StructArray");
+		StructArray_Offset = TypeInterop.GetPropertyOffset(StructArray_NativeProp);
+		BlittableStruct_NativeProp = propIter.FindNext("BlittableStruct");
+		BlittableStruct_Offset = TypeInterop.GetPropertyOffset(BlittableStruct_NativeProp);
 		Object_NativeProp = propIter.FindNext("Object");
 		Object_Offset = TypeInterop.GetPropertyOffset(Object_NativeProp);
 		SoftObjectPtr_NativeProp = propIter.FindNext("SoftObjectPtr");
@@ -294,6 +325,40 @@ public partial class USsTestGenClassManual : IStaticClass<USsTestGenClassManual>
 		{
 			ThrowIfNotValid();
 			return _stringIntMap ??= new(NativeObject + StringIntMap_Offset, StringIntMap_NativeProp, StringMarshaller.Instance, BlittableMarshaller<int>.Instance);
+		}
+	}
+
+	private FSsTestGenStructManualNativeRef? _struct;
+
+	public partial FSsTestGenStructManualNativeRef Struct
+	{
+		get
+		{
+			ThrowIfNotValid();
+			return _struct ??= new(NativeObject + Struct_Offset);
+		}
+	}
+
+	private TArray<FSsTestGenStructManual, FSsTestGenStructManualNativeRef>? _structArray;
+
+	public partial TArray<FSsTestGenStructManual, FSsTestGenStructManualNativeRef> StructArray
+	{
+		get
+		{
+			ThrowIfNotValid();
+			return _structArray ??= new(NativeObject + StructArray_Offset, StructArray_NativeProp);
+		}
+	}
+
+	public partial ref FSsTestBlittableGenStructManual BlittableStruct
+	{
+		get
+		{
+			unsafe
+			{
+				ThrowIfNotValid();
+				return ref *(FSsTestBlittableGenStructManual*)(NativeObject + BlittableStruct_Offset);
+			}
 		}
 	}
 

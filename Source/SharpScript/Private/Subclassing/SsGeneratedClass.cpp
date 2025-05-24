@@ -48,10 +48,9 @@ FSsGeneratedClassBuilder::FSsGeneratedClassBuilder(const FName& ClassName, UClas
 	OldClass = FindOldClass(ClassName);
 
 	// Create a new class with a temporary name; we will rename it as part of Finalize
-	const FName NewClassName = MakeUniqueObjectName(ClassOuter, USsGeneratedClass::StaticClass(),
-													*FString::Printf(TEXT("%s_NEWINST"), *ClassName.ToString()));
-	NewClass = NewObject<USsGeneratedClass>(ClassOuter, *NewClassName.ToString(),
-											RF_Public | RF_MarkAsNative | RF_Transient);
+	const FName NewClassName = MakeUniqueObjectName(ClassOuter, USsGeneratedClass::StaticClass(), *FString::Printf(TEXT("%s_NEWINST"), *ClassName.ToString()));
+	NewClass = NewObject<USsGeneratedClass>(ClassOuter, *NewClassName.ToString(), RF_Public | RF_Standalone | RF_Transient);
+	NewClass->AddToRoot();
 	NewClass->SetSuperStruct(SuperClass);
 	NewClass->ClassFlags = (SuperClass->ClassFlags & CLASS_ScriptInherit);
 
@@ -66,7 +65,7 @@ FSsGeneratedClassBuilder::~FSsGeneratedClassBuilder()
 	if (NewClass)
 	{
 		NewClass->ClearFlags(RF_AllFlags);
-		NewClass->ClearInternalFlags(EInternalObjectFlags::Native);
+		NewClass->RemoveFromRoot();
 		NewClass = nullptr;
 
 		CollectGarbage(GARBAGE_COLLECTION_KEEPFLAGS);
@@ -257,7 +256,7 @@ void USsGeneratedClass::StaticObjectConstructor(const FObjectInitializer& Initia
 	UObject* Object = Initializer.GetObj();
 	const USsGeneratedClass* GenClass = GetFirstGeneratedClass(Object->GetClass());
 	check(GenClass);
-	
+
 	// Call native constructor
 	GenClass->NativeSuperClass->ClassConstructor(Initializer);
 }

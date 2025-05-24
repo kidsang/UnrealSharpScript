@@ -111,6 +111,8 @@ bool USsSubclassingUtils::Initialize()
 	check(NamePropertyClass);
 	TextPropertyClass = FindObject<UClass>(CoreUObjectPackage, TEXT("TextProperty"));
 	check(TextPropertyClass);
+	StructPropertyClass = FindObject<UClass>(CoreUObjectPackage, TEXT("StructProperty"));
+	check(StructPropertyClass);
 	ObjectPropertyBaseClass = FindObject<UClass>(CoreUObjectPackage, TEXT("ObjectPropertyBase"));
 	check(ObjectPropertyBaseClass);
 	ObjectPropertyClass = FindObject<UClass>(CoreUObjectPackage, TEXT("ObjectProperty"));
@@ -270,6 +272,23 @@ FProperty* USsSubclassingUtils::CreateProperty(FFieldVariant Owner, const FSsPro
 			[](FFieldVariant Owner, const FSsPropertyDef& PropDef, EObjectFlags InObjectFlags) -> FProperty*
 			{
 				return new FTextProperty(Owner, PropDef.PropName, InObjectFlags);
+			}
+		},
+		{
+			StructPropertyClass,
+			[](FFieldVariant Owner, const FSsPropertyDef& PropDef, EObjectFlags InObjectFlags) -> FProperty*
+			{
+				UScriptStruct* ScriptStruct = Cast<UScriptStruct>(PropDef.UnderlyingType);
+				check(IsValid(ScriptStruct));
+				auto Prop = new FStructProperty(Owner, PropDef.PropName, InObjectFlags);
+				Prop->Struct = ScriptStruct;
+
+				if (ScriptStruct->StructFlags & STRUCT_HasInstancedReference)
+				{
+					Prop->SetPropertyFlags(CPF_ContainsInstancedReference);
+				}
+
+				return Prop;
 			}
 		},
 		{
@@ -480,6 +499,7 @@ UClass* USsSubclassingUtils::BoolPropertyClass = nullptr;
 UClass* USsSubclassingUtils::StrPropertyClass = nullptr;
 UClass* USsSubclassingUtils::NamePropertyClass = nullptr;
 UClass* USsSubclassingUtils::TextPropertyClass = nullptr;
+UClass* USsSubclassingUtils::StructPropertyClass = nullptr;
 UClass* USsSubclassingUtils::ObjectPropertyBaseClass = nullptr;
 UClass* USsSubclassingUtils::ObjectPropertyClass = nullptr;
 UClass* USsSubclassingUtils::SoftObjectPropertyClass = nullptr;

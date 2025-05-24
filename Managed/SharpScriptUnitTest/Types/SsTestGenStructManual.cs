@@ -27,13 +27,16 @@ public partial struct FSsTestGenStructManual
 	public FText Text;
 
 	[UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "CSharp|Internal")]
-	public TArray<string> StringArray;
+	public List<string> StringArray;
 
 	[UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "CSharp|Internal")]
-	public TSet<string> StringSet;
+	public HashSet<string> StringSet;
 
 	[UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "CSharp|Internal")]
-	public TMap<string, int> StringIntMap;
+	public Dictionary<string, int> StringIntMap;
+
+	[UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "CSharp|Internal")]
+	public FSsArrayTestInnerGenStructManual Struct;
 
 	[UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "CSharp|Internal")]
 	public UObject? Object;
