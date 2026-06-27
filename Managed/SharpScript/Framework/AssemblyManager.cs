@@ -36,6 +36,26 @@ public enum LoadAssemblyResult
 }
 
 /// <summary>
+/// Interface for assembly plugin.
+/// </summary>
+public interface IAssemblyPlugin
+{
+	/// <summary>
+	/// Register all subclassing types in this assembly.
+	/// </summary>
+	public void RegisterSubclassingTypes()
+	{
+	}
+
+	/// <summary>
+	/// Unregister all subclassing types in this assembly.
+	/// </summary>
+	public void UnregisterSubclassingTypes()
+	{
+	}
+}
+
+/// <summary>
 /// Record dynamically loaded assembly information, used to support unloading and reloading
 /// </summary>
 class LoadedAssemblyInfo(string assemblyName, string assemblyPath)
@@ -64,6 +84,11 @@ class LoadedAssemblyInfo(string assemblyName, string assemblyPath)
 	/// Loaded assembly
 	/// </summary>
 	public Assembly? Assembly;
+
+	/// <summary>
+	/// Interface for assembly plugin
+	/// </summary>
+	public IAssemblyPlugin? AssemblyPlugin;
 
 	// /// <summary>
 	// /// Records the names of assemblies that reference this assembly
@@ -372,6 +397,12 @@ public static unsafe class AssemblyManager
 		// 		InternalUnloadAssembly(referencedByAssemblyName, ref unloadedAssemblyInfos);
 		// 	}
 		// }
+
+		if (assemblyInfo.AssemblyPlugin != null)
+		{
+			assemblyInfo.AssemblyPlugin.UnregisterSubclassingTypes();
+			assemblyInfo.AssemblyPlugin = null;
+		}
 
 		// Clean up instances and types in the assembly
 		Debug.Assert(assemblyInfo.Assembly != null);

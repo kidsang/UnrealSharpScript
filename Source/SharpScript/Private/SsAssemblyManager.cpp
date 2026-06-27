@@ -88,10 +88,10 @@ int FSsAssemblyManager::InternalLoadAssembly(void* AssemblyLoadContext, const TC
 
 #if WITH_EDITOR || !UE_BUILD_SHIPPING
 	// In editor or non-shipping builds, attempt to load pdb for debugging
-	FString SymbolePath(AssemblyPath);
-	SymbolePath.ReplaceInline(TEXT(".dll"), TEXT(".pdb"));
+	FString SymbolPath(AssemblyPath);
+	SymbolPath.ReplaceInline(TEXT(".dll"), TEXT(".pdb"));
 	TArray<uint8> SymbolBytes;
-	FFileHelper::LoadFileToArray(SymbolBytes, *SymbolePath);
+	FFileHelper::LoadFileToArray(SymbolBytes, *SymbolPath);
 	int SymbolBytesLength = SymbolBytes.Num();
 	const uint8* SymbolBytesPtr = SymbolBytesLength > 0 ? SymbolBytes.GetData() : nullptr;
 #else

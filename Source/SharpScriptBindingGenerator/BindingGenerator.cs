@@ -188,14 +188,14 @@ public static class BindingGenerator
 			return;
 		}
 
-		void CollectSholdExportType(UhtType type)
+		void CollectShouldExportType(UhtType type)
 		{
 			ShouldExportTypes.Add(type);
 		}
 
 		foreach (UhtType child in package.Children)
 		{
-			ForEachChild(child, CollectSholdExportType);
+			ForEachChild(child, CollectShouldExportType);
 		}
 	}
 

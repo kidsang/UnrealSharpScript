@@ -49,7 +49,7 @@ public static unsafe class TypeRegistry
 				{
 					fixed (char* typeName = attribute.TypeName)
 					{
-						NativeUnegisterClassTypeByName(typeName);
+						NativeUnregisterClassTypeByName(typeName);
 					}
 				}
 			}
@@ -77,7 +77,7 @@ public static unsafe class TypeRegistry
 	internal static delegate* unmanaged[Cdecl]<IntPtr, IntPtr, void> NativeRegisterClassType;
 	internal static delegate* unmanaged[Cdecl]<char*, IntPtr, void> NativeRegisterClassTypeByName;
 	internal static delegate* unmanaged[Cdecl]<IntPtr, void> NativeUnregisterClassType;
-	internal static delegate* unmanaged[Cdecl]<char*, void> NativeUnegisterClassTypeByName;
+	internal static delegate* unmanaged[Cdecl]<char*, void> NativeUnregisterClassTypeByName;
 	internal static delegate* unmanaged[Cdecl]<IntPtr, IntPtr> NativeGetManagedClassType;
 #pragma warning restore CS0649
 }

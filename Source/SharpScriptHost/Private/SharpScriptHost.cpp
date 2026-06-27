@@ -69,7 +69,7 @@ void FSharpScriptHostModule::StartupModule()
 	//DotnetRootDir = "F:/dotnet/dotnet-runtime-8.0.6-win-x64-mono-debug"; // for local debug
 #else
 	FString DotnetRootDir;
-#error "Unsuported platform"
+#error "Unsupported platform"
 #endif
 
 	static constexpr const TCHAR* PluginDirMacro = TEXT("$(PluginDir)");
@@ -92,7 +92,7 @@ void FSharpScriptHostModule::StartupModule()
 		return;
 	}
 
-	UE_LOG(LogSharpScriptHost, Display, TEXT("hostfxr loaded successfuly!"));
+	UE_LOG(LogSharpScriptHost, Display, TEXT("hostfxr loaded successfully!"));
 
 	hostfxr_set_error_writer_fn HostfxrSetErrorWriter = (hostfxr_set_error_writer_fn)FPlatformProcess::GetDllExport(
 		HostfxrDllHandle, TEXT("hostfxr_set_error_writer"));
@@ -170,7 +170,7 @@ void FSharpScriptHostModule::StartupModule()
 		return;
 	}
 
-	UE_LOG(LogSharpScriptHost, Display, TEXT("Host functions loaded successfuly!"));
+	UE_LOG(LogSharpScriptHost, Display, TEXT("Host functions loaded successfully!"));
 	HostfxrClose(HostfxrContext);
 
 	int result = HostfxrLoadAssembly(
@@ -195,7 +195,7 @@ void FSharpScriptHostModule::StartupModule()
 		return;
 	}
 
-	UE_LOG(LogSharpScriptHost, Display, TEXT("Host initialize successfuly!"));
+	UE_LOG(LogSharpScriptHost, Display, TEXT("Host initialize successfully!"));
 }
 
 void FSharpScriptHostModule::ShutdownModule()

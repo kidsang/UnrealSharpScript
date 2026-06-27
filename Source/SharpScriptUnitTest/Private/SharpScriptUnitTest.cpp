@@ -169,7 +169,7 @@ void FSharpScriptUnitTestContext::LoadUnitTestAssemblies()
 void FSharpScriptUnitTestContext::UnloadUnitTestAssemblies()
 {
 	bool bResult = FSsAssemblyManager::UnloadAssembly(UnitTestAssemblyName);
-	check(bResult || FSharpScriptHostModule::IsUsingMonoRuntime()); // NOTE: Untill 9.0.4, mono runtime still can't unload assemblies.
+	check(bResult || FSharpScriptHostModule::IsUsingMonoRuntime()); // NOTE: Until 9.0.4, mono runtime still can't unload assemblies.
 }
 
 void FSharpScriptUnitTestContext::GetManagedFunction(const TCHAR* FuncName, void** OutManagedFunc)

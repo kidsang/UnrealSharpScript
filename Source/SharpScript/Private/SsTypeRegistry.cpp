@@ -77,7 +77,7 @@ void USsTypeRegistry::DoExportFunctions(FSsBindNativeCallbackFunc BindNativeCall
 	BindNativeCallbackFunc(&RegisterClassType, TEXT("TypeRegistry.NativeRegisterClassType"));
 	BindNativeCallbackFunc(&RegisterClassTypeByName, TEXT("TypeRegistry.NativeRegisterClassTypeByName"));
 	BindNativeCallbackFunc(&UnregisterClassType, TEXT("TypeRegistry.NativeUnregisterClassType"));
-	BindNativeCallbackFunc(&UnregisterClassTypeByName, TEXT("TypeRegistry.NativeUnegisterClassTypeByName"));
+	BindNativeCallbackFunc(&UnregisterClassTypeByName, TEXT("TypeRegistry.NativeUnregisterClassTypeByName"));
 	BindNativeCallbackFunc(&GetManagedClassType, TEXT("TypeRegistry.NativeGetManagedClassType"));
 }
 

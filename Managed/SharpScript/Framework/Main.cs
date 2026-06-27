@@ -19,7 +19,7 @@ enum StartupError
 	/// <summary>
 	/// Framework startup configuration size mismatch
 	/// </summary>
-	StarupConfigSizeNotMatched = 0x1002,
+	StartupConfigSizeNotMatched = 0x1002,
 }
 
 public static class Main
@@ -40,7 +40,7 @@ public static class Main
 		int startupConfigSize = sizeof(FrameworkStartupConfig);
 		if (startupConfigSize != startupConfig.ConfigSize)
 		{
-			return (int)StartupError.StarupConfigSizeNotMatched;
+			return (int)StartupError.StartupConfigSizeNotMatched;
 		}
 
 		// Assign various function pointers passed from C++ to C# to respective managers
