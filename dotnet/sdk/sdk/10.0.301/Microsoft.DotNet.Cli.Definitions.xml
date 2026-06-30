@@ -1,0 +1,1737 @@
+<?xml version="1.0"?>
+<doc>
+    <assembly>
+        <name>Microsoft.DotNet.Cli.Definitions</name>
+    </assembly>
+    <members>
+        <member name="F:Microsoft.DotNet.Cli.Commands.Build.BuildCommandDefinition.TargetOption">
+            <summary>
+            Build actually means 'run the default Target' generally in MSBuild
+            </summary>
+        </member>
+        <member name="F:Microsoft.DotNet.Cli.Commands.Clean.FileBasedAppArtifacts.CleanFileBasedAppArtifactsCommandDefinition.AutomaticOption">
+            <summary>
+            Specified internally when the command is started automatically in background by <c>dotnet run</c>.
+            Causes RunFileArtifactsMetadata.LastAutomaticCleanupUtc to be updated.
+            </summary>
+        </member>
+        <member name="T:Microsoft.DotNet.Cli.Commands.Workload.InstallingWorkloadCommandDefinition">
+            <summary>
+            Shared options of workload install and update commands.
+            </summary>
+        </member>
+        <member name="F:Microsoft.DotNet.Cli.Commands.Workload.Elevate.WorkloadElevateCommandDefinition.ClientTempOption">
+            <summary>
+            Optional, hidden argument supplied by the unelevated client at server launch with the value of
+            the client's <see cref="M:System.IO.Path.GetTempPath"/>. Used by the elevated server to accept
+            IPC-supplied paths that originate from the client's temp directory when it differs from the
+            server's (e.g., over-the-shoulder UAC, custom TEMP env vars).
+            </summary>
+        </member>
+        <member name="M:Microsoft.DotNet.Cli.CommonOptions.CreateRestorePropertyOption">
+            <summary>
+            Sets MSBuild Global Property values that are only used during Restore (implicit or explicit)
+            </summary>
+            <remarks>
+            </remarks>
+        </member>
+        <member name="M:Microsoft.DotNet.Cli.CommonOptions.CreateInteractiveOption(System.Boolean,System.Boolean)">
+            <summary>
+            A 'template' for interactive usage across the whole dotnet CLI. Use this as a base and then specialize it for your use cases.
+            Despite being a 'forwarded option' there is no default forwarding configured, so if you want forwarding you can add it on a per-command basis.
+            </summary>
+            <param name="acceptArgument">Whether the option accepts an boolean argument. If false, the option will be a flag.</param>
+            <remarks>
+            If not set by a user, this will default to true if the user is not in a CI environment as detected by <see cref="M:Microsoft.DotNet.Cli.Telemetry.CIEnvironmentDetectorForTelemetry.IsCIEnvironment"/>.
+            If this is set to function as a flag, then there is no simple user-provided way to circumvent the behavior.
+            </remarks>
+        </member>
+        <member name="M:Microsoft.DotNet.Cli.CommonOptions.CreateNoLogoOption(System.Boolean,System.String,System.String)">
+            <summary>
+            Creates an implementation of the <c>--no-logo</c> option.
+            This option suppresses the display of the startup banner or logos for commands or products it is applied to.
+            The behavior of this option is influenced by the <c>DOTNET_NOLOGO</c> environment variable if it is set:
+            <list type="bullet">
+            <item>If the <c>--no-logo</c> option is not specified on the command line, the environment variable will be checked to determine
+            whether to suppress logos. Any truthy value - <c>true</c>, <c>1</c>, <c>yes</c>, <c>on</c> - will suppress logos, while any falsy value - <c>false</c>, <c>0</c>, <c>no</c>, <c>off</c> - will show logos.</item>
+            <item>If the option is specified on the command line, it takes precedence over the environment variable.</item>
+            </list>
+            Finally, if neither the option nor the environment variable is set, the option will default to the provided <paramref name="defaultValue"/>.
+            </summary>
+        </member>
+        <member name="M:Microsoft.DotNet.Cli.CommonOptions.CreateDiagnosticsOption(System.Boolean)">
+            <summary>
+            Creates common diagnostics option (-d|--diagnostics).
+            </summary>
+        </member>
+        <member name="T:Microsoft.DotNet.Cli.Help.HelpBuilder">
+            <summary>
+            Formats output to be shown to users to describe how to use a command line tool.
+            </summary>
+        </member>
+        <member name="M:Microsoft.DotNet.Cli.Help.HelpBuilder.#ctor(System.Int32)">
+            <summary>
+            Initializes a new instance of the <see cref="T:Microsoft.DotNet.Cli.Help.HelpBuilder"/> class.
+            </summary>
+            <param name="maxWidth">The maximum width in characters after which help output is wrapped.</param>
+        </member>
+        <member name="P:Microsoft.DotNet.Cli.Help.HelpBuilder.MaxWidth">
+            <summary>
+            The maximum width for which to format help output.
+            </summary>
+        </member>
+        <member name="M:Microsoft.DotNet.Cli.Help.HelpBuilder.Write(Microsoft.DotNet.Cli.Help.HelpContext)">
+            <summary>
+            Writes help output for the specified command.
+            </summary>
+        </member>
+        <member name="M:Microsoft.DotNet.Cli.Help.HelpBuilder.CustomizeSymbol(System.CommandLine.Symbol,System.Func{Microsoft.DotNet.Cli.Help.HelpContext,System.String},System.Func{Microsoft.DotNet.Cli.Help.HelpContext,System.String},System.Func{Microsoft.DotNet.Cli.Help.HelpContext,System.String})">
+            <summary>
+            Specifies custom help details for a specific symbol.
+            </summary>
+            <param name="symbol">The symbol to specify custom help details for.</param>
+            <param name="firstColumnText">A delegate to display the first help column (typically name and usage information).</param>
+            <param name="secondColumnText">A delegate to display second help column (typically the description).</param>
+            <param name="defaultValue">A delegate to display the default value for the symbol.</param>
+        </member>
+        <member name="M:Microsoft.DotNet.Cli.Help.HelpBuilder.CustomizeLayout(System.Func{Microsoft.DotNet.Cli.Help.HelpContext,System.Collections.Generic.IEnumerable{System.Func{Microsoft.DotNet.Cli.Help.HelpContext,System.Boolean}}})">
+            <summary>
+            Customizes the help sections that will be displayed.
+            </summary>
+            <param name="getLayout">
+            A delegate that returns the sections in the order in which they should be written.<br/>
+            The section delegate should return false if the section is empty, true otherwise.
+            </param>
+        </member>
+        <member name="M:Microsoft.DotNet.Cli.Help.HelpBuilder.CustomizeSymbol(System.CommandLine.Symbol,System.String,System.String,System.String)">
+            <summary>
+            Specifies custom help details for a specific symbol.
+            </summary>
+            <param name="symbol">The symbol to customize the help details for.</param>
+            <param name="firstColumnText">A delegate to display the first help column (typically name and usage information).</param>
+            <param name="secondColumnText">A delegate to display second help column (typically the description).</param>
+            <param name="defaultValue">The displayed default value for the symbol.</param>
+        </member>
+        <member name="M:Microsoft.DotNet.Cli.Help.HelpBuilder.WriteColumns(System.Collections.Generic.IReadOnlyList{Microsoft.DotNet.Cli.Help.TwoColumnHelpRow},Microsoft.DotNet.Cli.Help.HelpContext)">
+            <summary>
+            Writes the specified help rows, aligning output in columns.
+            </summary>
+            <param name="items">The help items to write out in columns.</param>
+            <param name="context">The help context.</param>
+        </member>
+        <member name="M:Microsoft.DotNet.Cli.Help.HelpBuilder.GetTwoColumnRow(System.CommandLine.Symbol,Microsoft.DotNet.Cli.Help.HelpContext)">
+            <summary>
+            Gets a help item for the specified symbol.
+            </summary>
+            <param name="symbol">The symbol to get a help item for.</param>
+            <param name="context">The help context.</param>
+        </member>
+        <member name="T:Microsoft.DotNet.Cli.Help.HelpBuilder.Default">
+            <summary>
+            Provides default formatting for help output.
+            </summary>
+        </member>
+        <member name="M:Microsoft.DotNet.Cli.Help.HelpBuilder.Default.GetArgumentDefaultValue(System.CommandLine.Symbol)">
+            <summary>
+            Gets an argument's default value to be displayed in help.
+            </summary>
+            <param name="parameter">The argument or option to get the default value for.</param>
+        </member>
+        <member name="M:Microsoft.DotNet.Cli.Help.HelpBuilder.Default.GetArgumentDescription(System.CommandLine.Argument)">
+            <summary>
+            Gets the description for an argument (typically used in the second column text in the arguments section).
+            </summary>
+        </member>
+        <member name="M:Microsoft.DotNet.Cli.Help.HelpBuilder.Default.GetArgumentUsageLabel(System.CommandLine.Symbol)">
+            <summary>
+            Gets the usage title for an argument (for example: <c>&lt;value&gt;</c>, typically used in the first column text in the arguments usage section, or within the synopsis.
+            </summary>
+        </member>
+        <member name="M:Microsoft.DotNet.Cli.Help.HelpBuilder.Default.GetCommandUsageLabel(System.CommandLine.Command)">
+            <summary>
+            Gets the usage label for the specified symbol (typically used as the first column text in help output).
+            </summary>
+            <param name="symbol">The symbol to get a help item for.</param>
+            <returns>Text to display.</returns>
+        </member>
+        <member name="M:Microsoft.DotNet.Cli.Help.HelpBuilder.Default.GetOptionUsageLabel(System.CommandLine.Option)">
+            <inheritdoc cref="M:Microsoft.DotNet.Cli.Help.HelpBuilder.Default.GetCommandUsageLabel(System.CommandLine.Command)"/>
+        </member>
+        <member name="M:Microsoft.DotNet.Cli.Help.HelpBuilder.Default.GetLayout">
+            <summary>
+            Gets the default sections to be written for command line help.
+            </summary>
+        </member>
+        <member name="M:Microsoft.DotNet.Cli.Help.HelpBuilder.Default.SynopsisSection">
+            <summary>
+            Writes a help section describing a command's synopsis.
+            </summary>
+        </member>
+        <member name="M:Microsoft.DotNet.Cli.Help.HelpBuilder.Default.CommandUsageSection">
+            <summary>
+            Writes a help section describing a command's usage.
+            </summary>
+        </member>
+        <member name="M:Microsoft.DotNet.Cli.Help.HelpBuilder.Default.CommandArgumentsSection">
+            <summary>
+            Writes a help section describing a command's arguments.
+             </summary>
+        </member>
+        <member name="M:Microsoft.DotNet.Cli.Help.HelpBuilder.Default.SubcommandsSection">
+            <summary>
+            Writes a help section describing a command's subcommands.
+             </summary>
+        </member>
+        <member name="M:Microsoft.DotNet.Cli.Help.HelpBuilder.Default.OptionsSection">
+            <summary>
+            Writes a help section describing a command's options.
+             </summary>
+        </member>
+        <member name="M:Microsoft.DotNet.Cli.Help.HelpBuilder.Default.AdditionalArgumentsSection">
+            <summary>
+            Writes a help section describing a command's additional arguments, typically shown only when <see cref="P:System.CommandLine.Command.TreatUnmatchedTokensAsErrors"/> is set to <see langword="true"/>.
+             </summary>
+        </member>
+        <member name="T:Microsoft.DotNet.Cli.Help.HelpContext">
+            <summary>
+            Supports formatting command line help.
+            </summary>
+            <param name="helpBuilder">The current help builder.</param>
+            <param name="command">The command for which help is being formatted.</param>
+            <param name="output">A text writer to write output to.</param>
+            <param name="parseResult">The parse result.</param>
+        </member>
+        <member name="M:Microsoft.DotNet.Cli.Help.HelpContext.#ctor(Microsoft.DotNet.Cli.Help.HelpBuilder,System.CommandLine.Command,System.IO.TextWriter,System.CommandLine.ParseResult)">
+            <summary>
+            Supports formatting command line help.
+            </summary>
+            <param name="helpBuilder">The current help builder.</param>
+            <param name="command">The command for which help is being formatted.</param>
+            <param name="output">A text writer to write output to.</param>
+            <param name="parseResult">The parse result.</param>
+        </member>
+        <member name="P:Microsoft.DotNet.Cli.Help.HelpContext.HelpBuilder">
+            <summary>
+            The help builder for the current operation.
+            </summary>
+        </member>
+        <member name="P:Microsoft.DotNet.Cli.Help.HelpContext.Command">
+            <summary>
+            The command for which help is being formatted.
+            </summary>
+        </member>
+        <member name="P:Microsoft.DotNet.Cli.Help.HelpContext.Output">
+            <summary>
+            A text writer to write output to.
+            </summary>
+        </member>
+        <member name="T:Microsoft.DotNet.Cli.Help.ICustomHelp">
+            <summary>
+            If <see cref="T:System.CommandLine.Command"/> implements this interface, it can create custom help
+            that should be used when building the parser.
+            </summary>
+        </member>
+        <member name="M:Microsoft.DotNet.Cli.Help.ICustomHelp.CustomHelpLayout">
+            <summary>
+            Returns custom help layout for the command.
+            </summary>
+        </member>
+        <member name="T:Microsoft.DotNet.Cli.Help.LocalizationResources">
+            <summary>
+            Provides localizable strings for help and error messages.
+            </summary>
+        </member>
+        <member name="M:Microsoft.DotNet.Cli.Help.LocalizationResources.HelpUsageTitle">
+            <summary>
+              Interpolates values into a localized string similar to Usage:.
+            </summary>
+        </member>
+        <member name="M:Microsoft.DotNet.Cli.Help.LocalizationResources.HelpDescriptionTitle">
+            <summary>
+              Interpolates values into a localized string similar to Description:.
+            </summary>
+        </member>
+        <member name="M:Microsoft.DotNet.Cli.Help.LocalizationResources.HelpUsageOptions">
+            <summary>
+              Interpolates values into a localized string similar to [options].
+            </summary>
+        </member>
+        <member name="M:Microsoft.DotNet.Cli.Help.LocalizationResources.HelpUsageCommand">
+            <summary>
+              Interpolates values into a localized string similar to [command].
+            </summary>
+        </member>
+        <member name="M:Microsoft.DotNet.Cli.Help.LocalizationResources.HelpUsageAdditionalArguments">
+            <summary>
+              Interpolates values into a localized string similar to [[--] &lt;additional arguments&gt;...]].
+            </summary>
+        </member>
+        <member name="M:Microsoft.DotNet.Cli.Help.LocalizationResources.HelpArgumentsTitle">
+            <summary>
+              Interpolates values into a localized string similar to Arguments:.
+            </summary>
+        </member>
+        <member name="M:Microsoft.DotNet.Cli.Help.LocalizationResources.HelpOptionsTitle">
+            <summary>
+              Interpolates values into a localized string similar to Options:.
+            </summary>
+        </member>
+        <member name="M:Microsoft.DotNet.Cli.Help.LocalizationResources.HelpOptionsRequiredLabel">
+            <summary>
+              Interpolates values into a localized string similar to (REQUIRED).
+            </summary>
+        </member>
+        <member name="M:Microsoft.DotNet.Cli.Help.LocalizationResources.HelpArgumentDefaultValueLabel">
+            <summary>
+              Interpolates values into a localized string similar to default.
+            </summary>
+        </member>
+        <member name="M:Microsoft.DotNet.Cli.Help.LocalizationResources.HelpCommandsTitle">
+            <summary>
+              Interpolates values into a localized string similar to Commands:.
+            </summary>
+        </member>
+        <member name="M:Microsoft.DotNet.Cli.Help.LocalizationResources.HelpAdditionalArgumentsTitle">
+            <summary>
+              Interpolates values into a localized string similar to Additional Arguments:.
+            </summary>
+        </member>
+        <member name="M:Microsoft.DotNet.Cli.Help.LocalizationResources.HelpAdditionalArgumentsDescription">
+            <summary>
+              Interpolates values into a localized string similar to Arguments passed to the application that is being run..
+            </summary>
+        </member>
+        <member name="M:Microsoft.DotNet.Cli.Help.LocalizationResources.GetResourceString(System.String,System.Object[])">
+            <summary>
+            Interpolates values into a localized string.
+            </summary>
+            <param name="resourceName">The name of the resource.</param>
+            <param name="formatArguments">The values to interpolate.</param>
+            <returns>The final string after interpolation.</returns>
+        </member>
+        <member name="T:Microsoft.DotNet.Cli.Help.TwoColumnHelpRow">
+            <summary>
+            Provides details about an item to be formatted to output in order to display two-column command line help.
+            </summary>
+            <param name="firstColumnText">The name and invocation details, typically displayed in the first help column.</param>
+            <param name="secondColumnText">The description of a symbol, typically displayed in the second help column.</param>
+        </member>
+        <member name="M:Microsoft.DotNet.Cli.Help.TwoColumnHelpRow.#ctor(System.String,System.String)">
+            <summary>
+            Provides details about an item to be formatted to output in order to display two-column command line help.
+            </summary>
+            <param name="firstColumnText">The name and invocation details, typically displayed in the first help column.</param>
+            <param name="secondColumnText">The description of a symbol, typically displayed in the second help column.</param>
+        </member>
+        <member name="P:Microsoft.DotNet.Cli.Help.TwoColumnHelpRow.FirstColumnText">
+            <summary>
+            The first column for a help entry, typically containing the name and other usage details about an option or argument.
+            </summary>
+        </member>
+        <member name="P:Microsoft.DotNet.Cli.Help.TwoColumnHelpRow.SecondColumnText">
+            <summary>
+            The second column for a help entry, typically containing the name and other usage details about an option or argument.
+            </summary>
+        </member>
+        <member name="M:Microsoft.DotNet.Cli.Help.TwoColumnHelpRow.Equals(System.Object)">
+            <inheritdoc />
+        </member>
+        <member name="M:Microsoft.DotNet.Cli.Help.TwoColumnHelpRow.Equals(Microsoft.DotNet.Cli.Help.TwoColumnHelpRow)">
+            <inheritdoc />
+        </member>
+        <member name="M:Microsoft.DotNet.Cli.Help.TwoColumnHelpRow.GetHashCode">
+            <inheritdoc />
+        </member>
+        <member name="T:Microsoft.DotNet.Cli.Telemetry.EnvironmentDetectionRule">
+            <summary>
+            Base class for environment detection rules that can be evaluated against environment variables.
+            </summary>
+        </member>
+        <member name="M:Microsoft.DotNet.Cli.Telemetry.EnvironmentDetectionRule.IsMatch">
+            <summary>
+            Evaluates the rule against the current environment.
+            </summary>
+            <returns>True if the rule matches the current environment; otherwise, false.</returns>
+        </member>
+        <member name="T:Microsoft.DotNet.Cli.Telemetry.BooleanEnvironmentRule">
+            <summary>
+            Rule that matches when any of the specified environment variables is set to "true".
+            </summary>
+        </member>
+        <member name="T:Microsoft.DotNet.Cli.Telemetry.AllPresentEnvironmentRule">
+            <summary>
+            Rule that matches when all specified environment variables are present and not null/empty.
+            </summary>
+        </member>
+        <member name="T:Microsoft.DotNet.Cli.Telemetry.AnyPresentEnvironmentRule">
+            <summary>
+            Rule that matches when any of the specified environment variables is present and not null/empty.
+            </summary>
+        </member>
+        <member name="T:Microsoft.DotNet.Cli.Telemetry.EnvironmentVariableValueRule">
+            <summary>
+            Rule that matches when an environment variable contains a specific value (case-insensitive).
+            </summary>
+        </member>
+        <member name="T:Microsoft.DotNet.Cli.Telemetry.EnvironmentDetectionRuleWithResult`1">
+            <summary>
+            Rule that matches when any of the specified environment variables is present and not null/empty,
+            and returns the associated result value.
+            </summary>
+            <typeparam name="T">The type of the result value.</typeparam>
+        </member>
+        <member name="M:Microsoft.DotNet.Cli.Telemetry.EnvironmentDetectionRuleWithResult`1.GetResult">
+            <summary>
+            Evaluates the rule and returns the result if matched.
+            </summary>
+            <returns>The result value if the rule matches; otherwise, null.</returns>
+        </member>
+        <member name="M:Microsoft.DotNet.Cli.CommandDirectoryContext.GetFullPath(System.String)">
+            <summary>
+            Expands a path similar to Path.GetFullPath() but gives unit tests a hook to inject an overwrite to the
+            base path.
+            </summary>
+            <param name="path">A relative or absolute path specifier</param>
+            <returns>The full path to the target</returns>
+        </member>
+        <member name="T:Microsoft.DotNet.Cli.MSBuildPropertyParser">
+            <summary>
+            Parses property key value pairs that have already been forwarded through the PropertiesOption class.
+            Does not parse -p and etc. formats, (this is done by PropertiesOption) but does parse property values separated by =, ;, and using quotes.
+            </summary>
+        </member>
+        <member name="M:Microsoft.DotNet.Cli.MSBuildPropertyParser.SurroundWithDoubleQuotes(System.String)">
+            <summary>
+            Adding double quotes around the property helps MSBuild arguments parser and avoid incorrect splits on ',' or ';'.
+            Internal for testing.
+            </summary>
+        </member>
+        <member name="M:Microsoft.DotNet.Cli.OptionExtensions.ForwardAsOutputPath(System.CommandLine.Option{System.String},System.String,System.Boolean)">
+            <summary>
+            Set up an option to be forwarded as an output path to MSBuild
+            </summary>
+            <param name="option">The command line option</param>
+            <param name="outputPropertyName">The property name for the output path (such as OutputPath or PublishDir)</param>
+            <param name="surroundWithDoubleQuotes">Whether the path should be surrounded with double quotes.  This may not be necessary but preserves the previous behavior of "dotnet test"</param>
+            <returns>The option</returns>
+        </member>
+        <member name="M:Microsoft.DotNet.Cli.OptionExtensions.ForwardAsMSBuildProperty(System.CommandLine.Option{System.Collections.ObjectModel.ReadOnlyDictionary{System.String,System.String}})">
+            <summary>
+            Set up an option to be forwarded as an MSBuild property
+            This will parse the values as MSBuild properties and forward them in the format <c>optionName:key=value</c>.
+            For example, if the option is named "--property", and the values are "A=B" and "C=D", it will be forwarded as:
+            <c>--property:A=B --property:C=D</c>.
+            This is useful for options that can take multiple key-value pairs, such as --property.
+            </summary>
+        </member>
+        <member name="P:Microsoft.DotNet.Cli.CommandDefinitionStrings.NoLogoOptionDescription">
+            <summary>Do not display the startup banner or the copyright message.</summary>
+        </member>
+        <member name="P:Microsoft.DotNet.Cli.CommandDefinitionStrings.PackageReference">
+            <summary>Package reference</summary>
+        </member>
+        <member name="P:Microsoft.DotNet.Cli.CommandDefinitionStrings.RequiredCommandNotPassed">
+            <summary>Required command was not provided.</summary>
+        </member>
+        <member name="P:Microsoft.DotNet.Cli.CommandDefinitionStrings.ProjectOrFileArgumentName">
+            <summary>PROJECT | FILE</summary>
+        </member>
+        <member name="P:Microsoft.DotNet.Cli.CommandDefinitionStrings.ProjectArgumentDescription">
+            <summary>The project file to operate on. If a file is not specified, the command will search the current directory for one.</summary>
+        </member>
+        <member name="P:Microsoft.DotNet.Cli.CommandDefinitionStrings.ProjectOrFileArgumentDescription">
+            <summary>The project file or C# file-based app to operate on. If a file is not specified, the command will search the current directory for a project file.</summary>
+        </member>
+        <member name="P:Microsoft.DotNet.Cli.CommandDefinitionStrings.FileArgumentDescription">
+            <summary>The file-based app to operate on.</summary>
+        </member>
+        <member name="P:Microsoft.DotNet.Cli.CommandDefinitionStrings.CommonCmdFramework">
+            <summary>FRAMEWORK</summary>
+        </member>
+        <member name="P:Microsoft.DotNet.Cli.CommandDefinitionStrings.VerbosityOptionDescription">
+            <summary>Set the MSBuild verbosity level. Allowed values are q[uiet], m[inimal], n[ormal], d[etailed], and diag[nostic].</summary>
+        </member>
+        <member name="P:Microsoft.DotNet.Cli.CommandDefinitionStrings.CmdVersionSuffixDescription">
+            <summary>Set the value of the $(VersionSuffix) property to use when building the project.</summary>
+        </member>
+        <member name="P:Microsoft.DotNet.Cli.CommandDefinitionStrings.NoRestoreDescription">
+            <summary>Do not restore the project before building.</summary>
+        </member>
+        <member name="P:Microsoft.DotNet.Cli.CommandDefinitionStrings.LevelArgumentName">
+            <summary>LEVEL</summary>
+        </member>
+        <member name="P:Microsoft.DotNet.Cli.CommandDefinitionStrings.FrameworkArgumentName">
+            <summary>FRAMEWORK</summary>
+        </member>
+        <member name="P:Microsoft.DotNet.Cli.CommandDefinitionStrings.RuntimeIdentifierArgumentName">
+            <summary>RUNTIME_IDENTIFIER</summary>
+        </member>
+        <member name="P:Microsoft.DotNet.Cli.CommandDefinitionStrings.ConfigurationArgumentName">
+            <summary>CONFIGURATION</summary>
+        </member>
+        <member name="P:Microsoft.DotNet.Cli.CommandDefinitionStrings.VersionSuffixArgumentName">
+            <summary>VERSION_SUFFIX</summary>
+        </member>
+        <member name="P:Microsoft.DotNet.Cli.CommandDefinitionStrings.SolutionOrProjectArgumentDescription">
+            <summary>The project or solution file to operate on. If a file is not specified, the command will search the current directory for one.</summary>
+        </member>
+        <member name="P:Microsoft.DotNet.Cli.CommandDefinitionStrings.SolutionOrProjectArgumentName">
+            <summary>PROJECT | SOLUTION</summary>
+        </member>
+        <member name="P:Microsoft.DotNet.Cli.CommandDefinitionStrings.SolutionOrProjectOrFileArgumentDescription">
+            <summary>The project or solution or C# (file-based program) file to operate on. If a file is not specified, the command will search the current directory for a project or solution.</summary>
+        </member>
+        <member name="P:Microsoft.DotNet.Cli.CommandDefinitionStrings.SolutionOrProjectOrFileArgumentName">
+            <summary>PROJECT | SOLUTION | FILE</summary>
+        </member>
+        <member name="P:Microsoft.DotNet.Cli.CommandDefinitionStrings.CommandInteractiveOptionDescription">
+            <summary>Allows the command to stop and wait for user input or action (for example to complete authentication).</summary>
+        </member>
+        <member name="P:Microsoft.DotNet.Cli.CommandDefinitionStrings.CommandPrereleaseOptionDescription">
+            <summary>Allows prerelease packages to be installed.</summary>
+        </member>
+        <member name="P:Microsoft.DotNet.Cli.CommandDefinitionStrings.ArchitectureOptionDescription">
+            <summary>The target architecture.</summary>
+        </member>
+        <member name="P:Microsoft.DotNet.Cli.CommandDefinitionStrings.OperatingSystemOptionDescription">
+            <summary>The target operating system.</summary>
+        </member>
+        <member name="P:Microsoft.DotNet.Cli.CommandDefinitionStrings.CannotResolveRuntimeIdentifier">
+            <summary>Resolving the current runtime identifier failed.</summary>
+        </member>
+        <member name="P:Microsoft.DotNet.Cli.CommandDefinitionStrings.CannotSpecifyBothRuntimeAndArchOptions">
+            <summary>Specifying both the `-r|--runtime` and `-a|--arch` options is not supported.</summary>
+        </member>
+        <member name="P:Microsoft.DotNet.Cli.CommandDefinitionStrings.CannotSpecifyBothRuntimeAndOsOptions">
+            <summary>Specifying both the `-r|--runtime` and `-os` options is not supported.</summary>
+        </member>
+        <member name="P:Microsoft.DotNet.Cli.CommandDefinitionStrings.CmdEnvironmentVariableDescription">
+            <summary>Sets the value of an environment variable. 
+            Creates the variable if it does not exist, overrides if it does. 
+            This argument can be specified multiple times to provide multiple variables.
+            
+            Examples:
+            -e VARIABLE=abc
+            -e VARIABLE="value with spaces"
+            -e VARIABL ...</summary>
+        </member>
+        <member name="P:Microsoft.DotNet.Cli.CommandDefinitionStrings.CmdTestEnvironmentVariableDescription">
+            <summary>Sets the value of an environment variable. 
+            Creates the variable if it does not exist, overrides if it does. 
+            This will force the tests to be run in an isolated process. 
+            This argument can be specified multiple times to provide multiple variables.
+            
+            Example ...</summary>
+        </member>
+        <member name="P:Microsoft.DotNet.Cli.CommandDefinitionStrings.CmdEnvironmentVariableExpression">
+            <summary>NAME="VALUE"</summary>
+        </member>
+        <member name="P:Microsoft.DotNet.Cli.CommandDefinitionStrings.IncorrectlyFormattedEnvironmentVariables">
+            <summary>Incorrectly formatted environment variables: {0}</summary>
+        </member>
+        <member name="P:Microsoft.DotNet.Cli.CommandDefinitionStrings.SelfContainedOptionDescription">
+            <summary>Publish the .NET runtime with your application so the runtime doesn't need to be installed on the target machine.
+            The default is 'false.' However, when targeting .NET 7 or lower, the default is 'true' if a runtime identifier is specified.</summary>
+        </member>
+        <member name="P:Microsoft.DotNet.Cli.CommandDefinitionStrings.FrameworkDependentOptionDescription">
+            <summary>Publish your application as a framework dependent application. A compatible .NET runtime must be installed on the target machine to run your application.</summary>
+        </member>
+        <member name="P:Microsoft.DotNet.Cli.CommandDefinitionStrings.SelfContainAndNoSelfContainedConflict">
+            <summary>The '--self-contained' and '--no-self-contained' options cannot be used together.</summary>
+        </member>
+        <member name="P:Microsoft.DotNet.Cli.CommandDefinitionStrings.DisableBuildServersOptionDescription">
+            <summary>Force the command to ignore any persistent build servers.</summary>
+        </member>
+        <member name="P:Microsoft.DotNet.Cli.CommandDefinitionStrings.ArchArgumentName">
+            <summary>ARCH</summary>
+        </member>
+        <member name="P:Microsoft.DotNet.Cli.CommandDefinitionStrings.OSArgumentName">
+            <summary>OS</summary>
+        </member>
+        <member name="P:Microsoft.DotNet.Cli.CommandDefinitionStrings.ArtifactsPathOptionDescription">
+            <summary>The artifacts path. All output from the project, including build, publish, and pack output, will go in subfolders under the specified path.</summary>
+        </member>
+        <member name="P:Microsoft.DotNet.Cli.CommandDefinitionStrings.ArtifactsPathArgumentName">
+            <summary>ARTIFACTS_DIR</summary>
+        </member>
+        <member name="P:Microsoft.DotNet.Cli.CommandDefinitionStrings.UnrecognizedCommandOrArgument">
+            <summary>Unrecognized command or argument '{0}'</summary>
+        </member>
+        <member name="P:Microsoft.DotNet.Cli.CommandDefinitionStrings.SDKDiagnosticsCommandDefinition">
+            <summary>Enable diagnostic output.</summary>
+        </member>
+        <member name="P:Microsoft.DotNet.Cli.CommandDefinitionStrings.PackageIdentityArgumentDescription">
+            <summary>Package reference in the form of a package identifier like '{0}' or package identifier and version separated by '@' like '{0}@{1}'.</summary>
+        </member>
+        <member name="P:Microsoft.DotNet.Cli.CommandDefinitionStrings.PackageIdentityArgumentIdOrVersionIsNull">
+            <summary>Package reference id and version must not be null.</summary>
+        </member>
+        <member name="P:Microsoft.DotNet.Cli.CommandDefinitionStrings.InvalidVersion">
+            <summary>Invalid version string: {0}</summary>
+        </member>
+        <member name="P:Microsoft.DotNet.Cli.CommandDefinitionStrings.YesOptionDescription">
+            <summary>Accept all confirmation prompts using "yes."</summary>
+        </member>
+        <member name="P:Microsoft.DotNet.Cli.CommandDefinitionStrings.AddAppFullName">
+            <summary>Add one or more projects to a solution file.</summary>
+        </member>
+        <member name="P:Microsoft.DotNet.Cli.CommandDefinitionStrings.AddProjectPathArgumentDescription">
+            <summary>The paths to the projects to add to the solution.</summary>
+        </member>
+        <member name="P:Microsoft.DotNet.Cli.CommandDefinitionStrings.AddProjectPathArgumentName">
+            <summary>PROJECT_PATH</summary>
+        </member>
+        <member name="P:Microsoft.DotNet.Cli.CommandDefinitionStrings.AddProjectSolutionFolderArgumentDescription">
+            <summary>The destination solution folder path to add the projects to.</summary>
+        </member>
+        <member name="P:Microsoft.DotNet.Cli.CommandDefinitionStrings.AdManifestOnlyOptionDescription">
+            <summary>Only update advertising manifests.</summary>
+        </member>
+        <member name="P:Microsoft.DotNet.Cli.CommandDefinitionStrings.AllowPackageDowngradeOptionDescription">
+            <summary>Allow package downgrade when installing a .NET tool package.</summary>
+        </member>
+        <member name="P:Microsoft.DotNet.Cli.CommandDefinitionStrings.BuildAppFullName">
+            <summary>.NET Builder</summary>
+        </member>
+        <member name="P:Microsoft.DotNet.Cli.CommandDefinitionStrings.BuildConfigurationOptionDescription">
+            <summary>The configuration to use for building the project. The default for most projects is 'Debug'.</summary>
+        </member>
+        <member name="P:Microsoft.DotNet.Cli.CommandDefinitionStrings.BuildFrameworkOptionDescription">
+            <summary>The target framework to build for. The target framework must also be specified in the project file.</summary>
+        </member>
+        <member name="P:Microsoft.DotNet.Cli.CommandDefinitionStrings.BuildOutputOptionDescription">
+            <summary>The output directory to place built artifacts in.</summary>
+        </member>
+        <member name="P:Microsoft.DotNet.Cli.CommandDefinitionStrings.BuildRuntimeOptionDescription">
+            <summary>The target runtime to build for.</summary>
+        </member>
+        <member name="P:Microsoft.DotNet.Cli.CommandDefinitionStrings.BuildServerCommandDescription">
+            <summary>Interact with servers started from a build.</summary>
+        </member>
+        <member name="P:Microsoft.DotNet.Cli.CommandDefinitionStrings.BuildServerShutdownCommandDescription">
+            <summary>Shuts down build servers that are started from dotnet. By default, all servers are shut down.</summary>
+        </member>
+        <member name="P:Microsoft.DotNet.Cli.CommandDefinitionStrings.CannotCombineSearchStringAndVersion">
+            <summary>Cannot specify both the {0} and {1} arguments.</summary>
+        </member>
+        <member name="P:Microsoft.DotNet.Cli.CommandDefinitionStrings.CleanAllOptionDescription">
+            <summary>Causes clean to remove and uninstall all workload components from all SDK versions.</summary>
+        </member>
+        <member name="P:Microsoft.DotNet.Cli.CommandDefinitionStrings.CleanAppFullName">
+            <summary>.NET Clean Command</summary>
+        </member>
+        <member name="P:Microsoft.DotNet.Cli.CommandDefinitionStrings.CleanCmdOutputDir">
+            <summary>OUTPUT_DIR</summary>
+        </member>
+        <member name="P:Microsoft.DotNet.Cli.CommandDefinitionStrings.CleanCmdOutputDirDescription">
+            <summary>The directory containing the build artifacts to clean.</summary>
+        </member>
+        <member name="P:Microsoft.DotNet.Cli.CommandDefinitionStrings.CleanConfigurationOptionDescription">
+            <summary>The configuration to clean for. The default for most projects is 'Debug'.</summary>
+        </member>
+        <member name="P:Microsoft.DotNet.Cli.CommandDefinitionStrings.CleanFrameworkOptionDescription">
+            <summary>The target framework to clean for. The target framework must also be specified in the project file.</summary>
+        </member>
+        <member name="P:Microsoft.DotNet.Cli.CommandDefinitionStrings.CleanRuntimeOptionDescription">
+            <summary>The target runtime to clean for.</summary>
+        </member>
+        <member name="P:Microsoft.DotNet.Cli.CommandDefinitionStrings.CleanFileBasedAppArtifactsCommandDescription">
+            <summary>Removes artifacts created for file-based apps</summary>
+        </member>
+        <member name="P:Microsoft.DotNet.Cli.CommandDefinitionStrings.CleanFileBasedAppArtifactsDryRun">
+            <summary>Determines changes without actually modifying the file system</summary>
+        </member>
+        <member name="P:Microsoft.DotNet.Cli.CommandDefinitionStrings.CleanFileBasedAppArtifactsDays">
+            <summary>How many days an artifact folder needs to be unused in order to be removed</summary>
+        </member>
+        <member name="P:Microsoft.DotNet.Cli.CommandDefinitionStrings.CmdBlameCrashCollectAlwaysDescription">
+            <summary>Enables collecting crash dump on expected as well as unexpected testhost exit.</summary>
+        </member>
+        <member name="P:Microsoft.DotNet.Cli.CommandDefinitionStrings.CmdBlameCrashDescription">
+            <summary>Runs the tests in blame mode and collects a crash dump when the test host exits unexpectedly. This option depends on the version of .NET used, the type of error, and the operating system.
+            
+            For exceptions in managed code, a dump will be automatically collec ...</summary>
+        </member>
+        <member name="P:Microsoft.DotNet.Cli.CommandDefinitionStrings.CmdBlameCrashDumpTypeDescription">
+            <summary>The type of crash dump to be collected. Supported values are full (default) and mini. Implies --blame-crash.</summary>
+        </member>
+        <member name="P:Microsoft.DotNet.Cli.CommandDefinitionStrings.CmdBlameDescription">
+            <summary>Runs the tests in blame mode. This option is helpful in isolating problematic tests that cause the test host to crash or hang, but it does not create a memory dump by default.
+            
+            When a crash is detected, it creates an sequence file in TestResults/guid/guid_ ...</summary>
+        </member>
+        <member name="P:Microsoft.DotNet.Cli.CommandDefinitionStrings.CmdBlameHangDescription">
+            <summary>Run the tests in blame mode and enables collecting hang dump when test exceeds the given timeout.</summary>
+        </member>
+        <member name="P:Microsoft.DotNet.Cli.CommandDefinitionStrings.CmdBlameHangDumpTypeDescription">
+            <summary>The type of crash dump to be collected. The supported values are full (default), mini, and none. When 'none' is used then test host is terminated on timeout, but no dump is collected. Implies --blame-hang.</summary>
+        </member>
+        <member name="P:Microsoft.DotNet.Cli.CommandDefinitionStrings.CmdBlameHangTimeoutDescription">
+            <summary>Per-test timeout, after which hang dump is triggered and the testhost process is terminated. Default is 1h.
+            The timeout value is specified in the following format: 1.5h / 90m / 5400s / 5400000ms. When no unit is used (e.g. 5400000), the value is assumed to ...</summary>
+        </member>
+        <member name="P:Microsoft.DotNet.Cli.CommandDefinitionStrings.cmdCollectDescription">
+            <summary>The friendly name of the data collector to use for the test run.
+                                                    More info here: https://aka.ms/vstest-collect</summary>
+        </member>
+        <member name="P:Microsoft.DotNet.Cli.CommandDefinitionStrings.cmdCollectFriendlyName">
+            <summary>DATA_COLLECTOR_NAME</summary>
+        </member>
+        <member name="P:Microsoft.DotNet.Cli.CommandDefinitionStrings.CmdConfig">
+            <summary>CONFIG_FILE</summary>
+        </member>
+        <member name="P:Microsoft.DotNet.Cli.CommandDefinitionStrings.CmdConfigDescription">
+            <summary>The path to the NuGet config file to use. Requires the '--outdated', '--deprecated' or '--vulnerable' option.</summary>
+        </member>
+        <member name="P:Microsoft.DotNet.Cli.CommandDefinitionStrings.CmdConfigFileOption">
+            <summary>FILE</summary>
+        </member>
+        <member name="P:Microsoft.DotNet.Cli.CommandDefinitionStrings.CmdConfigFileOptionDescription">
+            <summary>The NuGet configuration file to use.</summary>
+        </member>
+        <member name="P:Microsoft.DotNet.Cli.CommandDefinitionStrings.CmdCurrentRuntimeOptionDescription">
+            <summary>Use current runtime as the target runtime.</summary>
+        </member>
+        <member name="P:Microsoft.DotNet.Cli.CommandDefinitionStrings.CmdDeprecatedDescription">
+            <summary>Lists packages that have been deprecated. Cannot be combined with '--vulnerable' or '--outdated' options.</summary>
+        </member>
+        <member name="P:Microsoft.DotNet.Cli.CommandDefinitionStrings.CmdDisableParallelOptionDescription">
+            <summary>Prevent restoring multiple projects in parallel.</summary>
+        </member>
+        <member name="P:Microsoft.DotNet.Cli.CommandDefinitionStrings.CmdExpressionName">
+            <summary>EXPRESSION</summary>
+        </member>
+        <member name="P:Microsoft.DotNet.Cli.CommandDefinitionStrings.CmdFileDescription">
+            <summary>Path to the file-based program.</summary>
+        </member>
+        <member name="P:Microsoft.DotNet.Cli.CommandDefinitionStrings.CmdOptionForceDescription">
+            <summary>Force conversion even if there are malformed directives.</summary>
+        </member>
+        <member name="P:Microsoft.DotNet.Cli.CommandDefinitionStrings.CmdForceRestoreOptionDescription">
+            <summary>Force all dependencies to be resolved even if the last restore was successful.
+            This is equivalent to deleting project.assets.json.</summary>
+        </member>
+        <member name="P:Microsoft.DotNet.Cli.CommandDefinitionStrings.CmdFormatDescription">
+            <summary>Specifies the output format type for the list packages command.</summary>
+        </member>
+        <member name="P:Microsoft.DotNet.Cli.CommandDefinitionStrings.CmdHighestMinorDescription">
+            <summary>Consider only the packages with a matching major version number when searching for newer packages. Requires the '--outdated' option.</summary>
+        </member>
+        <member name="P:Microsoft.DotNet.Cli.CommandDefinitionStrings.CmdHighestPatchDescription">
+            <summary>Consider only the packages with a matching major and minor version numbers when searching for newer packages. Requires the '--outdated' option.</summary>
+        </member>
+        <member name="P:Microsoft.DotNet.Cli.CommandDefinitionStrings.CmdIgnoreFailedSourcesOptionDescription">
+            <summary>Treat package source failures as warnings.</summary>
+        </member>
+        <member name="P:Microsoft.DotNet.Cli.CommandDefinitionStrings.CmdIncludeSourceDescription">
+            <summary>Include PDBs and source files. Source files go into the 'src' folder in the resulting nuget package.</summary>
+        </member>
+        <member name="P:Microsoft.DotNet.Cli.CommandDefinitionStrings.CmdIncludeSymbolsDescription">
+            <summary>Include packages with symbols in addition to regular packages in output directory.</summary>
+        </member>
+        <member name="P:Microsoft.DotNet.Cli.CommandDefinitionStrings.CmdListTestsDescription">
+            <summary>List the discovered tests instead of running the tests.</summary>
+        </member>
+        <member name="P:Microsoft.DotNet.Cli.CommandDefinitionStrings.CmdLockedModeOptionDescription">
+            <summary>Don't allow updating project lock file.</summary>
+        </member>
+        <member name="P:Microsoft.DotNet.Cli.CommandDefinitionStrings.CmdLockFilePathOption">
+            <summary>LOCK_FILE_PATH</summary>
+        </member>
+        <member name="P:Microsoft.DotNet.Cli.CommandDefinitionStrings.CmdLockFilePathOptionDescription">
+            <summary>Output location where project lock file is written. By default, this is 'PROJECT_ROOT\packages.lock.json'.</summary>
+        </member>
+        <member name="P:Microsoft.DotNet.Cli.CommandDefinitionStrings.CmdLoggerDescription">
+            <summary>The logger to use for test results.
+                                                    Examples:
+                                                    Log in trx format using a unique file name: --logger trx
+                                                    Log in trx format using the speci ...</summary>
+        </member>
+        <member name="P:Microsoft.DotNet.Cli.CommandDefinitionStrings.CmdLoggerOption">
+            <summary>LOGGER</summary>
+        </member>
+        <member name="P:Microsoft.DotNet.Cli.CommandDefinitionStrings.CmdMaxParallelTestModulesDescription">
+            <summary>The max number of test modules that can run in parallel.</summary>
+        </member>
+        <member name="P:Microsoft.DotNet.Cli.CommandDefinitionStrings.CmdNoAnsiDescription">
+            <summary>Disable ANSI output.</summary>
+        </member>
+        <member name="P:Microsoft.DotNet.Cli.CommandDefinitionStrings.CmdNoBuildDescription">
+            <summary>Do not build the project before testing. Implies --no-restore.</summary>
+        </member>
+        <member name="P:Microsoft.DotNet.Cli.CommandDefinitionStrings.CmdNoBuildOptionDescription">
+            <summary>Do not build the project before packing. Implies --no-restore.</summary>
+        </member>
+        <member name="P:Microsoft.DotNet.Cli.CommandDefinitionStrings.CmdNoCacheOptionDescription">
+            <summary>Do not cache packages and http requests.</summary>
+        </member>
+        <member name="P:Microsoft.DotNet.Cli.CommandDefinitionStrings.CmdNoDependenciesOptionDescription">
+            <summary>Do not restore project-to-project references and only restore the specified project.</summary>
+        </member>
+        <member name="P:Microsoft.DotNet.Cli.CommandDefinitionStrings.CmdNoHttpCacheOptionDescription">
+            <summary>Disable Http Caching for packages.</summary>
+        </member>
+        <member name="P:Microsoft.DotNet.Cli.CommandDefinitionStrings.CmdNoProgressDescription">
+            <summary>Disable progress reporting.</summary>
+        </member>
+        <member name="P:Microsoft.DotNet.Cli.CommandDefinitionStrings.CmdNumberName">
+            <summary>NUMBER</summary>
+        </member>
+        <member name="P:Microsoft.DotNet.Cli.CommandDefinitionStrings.CmdOutdatedDescription">
+            <summary>Lists packages that have newer versions. Cannot be combined with '--deprecated' or '--vulnerable' options.</summary>
+        </member>
+        <member name="P:Microsoft.DotNet.Cli.CommandDefinitionStrings.CmdOutputDescription">
+            <summary>The output directory to place built artifacts in.</summary>
+        </member>
+        <member name="P:Microsoft.DotNet.Cli.CommandDefinitionStrings.CmdOutputVersionDescription">
+            <summary>Specifies the version of machine-readable output. Requires the '--format json' option.</summary>
+        </member>
+        <member name="P:Microsoft.DotNet.Cli.CommandDefinitionStrings.CmdNoRestoreDescription">
+            <summary>Do not restore before running the command.</summary>
+        </member>
+        <member name="P:Microsoft.DotNet.Cli.CommandDefinitionStrings.CmdPackage">
+            <summary>PACKAGE_NAME</summary>
+        </member>
+        <member name="P:Microsoft.DotNet.Cli.CommandDefinitionStrings.CmdPackageDirectory">
+            <summary>PACKAGE_DIR</summary>
+        </member>
+        <member name="P:Microsoft.DotNet.Cli.CommandDefinitionStrings.CmdPackageDirectoryDescription">
+            <summary>The directory to restore packages to.</summary>
+        </member>
+        <member name="P:Microsoft.DotNet.Cli.CommandDefinitionStrings.CmdPackagesOption">
+            <summary>PACKAGES_DIR</summary>
+        </member>
+        <member name="P:Microsoft.DotNet.Cli.CommandDefinitionStrings.CmdPackagesOptionDescription">
+            <summary>The directory to restore packages to.</summary>
+        </member>
+        <member name="P:Microsoft.DotNet.Cli.CommandDefinitionStrings.CmdPathToLogFile">
+            <summary>LOG_FILE</summary>
+        </member>
+        <member name="P:Microsoft.DotNet.Cli.CommandDefinitionStrings.CmdPathTologFileDescription">
+            <summary>Enable verbose logging to the specified file.</summary>
+        </member>
+        <member name="P:Microsoft.DotNet.Cli.CommandDefinitionStrings.CmdPathToResultsDirectory">
+            <summary>RESULTS_DIR</summary>
+        </member>
+        <member name="P:Microsoft.DotNet.Cli.CommandDefinitionStrings.CmdPrereleaseDescription">
+            <summary>Consider packages with prerelease versions when searching for newer packages. Requires the '--outdated' option.</summary>
+        </member>
+        <member name="P:Microsoft.DotNet.Cli.CommandDefinitionStrings.CmdProjectDescriptionFormat">
+            <summary>Defines the path of the project file to run. Use path to the project file, or path to the directory containing the project file. If not specified, it defaults to the current directory.</summary>
+        </member>
+        <member name="P:Microsoft.DotNet.Cli.CommandDefinitionStrings.CmdProjectOrSolutionDescriptionFormat">
+            <summary>Defines the path of the project or solution file to test. Use path to the project file, or path to the directory containing the project file. If not specified, it defaults to the current directory.</summary>
+        </member>
+        <member name="P:Microsoft.DotNet.Cli.CommandDefinitionStrings.CmdProjectOrSolutionPathName">
+            <summary>PROJECT_OR_SOLUTION_PATH</summary>
+        </member>
+        <member name="P:Microsoft.DotNet.Cli.CommandDefinitionStrings.CmdReevaluateOptionDescription">
+            <summary>Forces restore to reevaluate all dependencies even if a lock file already exists.</summary>
+        </member>
+        <member name="P:Microsoft.DotNet.Cli.CommandDefinitionStrings.CmdResultsDirectoryDescription">
+            <summary>The directory where the test results will be placed.
+            The specified directory will be created if it does not exist.</summary>
+        </member>
+        <member name="P:Microsoft.DotNet.Cli.CommandDefinitionStrings.CmdConfigFileDescription">
+            <summary>Specifies a testconfig.json file.</summary>
+        </member>
+        <member name="P:Microsoft.DotNet.Cli.CommandDefinitionStrings.CmdConfigFilePath">
+            <summary>CONFIG_FILE</summary>
+        </member>
+        <member name="P:Microsoft.DotNet.Cli.CommandDefinitionStrings.CmdDiagnosticOutputDirectoryDescription">
+            <summary>Output directory of the diagnostic logging.
+            If not specified the file will be generated inside the default 'TestResults' directory.</summary>
+        </member>
+        <member name="P:Microsoft.DotNet.Cli.CommandDefinitionStrings.CmdDiagnosticOutputDirectoryPath">
+            <summary>DIAGNOSTIC_DIR</summary>
+        </member>
+        <member name="P:Microsoft.DotNet.Cli.CommandDefinitionStrings.CmdRootPathName">
+            <summary>ROOT_PATH</summary>
+        </member>
+        <member name="P:Microsoft.DotNet.Cli.CommandDefinitionStrings.CmdRuntimeOption">
+            <summary>RUNTIME_IDENTIFIER</summary>
+        </member>
+        <member name="P:Microsoft.DotNet.Cli.CommandDefinitionStrings.CmdRuntimeOptionDescription">
+            <summary>The target runtime to restore packages for.</summary>
+        </member>
+        <member name="P:Microsoft.DotNet.Cli.CommandDefinitionStrings.CmdServiceableDescription">
+            <summary>Set the serviceable flag in the package. See https://aka.ms/nupkgservicing for more information.</summary>
+        </member>
+        <member name="P:Microsoft.DotNet.Cli.CommandDefinitionStrings.CmdSettingsDescription">
+            <summary>The settings file to use when running tests.</summary>
+        </member>
+        <member name="P:Microsoft.DotNet.Cli.CommandDefinitionStrings.CmdSettingsFile">
+            <summary>SETTINGS_FILE</summary>
+        </member>
+        <member name="P:Microsoft.DotNet.Cli.CommandDefinitionStrings.CmdSolutionDescription">
+            <summary>Defines the path of the solution file to test. Use path to the solution file, or path to the directory containing the solution file. If not specified, it defaults to the current directory.</summary>
+        </member>
+        <member name="P:Microsoft.DotNet.Cli.CommandDefinitionStrings.CmdSolutionPathName">
+            <summary>SOLUTION_PATH</summary>
+        </member>
+        <member name="P:Microsoft.DotNet.Cli.CommandDefinitionStrings.CmdSourceOption">
+            <summary>SOURCE</summary>
+        </member>
+        <member name="P:Microsoft.DotNet.Cli.CommandDefinitionStrings.CmdSourceOptionDescription">
+            <summary>The NuGet package source to use for the restore.</summary>
+        </member>
+        <member name="P:Microsoft.DotNet.Cli.CommandDefinitionStrings.CmdTestAdapterPath">
+            <summary>ADAPTER_PATH</summary>
+        </member>
+        <member name="P:Microsoft.DotNet.Cli.CommandDefinitionStrings.CmdTestAdapterPathDescription">
+            <summary>The path to the custom adapters to use for the test run.</summary>
+        </member>
+        <member name="P:Microsoft.DotNet.Cli.CommandDefinitionStrings.CmdTestCaseFilterDescription">
+            <summary>Run tests that match the given expression.
+                                                    Examples:
+                                                    Run tests with priority set to 1: --filter "Priority = 1"
+                                                    Run a test with the speci ...</summary>
+        </member>
+        <member name="P:Microsoft.DotNet.Cli.CommandDefinitionStrings.CmdTestCaseFilterExpression">
+            <summary>EXPRESSION</summary>
+        </member>
+        <member name="P:Microsoft.DotNet.Cli.CommandDefinitionStrings.CmdTestModulesDescription">
+            <summary>Run tests for the specified test modules.</summary>
+        </member>
+        <member name="P:Microsoft.DotNet.Cli.CommandDefinitionStrings.CmdTestModulesRootDirectoryDescription">
+            <summary>The test modules have the specified root directory.</summary>
+        </member>
+        <member name="P:Microsoft.DotNet.Cli.CommandDefinitionStrings.CmdTestOutputDescription">
+            <summary>Verbosity of test output.</summary>
+        </member>
+        <member name="P:Microsoft.DotNet.Cli.CommandDefinitionStrings.CmdTransitiveDescription">
+            <summary>Lists transitive and top-level packages.</summary>
+        </member>
+        <member name="P:Microsoft.DotNet.Cli.CommandDefinitionStrings.CmdUnsupportedTestRunnerDescription">
+            <summary>Test runner '{0}' is not supported.</summary>
+        </member>
+        <member name="P:Microsoft.DotNet.Cli.CommandDefinitionStrings.CmdUseLockFileOptionDescription">
+            <summary>Enables project lock file to be generated and used with restore.</summary>
+        </member>
+        <member name="P:Microsoft.DotNet.Cli.CommandDefinitionStrings.CmdVersion">
+            <summary>VERSION</summary>
+        </member>
+        <member name="P:Microsoft.DotNet.Cli.CommandDefinitionStrings.CmdVersionDescription">
+            <summary>The version of the package to add.</summary>
+        </member>
+        <member name="P:Microsoft.DotNet.Cli.CommandDefinitionStrings.CmdVulnerableDescription">
+            <summary>Lists packages that have known vulnerabilities. Cannot be combined with '--deprecated' or '--outdated' options.</summary>
+        </member>
+        <member name="P:Microsoft.DotNet.Cli.CommandDefinitionStrings.CommandArgumentDescription">
+            <summary>The SDK command to launch online help for.</summary>
+        </member>
+        <member name="P:Microsoft.DotNet.Cli.CommandDefinitionStrings.CommandArgumentName">
+            <summary>COMMAND_NAME</summary>
+        </member>
+        <member name="P:Microsoft.DotNet.Cli.CommandDefinitionStrings.CommandNameArgumentDescription">
+            <summary>The command name of the tool to run.</summary>
+        </member>
+        <member name="P:Microsoft.DotNet.Cli.CommandDefinitionStrings.CommandNameArgumentName">
+            <summary>COMMAND_NAME</summary>
+        </member>
+        <member name="P:Microsoft.DotNet.Cli.CommandDefinitionStrings.CommandOptionLaunchProfileDescription">
+            <summary>The name of the launch profile (if any) to use when launching the application.</summary>
+        </member>
+        <member name="P:Microsoft.DotNet.Cli.CommandDefinitionStrings.CommandOptionLaunchProfileHelpName">
+            <summary>LAUNCH_PROFILE</summary>
+        </member>
+        <member name="P:Microsoft.DotNet.Cli.CommandDefinitionStrings.CommandOptionNoBuildDescription">
+            <summary>Do not build the project before running. Implies --no-restore.</summary>
+        </member>
+        <member name="P:Microsoft.DotNet.Cli.CommandDefinitionStrings.CommandOptionNoCacheDescription">
+            <summary>Skip up to date checks and always build the program before running.</summary>
+        </member>
+        <member name="P:Microsoft.DotNet.Cli.CommandDefinitionStrings.CommandOptionNoLaunchProfileArgumentsDescription">
+            <summary>Do not use arguments specified in launch profile to run the application.</summary>
+        </member>
+        <member name="P:Microsoft.DotNet.Cli.CommandDefinitionStrings.CommandOptionNoLaunchProfileDescription">
+            <summary>Do not attempt to use launchSettings.json or [app].run.json to configure the application.</summary>
+        </member>
+        <member name="P:Microsoft.DotNet.Cli.CommandDefinitionStrings.CommandOptionDeviceDescription">
+            <summary>The device identifier to use for running the application.</summary>
+        </member>
+        <member name="P:Microsoft.DotNet.Cli.CommandDefinitionStrings.CommandOptionDeviceHelpName">
+            <summary>DEVICE</summary>
+        </member>
+        <member name="P:Microsoft.DotNet.Cli.CommandDefinitionStrings.CommandOptionListDevicesDescription">
+            <summary>List available devices for running the application.</summary>
+        </member>
+        <member name="P:Microsoft.DotNet.Cli.CommandDefinitionStrings.CommandOptionProjectHelpName">
+            <summary>PROJECT_PATH</summary>
+        </member>
+        <member name="P:Microsoft.DotNet.Cli.CommandDefinitionStrings.CommandOptionFileDescription">
+            <summary>The path to the file-based app to run (can be also passed as the first argument if there is no project in the current directory).</summary>
+        </member>
+        <member name="P:Microsoft.DotNet.Cli.CommandDefinitionStrings.CommandOptionFileHelpName">
+            <summary>FILE_PATH</summary>
+        </member>
+        <member name="P:Microsoft.DotNet.Cli.CommandDefinitionStrings.ConfigFileArgumentName">
+            <summary>ConfigFile</summary>
+        </member>
+        <member name="P:Microsoft.DotNet.Cli.CommandDefinitionStrings.ConfigFileDescription">
+            <summary>The NuGet configuration file. If specified, only the settings from this file will be used. If not specified, the hierarchy of configuration files from the current directory will be used. For more information, see https://docs.microsoft.com/nuget/consume-pa ...</summary>
+        </member>
+        <member name="P:Microsoft.DotNet.Cli.CommandDefinitionStrings.CrashDumpTypeArgumentName">
+            <summary>DUMP_TYPE</summary>
+        </member>
+        <member name="P:Microsoft.DotNet.Cli.CommandDefinitionStrings.CreateManifestIfNeededOptionDescription">
+            <summary>Create a tool manifest if one isn't found during tool installation. For information on how manifests are located, see https://aka.ms/dotnet/tools/create-manifest-if-needed</summary>
+        </member>
+        <member name="P:Microsoft.DotNet.Cli.CommandDefinitionStrings.CurrentRuntimeOptionDescription">
+            <summary>Use current runtime as the target runtime.</summary>
+        </member>
+        <member name="P:Microsoft.DotNet.Cli.CommandDefinitionStrings.DetailDescription">
+            <summary>Show detail result of the query.</summary>
+        </member>
+        <member name="P:Microsoft.DotNet.Cli.CommandDefinitionStrings.DotnetTestCommandMTPDescription">
+            <summary>.NET Test Command for Microsoft.Testing.Platform (opted-in via 'global.json' file). This only supports Microsoft.Testing.Platform and doesn't support VSTest. For more information, see https://aka.ms/dotnet-test.</summary>
+        </member>
+        <member name="P:Microsoft.DotNet.Cli.CommandDefinitionStrings.DownloadToCacheOptionArgumentName">
+            <summary>DIRECTORY</summary>
+        </member>
+        <member name="P:Microsoft.DotNet.Cli.CommandDefinitionStrings.DownloadToCacheOptionDescription">
+            <summary>Download packages needed to install a workload to a folder that can be used for offline installation.</summary>
+        </member>
+        <member name="P:Microsoft.DotNet.Cli.CommandDefinitionStrings.ExactMatchDescription">
+            <summary>Require that the search term exactly match the name of the package. Causes `--take` and `--skip` options to be ignored.</summary>
+        </member>
+        <member name="P:Microsoft.DotNet.Cli.CommandDefinitionStrings.FormatArgumentName">
+            <summary>Format</summary>
+        </member>
+        <member name="P:Microsoft.DotNet.Cli.CommandDefinitionStrings.FormatDescription">
+            <summary>Format the output accordingly. Either `table`, or `json`. The default value is `table`.</summary>
+        </member>
+        <member name="P:Microsoft.DotNet.Cli.CommandDefinitionStrings.FormatOptionDescription">
+            <summary>Changes the format of outputted workload versions. Can take 'json' or 'list'</summary>
+        </member>
+        <member name="P:Microsoft.DotNet.Cli.CommandDefinitionStrings.FrameworkVersionOption">
+            <summary>FRAMEWORK_VERSION</summary>
+        </member>
+        <member name="P:Microsoft.DotNet.Cli.CommandDefinitionStrings.FrameworkVersionOptionDescription">
+            <summary>The Microsoft.NETCore.App package version that will be used to run the assemblies.</summary>
+        </member>
+        <member name="P:Microsoft.DotNet.Cli.CommandDefinitionStrings.FromCacheOptionArgumentName">
+            <summary>DIRECTORY</summary>
+        </member>
+        <member name="P:Microsoft.DotNet.Cli.CommandDefinitionStrings.FromCacheOptionDescription">
+            <summary>Complete the operation from cache (offline).</summary>
+        </member>
+        <member name="P:Microsoft.DotNet.Cli.CommandDefinitionStrings.FromHistoryOptionDescription">
+            <summary>Update workloads to a previous version specified by the argument. Use the 'dotnet workload history' to see available workload history records.</summary>
+        </member>
+        <member name="P:Microsoft.DotNet.Cli.CommandDefinitionStrings.FromPreviousSdkOptionDescription">
+            <summary>Include workloads installed with earlier SDK versions in update.</summary>
+        </member>
+        <member name="P:Microsoft.DotNet.Cli.CommandDefinitionStrings.FromRollbackDefinitionOptionDescription">
+            <summary>Update workloads based on specified rollback definition file.</summary>
+        </member>
+        <member name="P:Microsoft.DotNet.Cli.CommandDefinitionStrings.HangDumpTypeArgumentName">
+            <summary>DUMP_TYPE</summary>
+        </member>
+        <member name="P:Microsoft.DotNet.Cli.CommandDefinitionStrings.HangTimeoutArgumentName">
+            <summary>TIMESPAN</summary>
+        </member>
+        <member name="P:Microsoft.DotNet.Cli.CommandDefinitionStrings.HelpAppFullName">
+            <summary>.NET CLI help utility</summary>
+        </member>
+        <member name="P:Microsoft.DotNet.Cli.CommandDefinitionStrings.HistoryManifestOnlyOptionDescription">
+            <summary>Update to the workload versions specified in the history without changing which workloads are installed. Currently installed workloads will be updated to match the specified history version.</summary>
+        </member>
+        <member name="P:Microsoft.DotNet.Cli.CommandDefinitionStrings.IncludePreviewOptionDescription">
+            <summary>Allow prerelease workload manifests.</summary>
+        </member>
+        <member name="P:Microsoft.DotNet.Cli.CommandDefinitionStrings.InRoot">
+            <summary>Place project in root of the solution, rather than creating a solution folder.</summary>
+        </member>
+        <member name="P:Microsoft.DotNet.Cli.CommandDefinitionStrings.IntermediateWorkingDirOption">
+            <summary>WORKING_DIR</summary>
+        </member>
+        <member name="P:Microsoft.DotNet.Cli.CommandDefinitionStrings.IntermediateWorkingDirOptionDescription">
+            <summary>The working directory used by the command to execute.</summary>
+        </member>
+        <member name="P:Microsoft.DotNet.Cli.CommandDefinitionStrings.ListAppFullName">
+            <summary>List all projects in a solution file.</summary>
+        </member>
+        <member name="P:Microsoft.DotNet.Cli.CommandDefinitionStrings.ListSolutionFoldersArgumentDescription">
+            <summary>Display solution folder paths.</summary>
+        </member>
+        <member name="P:Microsoft.DotNet.Cli.CommandDefinitionStrings.ManifestOption">
+            <summary>MANIFEST</summary>
+        </member>
+        <member name="P:Microsoft.DotNet.Cli.CommandDefinitionStrings.ManifestOptionDescription">
+            <summary>The path to a target manifest file that contains the list of packages to be excluded from the publish step.</summary>
+        </member>
+        <member name="P:Microsoft.DotNet.Cli.CommandDefinitionStrings.MigrateAppFullName">
+            <summary>Generate a .slnx file from a .sln file.</summary>
+        </member>
+        <member name="P:Microsoft.DotNet.Cli.CommandDefinitionStrings.MSBuildOptionDescription">
+            <summary>Shut down the MSBuild build server.</summary>
+        </member>
+        <member name="P:Microsoft.DotNet.Cli.CommandDefinitionStrings.NetAddCommand">
+            <summary>.NET Add Command</summary>
+        </member>
+        <member name="P:Microsoft.DotNet.Cli.CommandDefinitionStrings.NetListCommand">
+            <summary>List references or packages of a .NET project.</summary>
+        </member>
+        <member name="P:Microsoft.DotNet.Cli.CommandDefinitionStrings.NetRemoveCommand">
+            <summary>.NET Remove Command</summary>
+        </member>
+        <member name="P:Microsoft.DotNet.Cli.CommandDefinitionStrings.NoBuildOptionDescription">
+            <summary>Do not build the project before publishing. Implies --no-restore.</summary>
+        </member>
+        <member name="P:Microsoft.DotNet.Cli.CommandDefinitionStrings.NoDependenciesOptionDescription">
+            <summary>Do not build project-to-project references and only build the specified project.</summary>
+        </member>
+        <member name="P:Microsoft.DotNet.Cli.CommandDefinitionStrings.NoIncrementalOptionDescription">
+            <summary>Do not use incremental building.</summary>
+        </member>
+        <member name="P:Microsoft.DotNet.Cli.CommandDefinitionStrings.OnlyLocalOptionSupportManifestFileOption">
+            <summary>Specifying the tool manifest option (--tool-manifest) is only valid with the local option (--local or the default).</summary>
+        </member>
+        <member name="P:Microsoft.DotNet.Cli.CommandDefinitionStrings.OptionsCannotBeCombined">
+            <summary>Options '--outdated', '--deprecated' and '--vulnerable' cannot be combined.</summary>
+        </member>
+        <member name="P:Microsoft.DotNet.Cli.CommandDefinitionStrings.OutputOptionName">
+            <summary>OUTPUT_DIR</summary>
+        </member>
+        <member name="P:Microsoft.DotNet.Cli.CommandDefinitionStrings.PackageAddAppFullName">
+            <summary>Add a NuGet package reference to the project.</summary>
+        </member>
+        <member name="P:Microsoft.DotNet.Cli.CommandDefinitionStrings.PackageAddCmdFramework">
+            <summary>FRAMEWORK</summary>
+        </member>
+        <member name="P:Microsoft.DotNet.Cli.CommandDefinitionStrings.PackageAddCmdFrameworkDescription">
+            <summary>Add the reference only when targeting a specific framework.</summary>
+        </member>
+        <member name="P:Microsoft.DotNet.Cli.CommandDefinitionStrings.PackageAddCmdNoRestoreDescription">
+            <summary>Add the reference without performing restore preview and compatibility check.</summary>
+        </member>
+        <member name="P:Microsoft.DotNet.Cli.CommandDefinitionStrings.PackageAddCmdSource">
+            <summary>SOURCE</summary>
+        </member>
+        <member name="P:Microsoft.DotNet.Cli.CommandDefinitionStrings.PackageAddCmdSourceDescription">
+            <summary>The NuGet package source to use during the restore.</summary>
+        </member>
+        <member name="P:Microsoft.DotNet.Cli.CommandDefinitionStrings.PackageListAppFullName">
+            <summary>List all package references of the project or solution.</summary>
+        </member>
+        <member name="P:Microsoft.DotNet.Cli.CommandDefinitionStrings.PackageListCmdFramework">
+            <summary>FRAMEWORK | FRAMEWORK\RID</summary>
+        </member>
+        <member name="P:Microsoft.DotNet.Cli.CommandDefinitionStrings.PackageListCmdFrameworkDescription">
+            <summary>Chooses a framework to show its packages. Use the option multiple times for multiple frameworks.</summary>
+        </member>
+        <member name="P:Microsoft.DotNet.Cli.CommandDefinitionStrings.PackageListCmdSource">
+            <summary>SOURCE</summary>
+        </member>
+        <member name="P:Microsoft.DotNet.Cli.CommandDefinitionStrings.PackageListCmdSourceDescription">
+            <summary>The NuGet sources to use when searching for newer packages. Requires the '--outdated', '--deprecated' or '--vulnerable' option.</summary>
+        </member>
+        <member name="P:Microsoft.DotNet.Cli.CommandDefinitionStrings.PackageRemoveAppFullName">
+            <summary>Remove a NuGet package reference from the project.</summary>
+        </member>
+        <member name="P:Microsoft.DotNet.Cli.CommandDefinitionStrings.PackageRemoveAppHelpText">
+            <summary>The package reference to remove.</summary>
+        </member>
+        <member name="P:Microsoft.DotNet.Cli.CommandDefinitionStrings.PackageSearchCommandDescription">
+            <summary>Searches one or more package sources for packages that match a search term. If no sources are specified, all sources defined in the NuGet.Config are used.</summary>
+        </member>
+        <member name="P:Microsoft.DotNet.Cli.CommandDefinitionStrings.PackageSearchPrereleaseDescription">
+            <summary>Include prerelease packages.</summary>
+        </member>
+        <member name="P:Microsoft.DotNet.Cli.CommandDefinitionStrings.PackageSearchSearchTermArgumentName">
+            <summary>SearchTerm</summary>
+        </member>
+        <member name="P:Microsoft.DotNet.Cli.CommandDefinitionStrings.PackageSearchSearchTermDescription">
+            <summary>Search term to filter package names, descriptions, and tags. Used as a literal value. Example: `dotnet package search some.package`. See also `--exact-match`.</summary>
+        </member>
+        <member name="P:Microsoft.DotNet.Cli.CommandDefinitionStrings.PackageSearchSkipArgumentName">
+            <summary>Skip</summary>
+        </member>
+        <member name="P:Microsoft.DotNet.Cli.CommandDefinitionStrings.PackageSearchSkipDescription">
+            <summary>Number of results to skip, to allow pagination. Default 0.</summary>
+        </member>
+        <member name="P:Microsoft.DotNet.Cli.CommandDefinitionStrings.PackageSearchTakeArgumentName">
+            <summary>Take</summary>
+        </member>
+        <member name="P:Microsoft.DotNet.Cli.CommandDefinitionStrings.PackageSearchTakeDescription">
+            <summary>Number of results to return. Default 20.</summary>
+        </member>
+        <member name="P:Microsoft.DotNet.Cli.CommandDefinitionStrings.PackAppFullName">
+            <summary>.NET Core NuGet Package Packer</summary>
+        </member>
+        <member name="P:Microsoft.DotNet.Cli.CommandDefinitionStrings.PackCmdOutputDir">
+            <summary>OUTPUT_DIR</summary>
+        </member>
+        <member name="P:Microsoft.DotNet.Cli.CommandDefinitionStrings.PackCmdOutputDirDescription">
+            <summary>The output directory to place built packages in.</summary>
+        </member>
+        <member name="P:Microsoft.DotNet.Cli.CommandDefinitionStrings.PackConfigurationOptionDescription">
+            <summary>The configuration to use for building the package. The default is 'Release'.</summary>
+        </member>
+        <member name="P:Microsoft.DotNet.Cli.CommandDefinitionStrings.PrintDownloadLinkOnlyDescription">
+            <summary>Only print the list of links to download without downloading.</summary>
+        </member>
+        <member name="P:Microsoft.DotNet.Cli.CommandDefinitionStrings.PrintSetVersionsDescription">
+            <summary>'dotnet workload search version' has three functions depending on its argument:
+                  1. If no argument is specified, it outputs a list of the latest released workload versions from this feature band. Takes the --take option to specify how many to provide  ...</summary>
+        </member>
+        <member name="P:Microsoft.DotNet.Cli.CommandDefinitionStrings.ProjectConvertAppFullName">
+            <summary>Convert a file-based program to a project-based program.</summary>
+        </member>
+        <member name="P:Microsoft.DotNet.Cli.CommandDefinitionStrings.ProjectConvertDryRun">
+            <summary>Determines changes without actually modifying the file system</summary>
+        </member>
+        <member name="P:Microsoft.DotNet.Cli.CommandDefinitionStrings.ProjectConvertDeleteSource">
+            <summary>Delete all source files after conversion</summary>
+        </member>
+        <member name="P:Microsoft.DotNet.Cli.CommandDefinitionStrings.ProjectManifest">
+            <summary>PROJECT_MANIFEST</summary>
+        </member>
+        <member name="P:Microsoft.DotNet.Cli.CommandDefinitionStrings.ProjectManifestDescription">
+            <summary>The XML file that contains the list of packages to be stored.</summary>
+        </member>
+        <member name="P:Microsoft.DotNet.Cli.CommandDefinitionStrings.PublishAppDescription">
+            <summary>Publisher for the .NET Platform</summary>
+        </member>
+        <member name="P:Microsoft.DotNet.Cli.CommandDefinitionStrings.PublishConfigurationOptionDescription">
+            <summary>The configuration to publish for. The default is 'Release' for NET 8.0 projects and above, but 'Debug' for older projects.</summary>
+        </member>
+        <member name="P:Microsoft.DotNet.Cli.CommandDefinitionStrings.PublishFrameworkOptionDescription">
+            <summary>The target framework to publish for. The target framework has to be specified in the project file.</summary>
+        </member>
+        <member name="P:Microsoft.DotNet.Cli.CommandDefinitionStrings.PublishOutputOption">
+            <summary>OUTPUT_DIR</summary>
+        </member>
+        <member name="P:Microsoft.DotNet.Cli.CommandDefinitionStrings.PublishOutputOptionDescription">
+            <summary>The output directory to place the published artifacts in.</summary>
+        </member>
+        <member name="P:Microsoft.DotNet.Cli.CommandDefinitionStrings.PublishRuntimeOptionDescription">
+            <summary>The target runtime to publish for. This is used when creating a self-contained deployment.
+            The default is to publish a framework-dependent application.</summary>
+        </member>
+        <member name="P:Microsoft.DotNet.Cli.CommandDefinitionStrings.RazorOptionDescription">
+            <summary>Shut down the Razor build server.</summary>
+        </member>
+        <member name="P:Microsoft.DotNet.Cli.CommandDefinitionStrings.ReferenceAddAppFullName">
+            <summary>Add a project-to-project reference to the project.</summary>
+        </member>
+        <member name="P:Microsoft.DotNet.Cli.CommandDefinitionStrings.ReferenceAddCmdFrameworkDescription">
+            <summary>Add the reference only when targeting a specific framework.</summary>
+        </member>
+        <member name="P:Microsoft.DotNet.Cli.CommandDefinitionStrings.ReferenceAddProjectPathArgumentDescription">
+            <summary>The paths to the projects to add as references.</summary>
+        </member>
+        <member name="P:Microsoft.DotNet.Cli.CommandDefinitionStrings.ReferenceAddProjectPathArgumentName">
+            <summary>PROJECT_PATH</summary>
+        </member>
+        <member name="P:Microsoft.DotNet.Cli.CommandDefinitionStrings.ReferenceListAppFullName">
+            <summary>List all project-to-project references of the project.</summary>
+        </member>
+        <member name="P:Microsoft.DotNet.Cli.CommandDefinitionStrings.ReferenceRemoveAppFullName">
+            <summary>Remove a project-to-project reference from the project.</summary>
+        </member>
+        <member name="P:Microsoft.DotNet.Cli.CommandDefinitionStrings.ReferenceRemoveCmdFrameworkDescription">
+            <summary>Remove the reference only when targeting a specific framework.</summary>
+        </member>
+        <member name="P:Microsoft.DotNet.Cli.CommandDefinitionStrings.ReferenceRemoveProjectPathArgumentDescription">
+            <summary>The paths to the referenced projects to remove.</summary>
+        </member>
+        <member name="P:Microsoft.DotNet.Cli.CommandDefinitionStrings.ReferenceRemoveProjectPathArgumentName">
+            <summary>PROJECT_PATH</summary>
+        </member>
+        <member name="P:Microsoft.DotNet.Cli.CommandDefinitionStrings.RemoveAppFullName">
+            <summary>Remove one or more projects from a solution file.</summary>
+        </member>
+        <member name="P:Microsoft.DotNet.Cli.CommandDefinitionStrings.RemoveProjectPathArgumentDescription">
+            <summary>The project paths or names to remove from the solution.</summary>
+        </member>
+        <member name="P:Microsoft.DotNet.Cli.CommandDefinitionStrings.RemoveProjectPathArgumentName">
+            <summary>PROJECT_PATH</summary>
+        </member>
+        <member name="P:Microsoft.DotNet.Cli.CommandDefinitionStrings.RestoreAppFullName">
+            <summary>.NET dependency restorer</summary>
+        </member>
+        <member name="P:Microsoft.DotNet.Cli.CommandDefinitionStrings.RollForwardOptionDescription">
+            <summary>Allow a .NET tool to roll forward to newer versions of the .NET runtime if the runtime it targets isn't installed.</summary>
+        </member>
+        <member name="P:Microsoft.DotNet.Cli.CommandDefinitionStrings.RunAppFullName">
+            <summary>.NET Run Command</summary>
+        </member>
+        <member name="P:Microsoft.DotNet.Cli.CommandDefinitionStrings.RunConfigurationOptionDescription">
+            <summary>The configuration to run for. The default for most projects is 'Debug'.</summary>
+        </member>
+        <member name="P:Microsoft.DotNet.Cli.CommandDefinitionStrings.RunFrameworkOptionDescription">
+            <summary>The target framework to run for. The target framework must also be specified in the project file.</summary>
+        </member>
+        <member name="P:Microsoft.DotNet.Cli.CommandDefinitionStrings.RunRuntimeOptionDescription">
+            <summary>The target runtime to run for.</summary>
+        </member>
+        <member name="P:Microsoft.DotNet.Cli.CommandDefinitionStrings.SdkAppFullName">
+            <summary>.NET SDK Command</summary>
+        </member>
+        <member name="P:Microsoft.DotNet.Cli.CommandDefinitionStrings.SdkCheckAppFullName">
+            <summary>.NET SDK Check Command</summary>
+        </member>
+        <member name="P:Microsoft.DotNet.Cli.CommandDefinitionStrings.SkipManifestUpdateOptionDescription">
+            <summary>Skip updating the workload manifests.</summary>
+        </member>
+        <member name="P:Microsoft.DotNet.Cli.CommandDefinitionStrings.SkipOptimizationOptionDescription">
+            <summary>Skip the optimization phase.</summary>
+        </member>
+        <member name="P:Microsoft.DotNet.Cli.CommandDefinitionStrings.SkipSignCheckOptionDescription">
+            <summary>Skip signature verification of workload packages and installers.</summary>
+        </member>
+        <member name="P:Microsoft.DotNet.Cli.CommandDefinitionStrings.SkipSymbolsOptionDescription">
+            <summary>Skip creating symbol files which can be used for profiling the optimized assemblies.</summary>
+        </member>
+        <member name="P:Microsoft.DotNet.Cli.CommandDefinitionStrings.SolutionAppFullName">
+            <summary>.NET modify solution file command</summary>
+        </member>
+        <member name="P:Microsoft.DotNet.Cli.CommandDefinitionStrings.SolutionArgumentDescription">
+            <summary>The solution file to operate on. If not specified, the command will search the current directory for one.</summary>
+        </member>
+        <member name="P:Microsoft.DotNet.Cli.CommandDefinitionStrings.SolutionArgumentName">
+            <summary>SLN_FILE</summary>
+        </member>
+        <member name="P:Microsoft.DotNet.Cli.CommandDefinitionStrings.SourceArgumentName">
+            <summary>Source</summary>
+        </member>
+        <member name="P:Microsoft.DotNet.Cli.CommandDefinitionStrings.SourceDescription">
+            <summary>The package source to search. You can pass multiple `--source` options to search multiple package sources. Example: `--source https://api.nuget.org/v3/index.json`.</summary>
+        </member>
+        <member name="P:Microsoft.DotNet.Cli.CommandDefinitionStrings.StoreAppDescription">
+            <summary>Stores the specified assemblies for the .NET Platform. By default, these will be optimized for the target runtime and framework.</summary>
+        </member>
+        <member name="P:Microsoft.DotNet.Cli.CommandDefinitionStrings.StoreFrameworkOptionDescription">
+            <summary>The target framework to store packages for. The target framework has to be specified in the project file.</summary>
+        </member>
+        <member name="P:Microsoft.DotNet.Cli.CommandDefinitionStrings.StoreOutputOption">
+            <summary>OUTPUT_DIR</summary>
+        </member>
+        <member name="P:Microsoft.DotNet.Cli.CommandDefinitionStrings.StoreOutputOptionDescription">
+            <summary>The output directory to store the given assemblies in.</summary>
+        </member>
+        <member name="P:Microsoft.DotNet.Cli.CommandDefinitionStrings.StoreRuntimeOptionDescription">
+            <summary>The target runtime to store packages for.</summary>
+        </member>
+        <member name="P:Microsoft.DotNet.Cli.CommandDefinitionStrings.TempDirOptionDescription">
+            <summary>Specify a temporary directory for this command to download and extract NuGet packages (must be secure).</summary>
+        </member>
+        <member name="P:Microsoft.DotNet.Cli.CommandDefinitionStrings.DotnetTestCommandVSTestDescription">
+            <summary>.NET Test Command for VSTest. To use Microsoft.Testing.Platform, opt-in to the Microsoft.Testing.Platform-based command via global.json. For more information, see https://aka.ms/dotnet-test.</summary>
+        </member>
+        <member name="P:Microsoft.DotNet.Cli.CommandDefinitionStrings.TestCmdNoLogo">
+            <summary>Run test(s), without displaying Microsoft Testplatform banner</summary>
+        </member>
+        <member name="P:Microsoft.DotNet.Cli.CommandDefinitionStrings.TestCmdOutputDir">
+            <summary>OUTPUT_DIR</summary>
+        </member>
+        <member name="P:Microsoft.DotNet.Cli.CommandDefinitionStrings.TestConfigurationOptionDescription">
+            <summary>The configuration to use for running tests. The default for most projects is 'Debug'.</summary>
+        </member>
+        <member name="P:Microsoft.DotNet.Cli.CommandDefinitionStrings.TestFrameworkOptionDescription">
+            <summary>The target framework to run tests for. The target framework must also be specified in the project file.</summary>
+        </member>
+        <member name="P:Microsoft.DotNet.Cli.CommandDefinitionStrings.TestRuntimeOptionDescription">
+            <summary>The target runtime to test for.</summary>
+        </member>
+        <member name="P:Microsoft.DotNet.Cli.CommandDefinitionStrings.ToolCommandDescription">
+            <summary>Install or work with tools that extend the .NET experience.</summary>
+        </member>
+        <member name="P:Microsoft.DotNet.Cli.CommandDefinitionStrings.ToolInstallAddSourceOptionDescription">
+            <summary>Add an additional NuGet package source to use during installation.</summary>
+        </member>
+        <member name="P:Microsoft.DotNet.Cli.CommandDefinitionStrings.ToolInstallAddSourceOptionName">
+            <summary>ADDSOURCE</summary>
+        </member>
+        <member name="P:Microsoft.DotNet.Cli.CommandDefinitionStrings.ToolInstallCommandDescription">
+            <summary>Install global or local tool. Local tools are added to manifest and restored.</summary>
+        </member>
+        <member name="P:Microsoft.DotNet.Cli.CommandDefinitionStrings.ToolInstallConfigFileOptionDescription">
+            <summary>The NuGet configuration file to use.</summary>
+        </member>
+        <member name="P:Microsoft.DotNet.Cli.CommandDefinitionStrings.ToolInstallConfigFileOptionName">
+            <summary>FILE</summary>
+        </member>
+        <member name="P:Microsoft.DotNet.Cli.CommandDefinitionStrings.ToolInstallFrameworkOptionDescription">
+            <summary>The target framework to install the tool for.</summary>
+        </member>
+        <member name="P:Microsoft.DotNet.Cli.CommandDefinitionStrings.ToolInstallFrameworkOptionName">
+            <summary>FRAMEWORK</summary>
+        </member>
+        <member name="P:Microsoft.DotNet.Cli.CommandDefinitionStrings.ToolInstallGlobalOptionDescription">
+            <summary>Install the tool for the current user.</summary>
+        </member>
+        <member name="P:Microsoft.DotNet.Cli.CommandDefinitionStrings.ToolInstallLocalOptionDescription">
+            <summary>Install the tool and add to the local tool manifest (default).</summary>
+        </member>
+        <member name="P:Microsoft.DotNet.Cli.CommandDefinitionStrings.ToolInstallManifestPathOptionDescription">
+            <summary>Path to the manifest file.</summary>
+        </member>
+        <member name="P:Microsoft.DotNet.Cli.CommandDefinitionStrings.ToolInstallManifestPathOptionName">
+            <summary>PATH</summary>
+        </member>
+        <member name="P:Microsoft.DotNet.Cli.CommandDefinitionStrings.ToolInstallSourceOptionDescription">
+            <summary>Replace all NuGet package sources to use during installation with these.</summary>
+        </member>
+        <member name="P:Microsoft.DotNet.Cli.CommandDefinitionStrings.ToolInstallSourceOptionName">
+            <summary>SOURCE</summary>
+        </member>
+        <member name="P:Microsoft.DotNet.Cli.CommandDefinitionStrings.ToolInstallToolPathOptionDescription">
+            <summary>The directory where the tool will be installed. The directory will be created if it does not exist.</summary>
+        </member>
+        <member name="P:Microsoft.DotNet.Cli.CommandDefinitionStrings.ToolInstallToolPathOptionName">
+            <summary>PATH</summary>
+        </member>
+        <member name="P:Microsoft.DotNet.Cli.CommandDefinitionStrings.ToolInstallVersionOptionDescription">
+            <summary>The version of the tool package to install.</summary>
+        </member>
+        <member name="P:Microsoft.DotNet.Cli.CommandDefinitionStrings.ToolInstallVersionOptionName">
+            <summary>VERSION</summary>
+        </member>
+        <member name="P:Microsoft.DotNet.Cli.CommandDefinitionStrings.ToolListCommandDescription">
+            <summary>List tools installed globally or locally.</summary>
+        </member>
+        <member name="P:Microsoft.DotNet.Cli.CommandDefinitionStrings.ToolListFormatOptionDescription">
+            <summary>The output format for the list of tools.</summary>
+        </member>
+        <member name="P:Microsoft.DotNet.Cli.CommandDefinitionStrings.ToolListGlobalOptionDescription">
+            <summary>List tools installed for the current user.</summary>
+        </member>
+        <member name="P:Microsoft.DotNet.Cli.CommandDefinitionStrings.ToolListLocalOptionDescription">
+            <summary>List the tools installed in the local tool manifest.</summary>
+        </member>
+        <member name="P:Microsoft.DotNet.Cli.CommandDefinitionStrings.ToolListPackageIdArgumentDescription">
+            <summary>The NuGet Package Id of the tool to list</summary>
+        </member>
+        <member name="P:Microsoft.DotNet.Cli.CommandDefinitionStrings.ToolListPackageIdArgumentName">
+            <summary>PACKAGE_ID</summary>
+        </member>
+        <member name="P:Microsoft.DotNet.Cli.CommandDefinitionStrings.ToolListToolPathOptionDescription">
+            <summary>The directory containing the tools to list.</summary>
+        </member>
+        <member name="P:Microsoft.DotNet.Cli.CommandDefinitionStrings.ToolRestoreCommandDescription">
+            <summary>Restore tools defined in the local tool manifest.</summary>
+        </member>
+        <member name="P:Microsoft.DotNet.Cli.CommandDefinitionStrings.ToolRestoreManifestPathOptionDescription">
+            <summary>Path to the manifest file.</summary>
+        </member>
+        <member name="P:Microsoft.DotNet.Cli.CommandDefinitionStrings.ToolRunCommandDescription">
+            <summary>Run a local tool. Note that this command cannot be used to run a global tool.</summary>
+        </member>
+        <member name="P:Microsoft.DotNet.Cli.CommandDefinitionStrings.ToolRunArgumentsDescription">
+            <summary>Arguments forwarded to the tool</summary>
+        </member>
+        <member name="P:Microsoft.DotNet.Cli.CommandDefinitionStrings.ToolSearchCommandDescription">
+            <summary>Search dotnet tools in nuget.org</summary>
+        </member>
+        <member name="P:Microsoft.DotNet.Cli.CommandDefinitionStrings.ToolSearchPrereleaseDescription">
+            <summary>Include pre-release packages.</summary>
+        </member>
+        <member name="P:Microsoft.DotNet.Cli.CommandDefinitionStrings.ToolSearchSearchTermArgumentName">
+            <summary>SEARCH_TERM</summary>
+        </member>
+        <member name="P:Microsoft.DotNet.Cli.CommandDefinitionStrings.ToolSearchSearchTermDescription">
+            <summary>Search term from package id or package description. Require at least one character.</summary>
+        </member>
+        <member name="P:Microsoft.DotNet.Cli.CommandDefinitionStrings.ToolSearchSkipArgumentName">
+            <summary>Skip</summary>
+        </member>
+        <member name="P:Microsoft.DotNet.Cli.CommandDefinitionStrings.ToolSearchSkipDescription">
+            <summary>The number of results to skip, for pagination.</summary>
+        </member>
+        <member name="P:Microsoft.DotNet.Cli.CommandDefinitionStrings.ToolSearchTakeArgumentName">
+            <summary>Take</summary>
+        </member>
+        <member name="P:Microsoft.DotNet.Cli.CommandDefinitionStrings.ToolSearchTakeDescription">
+            <summary>The number of results to return, for pagination.</summary>
+        </member>
+        <member name="P:Microsoft.DotNet.Cli.CommandDefinitionStrings.ToolUninstallCommandDescription">
+            <summary>Uninstall a global tool or local tool.</summary>
+        </member>
+        <member name="P:Microsoft.DotNet.Cli.CommandDefinitionStrings.ToolUninstallGlobalOptionDescription">
+            <summary>Uninstall the tool from the current user's tools directory.</summary>
+        </member>
+        <member name="P:Microsoft.DotNet.Cli.CommandDefinitionStrings.ToolUninstallLocalOptionDescription">
+            <summary>Uninstall the tool and remove it from the local tool manifest.</summary>
+        </member>
+        <member name="P:Microsoft.DotNet.Cli.CommandDefinitionStrings.ToolUninstallManifestPathOptionDescription">
+            <summary>Path to the manifest file.</summary>
+        </member>
+        <member name="P:Microsoft.DotNet.Cli.CommandDefinitionStrings.ToolUninstallToolPathOptionDescription">
+            <summary>The directory containing the tool to uninstall.</summary>
+        </member>
+        <member name="P:Microsoft.DotNet.Cli.CommandDefinitionStrings.ToolUpdateCommandDescription">
+            <summary>Update a global or local tool.</summary>
+        </member>
+        <member name="P:Microsoft.DotNet.Cli.CommandDefinitionStrings.UpdateAllOptionDescription">
+            <summary>Update all tools.</summary>
+        </member>
+        <member name="P:Microsoft.DotNet.Cli.CommandDefinitionStrings.UpdateModeDescription">
+            <summary>Controls whether updates should look for workload sets or the latest version of each individual manifest.</summary>
+        </member>
+        <member name="P:Microsoft.DotNet.Cli.CommandDefinitionStrings.ValidationFailedDuplicateVersion">
+            <summary>Cannot specify --version when the package argument already contains a version.</summary>
+        </member>
+        <member name="P:Microsoft.DotNet.Cli.CommandDefinitionStrings.VBCSCompilerOptionDescription">
+            <summary>Shut down the VB/C# compiler build server.</summary>
+        </member>
+        <member name="P:Microsoft.DotNet.Cli.CommandDefinitionStrings.VerbosityArgumentName">
+            <summary>Verbosity</summary>
+        </member>
+        <member name="P:Microsoft.DotNet.Cli.CommandDefinitionStrings.VerbosityDescription">
+            <summary>Display this amount of details in the output: `normal`, `minimal`, `detailed`. The default is `normal`</summary>
+        </member>
+        <member name="P:Microsoft.DotNet.Cli.CommandDefinitionStrings.WorkloadCleanCommandDescription">
+            <summary>Removes workload components that may have been left behind from previous updates and uninstallations.</summary>
+        </member>
+        <member name="P:Microsoft.DotNet.Cli.CommandDefinitionStrings.WorkloadCommandDescription">
+            <summary>Install or work with workloads that extend the .NET experience.</summary>
+        </member>
+        <member name="P:Microsoft.DotNet.Cli.CommandDefinitionStrings.WorkloadConfigCommandDescription">
+            <summary>Modify or display workload configuration values.
+            To display a value, specify the corresponding command-line option without providing a value.  For example: "dotnet workload config --update-mode"</summary>
+        </member>
+        <member name="P:Microsoft.DotNet.Cli.CommandDefinitionStrings.WorkloadElevateCommandDescription">
+            <summary>Start the elevated server process to facilitate MSI based installations.</summary>
+        </member>
+        <member name="P:Microsoft.DotNet.Cli.CommandDefinitionStrings.WorkloadHistoryCommandDescription">
+            <summary>Shows a history of workload installation actions.</summary>
+        </member>
+        <member name="P:Microsoft.DotNet.Cli.CommandDefinitionStrings.WorkloadIdArgumentDescription">
+            <summary>The NuGet package ID of the workload to install.</summary>
+        </member>
+        <member name="P:Microsoft.DotNet.Cli.CommandDefinitionStrings.WorkloadIdArgumentName">
+            <summary>WORKLOAD_ID</summary>
+        </member>
+        <member name="P:Microsoft.DotNet.Cli.CommandDefinitionStrings.WorkloadIdStubArgumentDescription">
+            <summary>The text to search for in the IDs and descriptions of available workloads.</summary>
+        </member>
+        <member name="P:Microsoft.DotNet.Cli.CommandDefinitionStrings.WorkloadIdStubArgumentName">
+            <summary>SEARCH_STRING</summary>
+        </member>
+        <member name="P:Microsoft.DotNet.Cli.CommandDefinitionStrings.WorkloadInfoDescription">
+            <summary>Display information about installed workloads.</summary>
+        </member>
+        <member name="P:Microsoft.DotNet.Cli.CommandDefinitionStrings.WorkloadInstallCommandDescription">
+            <summary>Install one or more workloads.</summary>
+        </member>
+        <member name="P:Microsoft.DotNet.Cli.CommandDefinitionStrings.WorkloadInstallConfigFileOptionDescription">
+            <summary>The NuGet configuration file to use.</summary>
+        </member>
+        <member name="P:Microsoft.DotNet.Cli.CommandDefinitionStrings.WorkloadInstallConfigFileOptionName">
+            <summary>FILE</summary>
+        </member>
+        <member name="P:Microsoft.DotNet.Cli.CommandDefinitionStrings.WorkloadInstallSourceOptionDescription">
+            <summary>The NuGet package source to use during the restore. To specify multiple sources, repeat the option.</summary>
+        </member>
+        <member name="P:Microsoft.DotNet.Cli.CommandDefinitionStrings.WorkloadInstallSourceOptionName">
+            <summary>SOURCE</summary>
+        </member>
+        <member name="P:Microsoft.DotNet.Cli.CommandDefinitionStrings.WorkloadInstallVersionOptionDescription">
+            <summary>The version of the SDK.</summary>
+        </member>
+        <member name="P:Microsoft.DotNet.Cli.CommandDefinitionStrings.WorkloadInstallVersionOptionName">
+            <summary>VERSION</summary>
+        </member>
+        <member name="P:Microsoft.DotNet.Cli.CommandDefinitionStrings.WorkloadListCommandDescription">
+            <summary>List workloads available.</summary>
+        </member>
+        <member name="P:Microsoft.DotNet.Cli.CommandDefinitionStrings.WorkloadRepairCommandDescription">
+            <summary>Repair workload installations.</summary>
+        </member>
+        <member name="P:Microsoft.DotNet.Cli.CommandDefinitionStrings.WorkloadRestoreCommandDescription">
+            <summary>Restore workloads required for a project.</summary>
+        </member>
+        <member name="P:Microsoft.DotNet.Cli.CommandDefinitionStrings.WorkloadSearchCommandDescription">
+            <summary>Search for available workloads.</summary>
+        </member>
+        <member name="P:Microsoft.DotNet.Cli.CommandDefinitionStrings.WorkloadSetVersionOptionDescription">
+            <summary>A workload version to display or one or more workloads and their versions joined by the '@' character.</summary>
+        </member>
+        <member name="P:Microsoft.DotNet.Cli.CommandDefinitionStrings.WorkloadUninstallCommandDescription">
+            <summary>Uninstall one or more workloads.</summary>
+        </member>
+        <member name="P:Microsoft.DotNet.Cli.CommandDefinitionStrings.WorkloadUpdateCommandDescription">
+            <summary>Update all installed workloads.</summary>
+        </member>
+        <member name="P:Microsoft.DotNet.Cli.CommandDefinitionStrings.WorkloadVersionArgument">
+            <summary>WORKLOAD_VERSION</summary>
+        </member>
+        <member name="P:Microsoft.DotNet.Cli.CommandDefinitionStrings.WorkloadVersionArgumentDescription">
+            <summary>Output workload manifest versions associated with the provided workload version.</summary>
+        </member>
+        <member name="P:Microsoft.DotNet.Cli.CommandDefinitionStrings.WorkloadVersionDescription">
+            <summary>Display the currently installed workload version.</summary>
+        </member>
+        <member name="P:Microsoft.DotNet.Cli.CommandDefinitionStrings.SolutionAddReferencedProjectsOptionDescription">
+            <summary>Recursively add projects' ReferencedProjects to solution</summary>
+        </member>
+        <member name="P:Microsoft.DotNet.Cli.CommandDefinitionStrings.ToolExecuteCommandDescription">
+            <summary>Executes a tool from source without permanently installing it.</summary>
+        </member>
+        <member name="P:Microsoft.DotNet.Cli.CommandDefinitionStrings.PackCmdVersionDescription">
+            <summary>The version of the package to create</summary>
+        </member>
+        <member name="P:Microsoft.DotNet.Cli.CommandDefinitionStrings.PackCmdVersion">
+            <summary>VERSION</summary>
+        </member>
+        <member name="P:Microsoft.DotNet.Cli.CommandDefinitionStrings.CmdMinimumExpectedTestsDescription">
+            <summary>Specifies the minimum number of tests that are expected to run.</summary>
+        </member>
+        <member name="P:Microsoft.DotNet.Cli.CommandDefinitionStrings.Option_Output">
+            <summary>Location to place the generated output.</summary>
+        </member>
+        <member name="P:Microsoft.DotNet.Cli.CommandDefinitionStrings.Command_AliasAdd_Description">
+            <summary>Creates an alias for instantiate command with a certain set of arguments.</summary>
+        </member>
+        <member name="P:Microsoft.DotNet.Cli.CommandDefinitionStrings.Command_AliasShow_Description">
+            <summary>Displays defined aliases.</summary>
+        </member>
+        <member name="P:Microsoft.DotNet.Cli.CommandDefinitionStrings.Command_Alias_Description">
+            <summary>Creates or displays defined aliases.</summary>
+        </member>
+        <member name="P:Microsoft.DotNet.Cli.CommandDefinitionStrings.Command_Details_Description">
+            <summary>Provides the details for specified template package.
+                  The command checks if the package is installed locally, if it was not found, it searches the configured NuGet feeds.</summary>
+        </member>
+        <member name="P:Microsoft.DotNet.Cli.CommandDefinitionStrings.Command_Install_Argument_Package">
+            <summary>NuGet package ID or path to folder or NuGet package to install. 
+            To install the NuGet package of certain version, use &lt;package ID&gt;::&lt;version&gt;.</summary>
+        </member>
+        <member name="P:Microsoft.DotNet.Cli.CommandDefinitionStrings.Command_Install_Description">
+            <summary>Installs a template package.</summary>
+        </member>
+        <member name="P:Microsoft.DotNet.Cli.CommandDefinitionStrings.Command_Instantiate_Argument_ShortName">
+            <summary>A short name of the template to create.</summary>
+        </member>
+        <member name="P:Microsoft.DotNet.Cli.CommandDefinitionStrings.Command_Instantiate_Argument_TemplateOptions">
+            <summary>Template specific options to use.</summary>
+        </member>
+        <member name="P:Microsoft.DotNet.Cli.CommandDefinitionStrings.Command_Instantiate_Description">
+            <summary>Instantiates a template with given short name. An alias of 'dotnet new &lt;template name&gt;'.</summary>
+        </member>
+        <member name="P:Microsoft.DotNet.Cli.CommandDefinitionStrings.Command_Legacy_Update_Check_Description">
+            <summary>Checks the currently installed template packages for updates.</summary>
+        </member>
+        <member name="P:Microsoft.DotNet.Cli.CommandDefinitionStrings.Command_List_Argument_Name">
+            <summary>If specified, only the templates matching the name will be shown.</summary>
+        </member>
+        <member name="P:Microsoft.DotNet.Cli.CommandDefinitionStrings.Command_List_Description">
+            <summary>Lists templates containing the specified template name. If no name is specified, lists all templates.</summary>
+        </member>
+        <member name="P:Microsoft.DotNet.Cli.CommandDefinitionStrings.Command_New_Description">
+            <summary>Template Instantiation Commands for .NET CLI.</summary>
+        </member>
+        <member name="P:Microsoft.DotNet.Cli.CommandDefinitionStrings.Command_Search_Argument_Name">
+            <summary>If specified, only the templates matching the name will be shown.</summary>
+        </member>
+        <member name="P:Microsoft.DotNet.Cli.CommandDefinitionStrings.Command_Search_Description">
+            <summary>Searches for the templates on NuGet.org.</summary>
+        </member>
+        <member name="P:Microsoft.DotNet.Cli.CommandDefinitionStrings.Command_Uninstall_Argument_Package">
+            <summary>NuGet package ID (without version) or path to folder to uninstall. 
+            If command is specified without the argument, it lists all the template packages installed.</summary>
+        </member>
+        <member name="P:Microsoft.DotNet.Cli.CommandDefinitionStrings.Command_Uninstall_Description">
+            <summary>Uninstalls a template package.</summary>
+        </member>
+        <member name="P:Microsoft.DotNet.Cli.CommandDefinitionStrings.Command_Update_Description">
+            <summary>Checks the currently installed template packages for update, and install the updates.</summary>
+        </member>
+        <member name="P:Microsoft.DotNet.Cli.CommandDefinitionStrings.Command_Update_Option_CheckOnly">
+            <summary>Only checks for updates and display the template packages to be updated without applying update.</summary>
+        </member>
+        <member name="P:Microsoft.DotNet.Cli.CommandDefinitionStrings.ListCommand_Option_IgnoreConstraints">
+            <summary>Disables checking if the template meets the constraints to be run.</summary>
+        </member>
+        <member name="P:Microsoft.DotNet.Cli.CommandDefinitionStrings.Option_AddSource">
+            <summary>Specifies a NuGet source to use.</summary>
+        </member>
+        <member name="P:Microsoft.DotNet.Cli.CommandDefinitionStrings.Option_AuthorFilter">
+            <summary>Filters the templates based on the template author.</summary>
+        </member>
+        <member name="P:Microsoft.DotNet.Cli.CommandDefinitionStrings.Option_BaselineFilter">
+            <summary>Filters the templates based on baseline defined in the template.</summary>
+        </member>
+        <member name="P:Microsoft.DotNet.Cli.CommandDefinitionStrings.Option_Columns">
+            <summary>Specifies the columns to display in the output.</summary>
+        </member>
+        <member name="P:Microsoft.DotNet.Cli.CommandDefinitionStrings.Option_ColumnsAll">
+            <summary>Displays all columns in the output.</summary>
+        </member>
+        <member name="P:Microsoft.DotNet.Cli.CommandDefinitionStrings.Option_Debug_Attach">
+            <summary>Allows to pause execution in order to attach to the process for debug purposes.</summary>
+        </member>
+        <member name="P:Microsoft.DotNet.Cli.CommandDefinitionStrings.Option_Debug_CustomSettings">
+            <summary>Sets custom settings location.</summary>
+        </member>
+        <member name="P:Microsoft.DotNet.Cli.CommandDefinitionStrings.Option_Debug_RebuildCache">
+            <summary>If specified, removes the template cache prior to command execution.</summary>
+        </member>
+        <member name="P:Microsoft.DotNet.Cli.CommandDefinitionStrings.Option_Debug_Reinit">
+            <summary>If specified, resets the settings prior to command execution.</summary>
+        </member>
+        <member name="P:Microsoft.DotNet.Cli.CommandDefinitionStrings.Option_Debug_ShowConfig">
+            <summary>If specified, shows the template engine config prior to command execution.</summary>
+        </member>
+        <member name="P:Microsoft.DotNet.Cli.CommandDefinitionStrings.Option_Debug_VirtualSettings">
+            <summary>If specified, the settings will be not preserved on file system.</summary>
+        </member>
+        <member name="P:Microsoft.DotNet.Cli.CommandDefinitionStrings.Option_Install_Force">
+            <summary>Allows installing template packages from the specified sources even if they would override a template package from another source.</summary>
+        </member>
+        <member name="P:Microsoft.DotNet.Cli.CommandDefinitionStrings.Option_Interactive">
+            <summary>Allows the command to stop and wait for user input or action (for example to complete authentication).</summary>
+        </member>
+        <member name="P:Microsoft.DotNet.Cli.CommandDefinitionStrings.Option_LanguageFilter">
+            <summary>Filters templates based on language.</summary>
+        </member>
+        <member name="P:Microsoft.DotNet.Cli.CommandDefinitionStrings.Option_PackageFilter">
+            <summary>Filters the templates based on NuGet package ID.</summary>
+        </member>
+        <member name="P:Microsoft.DotNet.Cli.CommandDefinitionStrings.Option_ProjectPath">
+            <summary>The project that should be used for context evaluation.</summary>
+        </member>
+        <member name="P:Microsoft.DotNet.Cli.CommandDefinitionStrings.Option_TagFilter">
+            <summary>Filters the templates based on the tag.</summary>
+        </member>
+        <member name="P:Microsoft.DotNet.Cli.CommandDefinitionStrings.Option_TypeFilter">
+            <summary>Filters templates based on available types. Predefined values are "project" and "item".</summary>
+        </member>
+        <member name="P:Microsoft.DotNet.Cli.CommandDefinitionStrings.TemplateCommand_Option_DryRun">
+            <summary>Displays a summary of what would happen if the given command line were run if it would result in a template creation.</summary>
+        </member>
+        <member name="P:Microsoft.DotNet.Cli.CommandDefinitionStrings.TemplateCommand_Option_Force">
+            <summary>Forces content to be generated even if it would change existing files.</summary>
+        </member>
+        <member name="P:Microsoft.DotNet.Cli.CommandDefinitionStrings.TemplateCommand_Option_Name">
+            <summary>The name for the output being created. If no name is specified, the name of the output directory is used.</summary>
+        </member>
+        <member name="P:Microsoft.DotNet.Cli.CommandDefinitionStrings.TemplateCommand_Option_NoUpdateCheck">
+            <summary>Disables checking for the template package updates when instantiating a template.</summary>
+        </member>
+        <member name="P:Microsoft.DotNet.Cli.CommandDefinitionStrings.Commands_Validator_WrongTokens">
+            <summary>Unrecognized command or argument(s): {0}.</summary>
+        </member>
+        <member name="P:Microsoft.DotNet.Cli.CommandDefinitionStrings.DetailsCommand_Argument_PackageIdentifier">
+            <summary>Package identifier</summary>
+        </member>
+        <member name="P:Microsoft.DotNet.Cli.CommandDefinitionStrings.DisableSdkTemplates_OptionDescription">
+            <summary>If present, prevents templates bundled in the SDK from being presented.</summary>
+        </member>
+        <member name="P:Microsoft.DotNet.Cli.CommandDefinitionStrings.DisableProjectContextEval_OptionDescription">
+            <summary>Disables evaluating project context using MSBuild.</summary>
+        </member>
+        <member name="P:Microsoft.DotNet.Cli.CommandDefinitionStrings.Verbosity_OptionDescription">
+            <summary>Sets the verbosity level. Allowed values are q[uiet], m[inimal], n[ormal], and diag[nostic].</summary>
+        </member>
+        <member name="P:Microsoft.DotNet.Cli.CommandDefinitionStrings.Diagnostics_OptionDescription">
+            <summary>Enables diagnostic output.</summary>
+        </member>
+        <member name="P:Microsoft.DotNet.Cli.CommandDefinitionStrings.SDKSchemaCommandDefinition">
+            <summary>Display the command schema as JSON.</summary>
+        </member>
+    </members>
+</doc>

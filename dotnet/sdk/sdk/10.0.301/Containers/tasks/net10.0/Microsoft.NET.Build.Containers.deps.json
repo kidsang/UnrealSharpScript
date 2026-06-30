@@ -1,0 +1,136 @@
+{
+  "runtimeTarget": {
+    "name": ".NETCoreApp,Version=v10.0",
+    "signature": ""
+  },
+  "compilationOptions": {},
+  "targets": {
+    ".NETCoreApp,Version=v10.0": {
+      "Microsoft.NET.Build.Containers/10.0.301-servicing.26270.133": {
+        "dependencies": {
+          "Microsoft.Extensions.Logging": "10.0.9",
+          "Microsoft.Extensions.Logging.MSBuild": "10.0.301-servicing.26270.133",
+          "Valleysoft.DockerCredsProvider": "2.2.4"
+        },
+        "runtime": {
+          "Microsoft.NET.Build.Containers.dll": {}
+        },
+        "resources": {
+          "cs/Microsoft.NET.Build.Containers.resources.dll": {
+            "locale": "cs"
+          },
+          "de/Microsoft.NET.Build.Containers.resources.dll": {
+            "locale": "de"
+          },
+          "es/Microsoft.NET.Build.Containers.resources.dll": {
+            "locale": "es"
+          },
+          "fr/Microsoft.NET.Build.Containers.resources.dll": {
+            "locale": "fr"
+          },
+          "it/Microsoft.NET.Build.Containers.resources.dll": {
+            "locale": "it"
+          },
+          "ja/Microsoft.NET.Build.Containers.resources.dll": {
+            "locale": "ja"
+          },
+          "ko/Microsoft.NET.Build.Containers.resources.dll": {
+            "locale": "ko"
+          },
+          "pl/Microsoft.NET.Build.Containers.resources.dll": {
+            "locale": "pl"
+          },
+          "pt-BR/Microsoft.NET.Build.Containers.resources.dll": {
+            "locale": "pt-BR"
+          },
+          "ru/Microsoft.NET.Build.Containers.resources.dll": {
+            "locale": "ru"
+          },
+          "tr/Microsoft.NET.Build.Containers.resources.dll": {
+            "locale": "tr"
+          },
+          "zh-Hans/Microsoft.NET.Build.Containers.resources.dll": {
+            "locale": "zh-Hans"
+          },
+          "zh-Hant/Microsoft.NET.Build.Containers.resources.dll": {
+            "locale": "zh-Hant"
+          }
+        }
+      },
+      "Microsoft.Extensions.DependencyInjection.Abstractions/10.0.9": {
+        "runtime": {
+          "lib/net10.0/Microsoft.Extensions.DependencyInjection.Abstractions.dll": {
+            "assemblyVersion": "10.0.0.0",
+            "fileVersion": "10.0.926.27113"
+          }
+        }
+      },
+      "Microsoft.Extensions.Logging/10.0.9": {
+        "dependencies": {
+          "Microsoft.Extensions.Options": "10.0.9"
+        }
+      },
+      "Microsoft.Extensions.Options/10.0.9": {
+        "dependencies": {
+          "Microsoft.Extensions.DependencyInjection.Abstractions": "10.0.9"
+        }
+      },
+      "Valleysoft.DockerCredsProvider/2.2.4": {
+        "runtime": {
+          "lib/net6.0/Valleysoft.DockerCredsProvider.dll": {
+            "assemblyVersion": "2.2.4.0",
+            "fileVersion": "2.2.4.0"
+          }
+        }
+      },
+      "Microsoft.Extensions.Logging.MSBuild/10.0.301-servicing.26270.133": {
+        "runtime": {
+          "Microsoft.Extensions.Logging.MSBuild.dll": {
+            "assemblyVersion": "10.0.301.0",
+            "fileVersion": "10.3.126.27133"
+          }
+        }
+      }
+    }
+  },
+  "libraries": {
+    "Microsoft.NET.Build.Containers/10.0.301-servicing.26270.133": {
+      "type": "project",
+      "serviceable": false,
+      "sha512": ""
+    },
+    "Microsoft.Extensions.DependencyInjection.Abstractions/10.0.9": {
+      "type": "package",
+      "serviceable": true,
+      "sha512": "sha512-g41l/30G3K4B/d/L8kjux0+30e27c8D0FVQ/PFCpbekgfDpj9mnDhieP67EqXWvl1EWNeZh2rpR4F5B/jcDOHA==",
+      "path": "microsoft.extensions.dependencyinjection.abstractions/10.0.9",
+      "hashPath": "microsoft.extensions.dependencyinjection.abstractions.10.0.9.nupkg.sha512"
+    },
+    "Microsoft.Extensions.Logging/10.0.9": {
+      "type": "package",
+      "serviceable": true,
+      "sha512": "sha512-N7Gm9SjugYjmmnhwbBKC9DFqGqjfJvh6YfOJgtwh0AW0Xpok3dIVors1ik050XmUxKAgAc7nNngDIJyFb06K2g==",
+      "path": "microsoft.extensions.logging/10.0.9",
+      "hashPath": "microsoft.extensions.logging.10.0.9.nupkg.sha512"
+    },
+    "Microsoft.Extensions.Options/10.0.9": {
+      "type": "package",
+      "serviceable": true,
+      "sha512": "sha512-hyNdX4c2UwkRkzb9byw0H2DQkRzwBM3mzY2sCM9egwzTyg8dvQJmp5noQHGEaaCORQrNK3DD2gREBsc2DlXS4A==",
+      "path": "microsoft.extensions.options/10.0.9",
+      "hashPath": "microsoft.extensions.options.10.0.9.nupkg.sha512"
+    },
+    "Valleysoft.DockerCredsProvider/2.2.4": {
+      "type": "package",
+      "serviceable": true,
+      "sha512": "sha512-i7xjNi5ZbujeevFAvT/yKmf4uegF2+N0xfbAB6JCFGr4KedTEUysUQb9QZIaPAkZHeEbuzrsRvflwHlU7QWSeg==",
+      "path": "valleysoft.dockercredsprovider/2.2.4",
+      "hashPath": "valleysoft.dockercredsprovider.2.2.4.nupkg.sha512"
+    },
+    "Microsoft.Extensions.Logging.MSBuild/10.0.301-servicing.26270.133": {
+      "type": "project",
+      "serviceable": false,
+      "sha512": ""
+    }
+  }
+}

@@ -1,0 +1,250 @@
+<?xml version="1.0"?>
+<doc>
+    <assembly>
+        <name>System.CommandLine.StaticCompletions</name>
+    </assembly>
+    <members>
+        <member name="T:System.CommandLine.StaticCompletions.DynamicSymbolExtensions">
+            <summary>
+            Extensions for marking options or arguments require dynamic completions. Such symbols get special handling
+            in the static completion generation logic.
+            </summary>
+        </member>
+        <member name="F:System.CommandLine.StaticCompletions.DynamicSymbolExtensions.s_dynamicSymbols">
+            <summary>
+            The state that is used to track which symbols are dynamic.
+            </summary>
+        </member>
+        <member name="M:System.CommandLine.StaticCompletions.DynamicSymbolExtensions.get_IsDynamic(System.CommandLine.Option)">
+            <inheritdoc cref="P:System.CommandLine.StaticCompletions.DynamicSymbolExtensions.&lt;G&gt;$DE4EB4D8733D1A3F9A8FA6DE7798F807.IsDynamic"/>
+        </member>
+        <member name="M:System.CommandLine.StaticCompletions.DynamicSymbolExtensions.set_IsDynamic(System.CommandLine.Option,System.Boolean)">
+            <inheritdoc cref="P:System.CommandLine.StaticCompletions.DynamicSymbolExtensions.&lt;G&gt;$DE4EB4D8733D1A3F9A8FA6DE7798F807.IsDynamic"/>
+        </member>
+        <member name="M:System.CommandLine.StaticCompletions.DynamicSymbolExtensions.get_IsDynamic(System.CommandLine.Argument)">
+            <inheritdoc cref="P:System.CommandLine.StaticCompletions.DynamicSymbolExtensions.&lt;G&gt;$4FB9B7C794CE5BAF3947ABB2BD108516.IsDynamic"/>
+        </member>
+        <member name="M:System.CommandLine.StaticCompletions.DynamicSymbolExtensions.set_IsDynamic(System.CommandLine.Argument,System.Boolean)">
+            <inheritdoc cref="P:System.CommandLine.StaticCompletions.DynamicSymbolExtensions.&lt;G&gt;$4FB9B7C794CE5BAF3947ABB2BD108516.IsDynamic"/>
+        </member>
+        <member name="P:System.CommandLine.StaticCompletions.DynamicSymbolExtensions.&lt;G&gt;$DE4EB4D8733D1A3F9A8FA6DE7798F807.IsDynamic">
+            <summary>
+            Indicates whether this option requires a dynamic call into the dotnet process to compute completions.
+            </summary>
+        </member>
+        <member name="P:System.CommandLine.StaticCompletions.DynamicSymbolExtensions.&lt;G&gt;$4FB9B7C794CE5BAF3947ABB2BD108516.IsDynamic">
+            <summary>
+            Indicates whether this argument requires a dynamic call into the dotnet process to compute completions.
+            </summary>
+        </member>
+        <member name="M:System.CommandLine.StaticCompletions.HelpExtensions.FunctionName(System.CommandLine.Command,System.String[])">
+            <summary>
+            Create a unique shell function name for a command - these names should be
+            * distinct from the 'root' command's name (i.e. we should not generate the function name 'dotnet' for the binary 'dotnet')
+            * distinct based on 'path' to get to this function (hence the parentCommandNames)
+            </summary>
+            <param name="command"></param>
+            <param name="parentCommandNames">The chain of commands to get to this command</param>
+            <returns></returns>
+        </member>
+        <member name="M:System.CommandLine.StaticCompletions.HelpExtensions.MakeSafeFunctionName(System.String)">
+            <summary>
+            Sanitizes a function name to be safe for bash
+            </summary>
+            <param name="functionName"></param>
+            <returns></returns>
+        </member>
+        <member name="M:System.CommandLine.StaticCompletions.HelpExtensions.Names(System.CommandLine.Option)">
+            <summary>
+            Get all names for an option, including the primary name and all aliases
+            </summary>
+            <param name="option"></param>
+            <returns></returns>
+        </member>
+        <member name="M:System.CommandLine.StaticCompletions.HelpExtensions.Names(System.CommandLine.Command)">
+            <summary>
+            Get all names for a command, including the primary name and all aliases
+            </summary>
+            <param name="command"></param>
+            <returns></returns>
+        </member>
+        <member name="M:System.CommandLine.StaticCompletions.Shells.BashShellProvider.GenerateDynamicCall">
+            <summary>
+            Generates a call to <code>dotnet complete &lt;string&gt; --position &lt;int&gt;</code> for dynamic completions where necessary, but in a more generic way
+            </summary>
+            <returns></returns>
+            <remarks>TODO: this is currently bound to the .NET CLI's 'dotnet complete' command - this should be definable/injectable per-host instead.</remarks>
+        </member>
+        <member name="M:System.CommandLine.StaticCompletions.Shells.BashShellProvider.GenerateChoicesPrompt(System.String)">
+            <summary>
+            Emit a bash command that calls compgen with a set of choices given the current work/stem, and sets those choices to COMPREPLY.
+            Think of this like a 'return' from a function.
+            </summary>
+            <param name="choicesInvocation">The expression used to generate the set of choices - will be passed to compgen with the -W flag, so should be either
+            * a concrete set of choices in a bash array already ($opts), or
+            * a subprocess that will return such an array (aka '(dotnet complete --position 10 'dotnet ad')') </param>
+            <returns></returns>
+        </member>
+        <member name="M:System.CommandLine.StaticCompletions.Shells.BashShellProvider.GenerateOptionHandler(System.CommandLine.Option)">
+            <summary>
+            Generates a concrete set of bash completion selection for a given option.
+            If the option's completions are dynamic, this will emit a call to the dynamic completion function (dotnet complete)
+            to get completions when the user requests completions for this option.
+            </summary>
+            <param name="option"></param>
+            <returns>a bash switch case expression for providing completions for this option</returns>
+        </member>
+        <member name="M:System.CommandLine.StaticCompletions.Shells.FishShellProvider.CollectStates(System.CommandLine.Command,System.Collections.Generic.List{System.ValueTuple{System.Int32,System.CommandLine.Command}})">
+            <summary>
+            Recursively collect all visible commands into a flat list with numeric state IDs.
+            State 0 is the root command.
+            </summary>
+        </member>
+        <member name="M:System.CommandLine.StaticCompletions.Shells.FishShellProvider.WriteTokenization(System.CodeDom.Compiler.IndentedTextWriter)">
+            <summary>
+            Write the command line tokenization logic.
+            Uses fish's commandline builtin to get completed tokens up to the cursor.
+            </summary>
+        </member>
+        <member name="M:System.CommandLine.StaticCompletions.Shells.FishShellProvider.WriteStateWalker(System.CodeDom.Compiler.IndentedTextWriter,System.Collections.Generic.List{System.ValueTuple{System.Int32,System.CommandLine.Command}},System.Collections.Generic.Dictionary{System.CommandLine.Command,System.Int32})">
+            <summary>
+            Generate the state machine that walks completed tokens to determine which subcommand context we're in.
+            For each state, we check if the current word matches a known subcommand (transitioning to that subcommand's state)
+            or a value-taking option (skipping tokens for the option's value(s), respecting the option's arity).
+            </summary>
+        </member>
+        <member name="M:System.CommandLine.StaticCompletions.Shells.FishShellProvider.WriteMultiValueSkipLoop(System.CodeDom.Compiler.IndentedTextWriter,System.Int32)">
+            <summary>
+            Emit a fish loop that skips value tokens after a multi-value option.
+            Stops when it has consumed maxValues tokens, or encounters a token starting with '-',
+            whichever comes first. For unbounded arities, only the '-' check applies.
+            </summary>
+        </member>
+        <member name="M:System.CommandLine.StaticCompletions.Shells.FishShellProvider.WriteOptionValueCompletions(System.CodeDom.Compiler.IndentedTextWriter,System.Collections.Generic.List{System.ValueTuple{System.Int32,System.CommandLine.Command}})">
+            <summary>
+            Generate option value completions.
+            Scans backward through completed tokens to find the nearest option, then checks whether
+            we're still within that option's arity. This correctly handles both single-value and
+            multi-value options (e.g. <c>--sources foo bar</c> with arity 3 still offers completions
+            for the third value).
+            </summary>
+        </member>
+        <member name="M:System.CommandLine.StaticCompletions.Shells.FishShellProvider.WriteStateCompletions(System.CodeDom.Compiler.IndentedTextWriter,System.Collections.Generic.List{System.ValueTuple{System.Int32,System.CommandLine.Command}})">
+            <summary>
+            Generate the main completion output for each state.
+            Emits subcommands, options, and positional argument completions for the current context.
+            </summary>
+        </member>
+        <member name="M:System.CommandLine.StaticCompletions.Shells.FishShellProvider.WriteCompletionCandidate(System.CodeDom.Compiler.IndentedTextWriter,System.CommandLine.Completions.CompletionItem)">
+            <summary>
+            Write a single completion candidate line with an optional description.
+            Fish uses tab-separated format: candidate\tdescription
+            </summary>
+        </member>
+        <member name="M:System.CommandLine.StaticCompletions.Shells.FishShellProvider.GenerateDynamicCall">
+            <summary>
+            Generate a dynamic completion call that invokes the binary's 'complete' subcommand.
+            Uses the actual command from the command line ($tokens[1]) so it works regardless of how the binary was invoked.
+            </summary>
+            <remarks>TODO: this is currently bound to the .NET CLI's 'complete' command pattern - this should be definable/injectable per-host instead.</remarks>
+        </member>
+        <member name="M:System.CommandLine.StaticCompletions.Shells.FishShellProvider.FishEscape(System.String)">
+            <summary>
+            Escape a string for use in a fish single-quoted string.
+            Fish single-quoted strings support \' and \\ as escape sequences.
+            </summary>
+        </member>
+        <member name="M:System.CommandLine.StaticCompletions.Shells.PowerShellShellProvider.GenerateOptionNameCompletions(System.CommandLine.Option)">
+            <summary>
+            Generations completion-list items for the names of the given option. Typically used by commands/subcommands for static lookup lists.
+            </summary>
+            <param name="o"></param>
+            <returns></returns>
+        </member>
+        <member name="M:System.CommandLine.StaticCompletions.Shells.PowerShellShellProvider.GenerateArgumentCompletions(System.CommandLine.Argument)">
+            <summary>
+            Generate completions for the statically-known arguments
+            </summary>
+            <param name="argument"></param>
+            <returns></returns>
+        </member>
+        <member name="M:System.CommandLine.StaticCompletions.Shells.PowerShellShellProvider.GenerateSubcommandCompletions(System.String[],System.CodeDom.Compiler.IndentedTextWriter,System.CommandLine.Command)">
+            <summary>
+            Generate completions for the subcommands of a given command. Each subcommand generates a list of switches for the staticly-known flags and arguments.
+            </summary>
+            <param name="parentCommandNames"></param>
+            <param name="writer"></param>
+            <param name="command"></param>
+            <remarks>Dynamically-generated completions are not yet supported</remarks>
+        </member>
+        <member name="M:System.CommandLine.StaticCompletions.Shells.PowerShellShellProvider.GenerateStaticCompletionsForCommand(System.String[],System.CommandLine.Command,System.CodeDom.Compiler.IndentedTextWriter)">
+            <summary>
+            Generate completions for the statically-known options, arguments, and subcommands of a given command.
+            </summary>
+        </member>
+        <member name="M:System.CommandLine.StaticCompletions.Shells.PowerShellShellProvider.GenerateDynamicCompletionsCall(System.CodeDom.Compiler.IndentedTextWriter)">
+            <summary>
+            Generate a call into `dotnet complete` for dynamic argument completions, then binds the returned values as CompletionResults.
+            </summary>
+            <remarks>TODO: this is currently bound to the .NET CLI's 'dotnet complete' command - this should be definable/injectable per-host instead.</remarks>
+        </member>
+        <member name="T:System.CommandLine.StaticCompletions.Shells.IShellProvider">
+            <summary>
+            Provides and manages completions scripts for a specific shell.
+            </summary>
+        </member>
+        <member name="P:System.CommandLine.StaticCompletions.Shells.IShellProvider.ArgumentName">
+            <summary>
+            The name of this shell as exposed on the completion command line arguments.
+            </summary>
+        </member>
+        <member name="P:System.CommandLine.StaticCompletions.Shells.IShellProvider.Extension">
+            <summary>
+            The file extension typically used for this shell's completions scripts (sans period).
+            </summary>
+        </member>
+        <member name="P:System.CommandLine.StaticCompletions.Shells.IShellProvider.HelpDescription">
+            <summary>
+            This will be used when specifying the shell in CLI completions and help text. Use it to provide any specific details about the shell.
+            For example, the PowershellShellProvider will clarify that it only works for PowerShell Core.
+            </summary>
+        </member>
+        <member name="M:System.CommandLine.StaticCompletions.Shells.IShellProvider.GenerateCompletions(System.CommandLine.Command)">
+            <summary>
+            Generates a shell-specific completions script for the given command tree.
+            </summary>
+            <param name="command"></param>
+            <returns></returns>
+        </member>
+        <member name="P:System.CommandLine.StaticCompletions.Resources.Strings.CompletionsCommand_Description">
+            <summary>Commands for generating and registering completions for supported shells</summary>
+        </member>
+        <member name="P:System.CommandLine.StaticCompletions.Resources.Strings.CompletionsCommand_ShellArgument_Description">
+            <summary>The shell for which to generate or register completions</summary>
+        </member>
+        <member name="P:System.CommandLine.StaticCompletions.Resources.Strings.ShellDiscovery_ShellEnvironmentNotSet">
+            <summary>Could not determine the shell from the environment - the SHELL environment variable was not set.</summary>
+        </member>
+        <member name="P:System.CommandLine.StaticCompletions.Resources.Strings.ShellDiscovery_ShellNotSupported">
+            <summary>The shell application '{0}' is not supported. The following shells are supported by this application: {1}</summary>
+        </member>
+        <member name="P:System.CommandLine.StaticCompletions.Resources.Strings.GenerateCommand_Description">
+            <summary>Generate the completion script for a supported shell</summary>
+        </member>
+        <member name="P:System.CommandLine.StaticCompletions.Resources.Strings.BashShellProvider_HelpDescription">
+            <summary>Generates a completion script for the Bourne Again SHell (bash).</summary>
+        </member>
+        <member name="P:System.CommandLine.StaticCompletions.Resources.Strings.PowershellShellProvider_HelpDescription">
+            <summary>Generates a completion script for PowerShell Core. These scripts will not work on Windows PowerShell.</summary>
+        </member>
+        <member name="P:System.CommandLine.StaticCompletions.Resources.Strings.FishShellProvider_HelpDescription">
+            <summary>Generates a completion script for the Fish shell.</summary>
+        </member>
+        <member name="P:System.CommandLine.StaticCompletions.Resources.Strings.ZshShellProvider_HelpDescription">
+            <summary>Generates a completion script for the Zsh shell.</summary>
+        </member>
+        <member name="P:System.CommandLine.StaticCompletions.Resources.Strings.NuShellShellProvider_HelpDescription">
+            <summary>Generates a completion script for the NuShell shell.</summary>
+        </member>
+    </members>
+</doc>

@@ -1,0 +1,82 @@
+{
+  "runtimeTarget": {
+    "name": ".NETCoreApp,Version=v10.0",
+    "signature": ""
+  },
+  "compilationOptions": {},
+  "targets": {
+    ".NETCoreApp,Version=v10.0": {
+      "Microsoft.NET.Sdk.StaticWebAssets.Tool/10.0.301-servicing.26270.133": {
+        "dependencies": {
+          "System.CommandLine": "2.0.9"
+        },
+        "runtime": {
+          "Microsoft.NET.Sdk.StaticWebAssets.Tool.dll": {}
+        }
+      },
+      "System.CommandLine/2.0.9": {
+        "runtime": {
+          "lib/net8.0/System.CommandLine.dll": {
+            "assemblyVersion": "2.0.9.0",
+            "fileVersion": "2.0.926.27113"
+          }
+        },
+        "resources": {
+          "lib/net8.0/cs/System.CommandLine.resources.dll": {
+            "locale": "cs"
+          },
+          "lib/net8.0/de/System.CommandLine.resources.dll": {
+            "locale": "de"
+          },
+          "lib/net8.0/es/System.CommandLine.resources.dll": {
+            "locale": "es"
+          },
+          "lib/net8.0/fr/System.CommandLine.resources.dll": {
+            "locale": "fr"
+          },
+          "lib/net8.0/it/System.CommandLine.resources.dll": {
+            "locale": "it"
+          },
+          "lib/net8.0/ja/System.CommandLine.resources.dll": {
+            "locale": "ja"
+          },
+          "lib/net8.0/ko/System.CommandLine.resources.dll": {
+            "locale": "ko"
+          },
+          "lib/net8.0/pl/System.CommandLine.resources.dll": {
+            "locale": "pl"
+          },
+          "lib/net8.0/pt-BR/System.CommandLine.resources.dll": {
+            "locale": "pt-BR"
+          },
+          "lib/net8.0/ru/System.CommandLine.resources.dll": {
+            "locale": "ru"
+          },
+          "lib/net8.0/tr/System.CommandLine.resources.dll": {
+            "locale": "tr"
+          },
+          "lib/net8.0/zh-Hans/System.CommandLine.resources.dll": {
+            "locale": "zh-Hans"
+          },
+          "lib/net8.0/zh-Hant/System.CommandLine.resources.dll": {
+            "locale": "zh-Hant"
+          }
+        }
+      }
+    }
+  },
+  "libraries": {
+    "Microsoft.NET.Sdk.StaticWebAssets.Tool/10.0.301-servicing.26270.133": {
+      "type": "project",
+      "serviceable": false,
+      "sha512": ""
+    },
+    "System.CommandLine/2.0.9": {
+      "type": "package",
+      "serviceable": true,
+      "sha512": "sha512-SW0WhEk4NFVZ4lOnsLrHQOV/7s0eTidezNybHQWXfqhuXWB17X3RXbrifeWBbUx1iu+NcYchVSufmW7svjUEnA==",
+      "path": "system.commandline/2.0.9",
+      "hashPath": "system.commandline.2.0.9.nupkg.sha512"
+    }
+  }
+}

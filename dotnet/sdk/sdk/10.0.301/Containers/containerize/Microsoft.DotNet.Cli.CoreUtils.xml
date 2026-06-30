@@ -1,0 +1,32 @@
+<?xml version="1.0"?>
+<doc>
+    <assembly>
+        <name>Microsoft.DotNet.Cli.CoreUtils</name>
+    </assembly>
+    <members>
+        <member name="P:Microsoft.DotNet.Cli.Utils.DotnetFiles.VersionFile">
+            <summary>
+            The SDK ships with a .version file that stores the commit information and SDK version
+            </summary>
+        </member>
+        <member name="P:Microsoft.DotNet.Cli.Utils.DotnetVersionFile.BuildRid">
+            <summary>
+            The runtime identifier (rid) that this CLI was built for.
+            </summary>
+            <remarks>
+            This is different than RuntimeInformation.RuntimeIdentifier because the
+            BuildRid is a RID that is guaranteed to exist and works on the current machine. The
+            RuntimeInformation.RuntimeIdentifier may be for a new version of the OS that
+            doesn't have full support yet.
+            </remarks>
+        </member>
+        <member name="T:Microsoft.DotNet.Cli.Utils.VerbosityOptions">
+            <summary>
+            Represents the desired verbosity level for command output.
+            Maps mostly to MSBuild's verbosity levels.
+            The odd naming is because we're currently leaning entirely on System.CommandLine's
+            default enum parsing.
+            </summary>
+        </member>
+    </members>
+</doc>

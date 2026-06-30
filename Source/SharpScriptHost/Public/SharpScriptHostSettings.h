@@ -53,7 +53,7 @@ private:
 	static TArray<FString> GetListOfRuntimeVersions()
 	{
 		return {
-			FString(TEXT("9.0.4")),
+			FString(TEXT("10.0.9")),
 		};
 	}
 };

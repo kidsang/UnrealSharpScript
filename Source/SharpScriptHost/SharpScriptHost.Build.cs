@@ -42,11 +42,19 @@ public class SharpScriptHost : ModuleRules
 	private void SetupWindowsLibraries()
 	{
 		AddRuntimeDependencies(Path.Combine(PluginDirectory, "dotnet", "runtime", "coreclr-win-x64"), "dll");
+
+		// Mono runtime is no longer bundled: .NET 10 does not ship a standalone Mono runtime package.
+		// Only add it as a runtime dependency if a Mono build happens to be present.
 		AddRuntimeDependencies(Path.Combine(PluginDirectory, "dotnet", "runtime", "mono-win-x64"), "dll");
 	}
 
 	private void AddRuntimeDependencies(string rootDir, string ext)
 	{
+		if (!Directory.Exists(rootDir))
+		{
+			return;
+		}
+
 		string[] files = Directory.GetFiles(rootDir, $"*.{ext}", SearchOption.AllDirectories);
 		foreach (string file in files)
 		{
