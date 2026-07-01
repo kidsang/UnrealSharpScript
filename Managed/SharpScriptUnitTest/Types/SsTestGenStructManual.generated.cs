@@ -54,88 +54,88 @@ public class FSsTestGenStructManualNativeRef(IntPtr nativePtr)
 			new()
 			{
 				PropName = "Bool",
-				PropType = UBoolProperty.StaticClass.NativeClass
+				PropType = UBoolProperty.StaticClass.NativeClass,
 			},
 			new()
 			{
 				PropName = "Int",
-				PropType = UIntProperty.StaticClass.NativeClass
+				PropType = UIntProperty.StaticClass.NativeClass,
 			},
 			new()
 			{
 				PropName = "Float",
-				PropType = UDoubleProperty.StaticClass.NativeClass
+				PropType = UDoubleProperty.StaticClass.NativeClass,
 			},
 			new()
 			{
 				PropName = "String",
-				PropType = UStrProperty.StaticClass.NativeClass
+				PropType = UStrProperty.StaticClass.NativeClass,
 			},
 			new()
 			{
 				PropName = "Name",
-				PropType = UNameProperty.StaticClass.NativeClass
+				PropType = UNameProperty.StaticClass.NativeClass,
 			},
 			new()
 			{
 				PropName = "Text",
-				PropType = UTextProperty.StaticClass.NativeClass
+				PropType = UTextProperty.StaticClass.NativeClass,
 			},
 			new()
 			{
 				PropName = "StringArray",
 				PropType = UArrayProperty.StaticClass.NativeClass,
-				InnerPropType = UStrProperty.StaticClass.NativeClass
+				InnerPropType = UStrProperty.StaticClass.NativeClass,
 			},
 			new()
 			{
 				PropName = "StringSet",
 				PropType = USetProperty.StaticClass.NativeClass,
-				InnerPropType = UStrProperty.StaticClass.NativeClass
+				InnerPropType = UStrProperty.StaticClass.NativeClass,
 			},
 			new()
 			{
 				PropName = "StringIntMap",
 				PropType = UMapProperty.StaticClass.NativeClass,
 				InnerPropType = UIntProperty.StaticClass.NativeClass,
-				KeyPropType = UStrProperty.StaticClass.NativeClass
+				KeyPropType = UStrProperty.StaticClass.NativeClass,
 			},
 			new()
 			{
 				PropName = "Struct",
 				PropType = UStructProperty.StaticClass.NativeClass,
-				UnderlyingType = FSsArrayTestInnerGenStructManualNativeRef.NativeType
+				UnderlyingType = FSsArrayTestInnerGenStructManualNativeRef.NativeType,
 			},
 			new()
 			{
 				PropName = "Object",
 				PropType = UObjectProperty.StaticClass.NativeClass,
-				UnderlyingType = UObject.StaticClass.NativeClass
+				UnderlyingType = UObject.StaticClass.NativeClass,
 			},
 			new()
 			{
 				PropName = "SoftObjectPtr",
 				PropType = USoftObjectProperty.StaticClass.NativeClass,
-				UnderlyingType = UObject.StaticClass.NativeClass
+				UnderlyingType = UObject.StaticClass.NativeClass,
 			},
 			new()
 			{
 				PropName = "LazyObjectPtr",
 				PropType = ULazyObjectProperty.StaticClass.NativeClass,
-				UnderlyingType = UObject.StaticClass.NativeClass
+				UnderlyingType = UObject.StaticClass.NativeClass,
 			},
 			new()
 			{
 				PropName = "Class",
 				PropType = UClassProperty.StaticClass.NativeClass,
-				UnderlyingType = UObject.StaticClass.NativeClass
+				UnderlyingType = UObject.StaticClass.NativeClass,
 			},
 			new()
 			{
 				PropName = "SoftClassPtr",
 				PropType = USoftClassProperty.StaticClass.NativeClass,
-				UnderlyingType = UObject.StaticClass.NativeClass
-			}
+				UnderlyingType = UObject.StaticClass.NativeClass,
+			},
 		];
 
 		unsafe
@@ -241,13 +241,13 @@ public class FSsTestGenStructManualNativeRef(IntPtr nativePtr)
 
 	private TSet<string>? _stringSet;
 
-	public TSet<string> StringSet =>
-		_stringSet ??= new(nativePtr + StringSet_Offset, StringSet_NativeProp, StringMarshaller.Instance);
+	public TSet<string> StringSet => _stringSet ??=
+		new(nativePtr + StringSet_Offset, StringSet_NativeProp, StringMarshaller.Instance);
 
 	private TMap<string, int>? _stringIntMap;
 
-	public TMap<string, int> StringIntMap => _stringIntMap ??= new(nativePtr + StringIntMap_Offset,
-		StringIntMap_NativeProp, StringMarshaller.Instance, BlittableMarshaller<int>.Instance);
+	public TMap<string, int> StringIntMap => _stringIntMap ??=
+		new(nativePtr + StringIntMap_Offset, StringIntMap_NativeProp, StringMarshaller.Instance, BlittableMarshaller<int>.Instance);
 
 	private FSsArrayTestInnerGenStructManualNativeRef? _struct;
 
