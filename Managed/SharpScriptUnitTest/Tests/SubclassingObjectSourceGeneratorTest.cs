@@ -39,8 +39,7 @@ public class SubclassingObjectSourceGeneratorTest : IUnitTestInterface
 		Utils.Assert(!obj.Bool);
 		Utils.Assert(obj.Int == 0);
 		Utils.Assert(obj.Float == 0);
-		// Utils.Assert(obj.Enum == 0);
-		// Utils.Assert(obj.LongEnum == 0);
+		Utils.Assert(obj.Enum == 0);
 		Utils.Assert(obj.String == string.Empty);
 		Utils.Assert(obj.Name == FName.None);
 		Utils.Assert(obj.Text == string.Empty);
@@ -62,10 +61,8 @@ public class SubclassingObjectSourceGeneratorTest : IUnitTestInterface
 		obj.Float = 2;
 		// ReSharper disable once CompareOfFloatsByEqualityOperator
 		Utils.Assert(obj.Float == 2);
-		// obj.Enum = ESsBindingTestEnum.Two;
-		// Utils.Assert(obj.Enum == ESsBindingTestEnum.Two);
-		// obj.LongEnum = ESsBindingTestLongEnum.Two;
-		// Utils.Assert(obj.LongEnum == ESsBindingTestLongEnum.Two);
+		obj.Enum = ESsTestGenEnumSourceGenerator.Two;
+		Utils.Assert(obj.Enum == ESsTestGenEnumSourceGenerator.Two);
 		obj.String = "String";
 		Utils.Assert(obj.String == "String");
 		obj.Name = "Name";
@@ -108,8 +105,7 @@ public class SubclassingObjectSourceGeneratorTest : IUnitTestInterface
 		Utils.Assert(!obj.Struct.Bool);
 		Utils.Assert(obj.Struct.Int == 0);
 		Utils.Assert(obj.Struct.Float == 0);
-		// Utils.Assert(obj.Struct.Enum == 0);
-		// Utils.Assert(obj.Struct.LongEnum == 0);
+		Utils.Assert(obj.Struct.Enum == 0);
 		Utils.Assert(obj.Struct.String == string.Empty);
 		Utils.Assert(obj.Struct.Name == FName.None);
 		Utils.Assert(obj.Struct.Text == string.Empty);
@@ -131,10 +127,8 @@ public class SubclassingObjectSourceGeneratorTest : IUnitTestInterface
 		obj.Struct.Float = 2;
 		// ReSharper disable once CompareOfFloatsByEqualityOperator
 		Utils.Assert(obj.Struct.Float == 2);
-		// obj.Struct.Enum = ESsTestEnum.Two;
-		// Utils.Assert(obj.Struct.Enum == ESsTestEnum.Two);
-		// obj.Struct.LongEnum = ESsTestLongEnum.Two;
-		// Utils.Assert(obj.Struct.LongEnum == ESsTestLongEnum.Two);
+		obj.Struct.Enum = ESsTestGenEnumManual.Two;
+		Utils.Assert(obj.Struct.Enum == ESsTestGenEnumManual.Two);
 		obj.Struct.String = "String";
 		Utils.Assert(obj.Struct.String == "String");
 		obj.Struct.Name = "Name";
@@ -179,8 +173,7 @@ public class SubclassingObjectSourceGeneratorTest : IUnitTestInterface
 		Utils.Assert(!obj.StructArray[0].Bool);
 		Utils.Assert(obj.StructArray[0].Int == 0);
 		Utils.Assert(obj.StructArray[0].Float == 0);
-		// Utils.Assert(obj.StructArray[0].Enum == 0);
-		// Utils.Assert(obj.StructArray[0].LongEnum == 0);
+		Utils.Assert(obj.StructArray[0].Enum == 0);
 		Utils.Assert(obj.StructArray[0].String == string.Empty);
 		Utils.Assert(obj.StructArray[0].Name == FName.None);
 		Utils.Assert(obj.StructArray[0].Text == string.Empty);
@@ -202,10 +195,8 @@ public class SubclassingObjectSourceGeneratorTest : IUnitTestInterface
 		obj.StructArray[0].Float = 2;
 		// ReSharper disable once CompareOfFloatsByEqualityOperator
 		Utils.Assert(obj.StructArray[0].Float == 2);
-		// obj.StructArray[0].Enum = ESsTestEnum.Two;
-		// Utils.Assert(obj.StructArray[0].Enum == ESsTestEnum.Two);
-		// obj.StructArray[0].LongEnum = ESsTestLongEnum.Two;
-		// Utils.Assert(obj.StructArray[0].LongEnum == ESsTestLongEnum.Two);
+		obj.StructArray[0].Enum = ESsTestGenEnumManual.Two;
+		Utils.Assert(obj.StructArray[0].Enum == ESsTestGenEnumManual.Two);
 		obj.StructArray[0].String = "String";
 		Utils.Assert(obj.StructArray[0].String == "String");
 		obj.StructArray[0].Name = "Name";

@@ -31,8 +31,7 @@ public class SubclassingStructSourceGeneratorTest : IUnitTestInterface
 			Utils.Assert(!testStructDefault.Bool);
 			Utils.Assert(testStructDefault.Int == 0);
 			Utils.Assert(testStructDefault.Float == 0);
-			// Utils.Assert(testStructDefault.Enum == 0);
-			// Utils.Assert(testStructDefault.LongEnum == 0);
+			Utils.Assert(testStructDefault.Enum == 0);
 			Utils.Assert(testStructDefault.String == string.Empty);
 			Utils.Assert(testStructDefault.Name == FName.None);
 			Utils.Assert(testStructDefault.Text == string.Empty);
@@ -54,8 +53,7 @@ public class SubclassingStructSourceGeneratorTest : IUnitTestInterface
 			testStructCustomNativeRef.Bool = true;
 			testStructCustomNativeRef.Int = 123;
 			testStructCustomNativeRef.Float = 2;
-			// testStructCustomNativeRef.Enum = ESsTestEnum.Two;
-			// testStructCustomNativeRef.LongEnum = ESsTestLongEnum.Two;
+			testStructCustomNativeRef.Enum = ESsTestGenEnumSourceGenerator.Two;
 			testStructCustomNativeRef.String = "String";
 			testStructCustomNativeRef.Name = "Name";
 			testStructCustomNativeRef.Text = new FText("Text");
@@ -77,8 +75,7 @@ public class SubclassingStructSourceGeneratorTest : IUnitTestInterface
 			Utils.Assert(testStructCustom.Int == 123);
 			// ReSharper disable once CompareOfFloatsByEqualityOperator
 			Utils.Assert(testStructCustom.Float == 2);
-			// Utils.Assert(testStructCustom.Enum == ESsTestEnum.Two);
-			// Utils.Assert(testStructCustom.LongEnum == ESsTestLongEnum.Two);
+			Utils.Assert(testStructCustom.Enum == ESsTestGenEnumSourceGenerator.Two);
 			Utils.Assert(testStructCustom.String == "String");
 			Utils.Assert(testStructCustom.Name == "Name");
 			Utils.Assert(testStructCustom.Text == "Text");
@@ -122,8 +119,7 @@ public class SubclassingStructSourceGeneratorTest : IUnitTestInterface
 		Utils.Assert(structRef.Int == structVal.Int);
 		// ReSharper disable once CompareOfFloatsByEqualityOperator
 		Utils.Assert(structRef.Float == structVal.Float);
-		// Utils.Assert(structRef.Enum == structVal.Enum);
-		// Utils.Assert(structRef.LongEnum == structVal.LongEnum);
+		Utils.Assert(structRef.Enum == structVal.Enum);
 		Utils.Assert(structRef.String == structVal.String);
 		Utils.Assert(structRef.Name == structVal.Name);
 		Utils.Assert(structRef.Text == structVal.Text);

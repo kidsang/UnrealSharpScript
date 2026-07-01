@@ -6,6 +6,7 @@
 
 class USsGeneratedClass;
 class USsGeneratedStruct;
+class USsGeneratedEnum;
 
 /**
  * Meta info collected from csharp property definitions to create unreal property.
@@ -42,6 +43,19 @@ private:
 };
 
 /**
+ * Meta info collected from csharp enum value definitions to create unreal enum.
+ * <br/> See: SubclassingUtils.cs EnumValueDef
+ */
+struct FSsEnumValueDef
+{
+	/** Name of enum value. */
+	FName Name;
+
+	/** Underlying integer value of enum value. */
+	int64 Value = 0;
+};
+
+/**
  * Provides functionality to register and create subclassing types in C#.
  */
 UCLASS()
@@ -69,8 +83,7 @@ public:
 	 * @param PropertyCount Count of property array.
 	 * @return Newly generated class if success, otherwise nullptr.
 	 */
-	static USsGeneratedClass* GenerateClass(const void* ManagedType, const FName& ClassName, UClass* SuperClass,
-	                                        const FSsPropertyDef* PropertyDefines, int PropertyCount);
+	static USsGeneratedClass* GenerateClass(const void* ManagedType, const FName& ClassName, UClass* SuperClass, const FSsPropertyDef* PropertyDefines, int PropertyCount);
 
 	/**
 	 * Called by C#, generate a new unreal struct from given infos.
@@ -79,8 +92,17 @@ public:
 	 * @param PropertyCount Count of property array.
 	 * @return Newly generated struct if success, otherwise nullptr.
 	 */
-	static USsGeneratedStruct* GenerateStruct(const FName& StructName, const FSsPropertyDef* PropertyDefines,
-	                                          int PropertyCount);
+	static USsGeneratedStruct* GenerateStruct(const FName& StructName, const FSsPropertyDef* PropertyDefines, int PropertyCount);
+
+	/**
+	 * Called by C#, generate a new unreal enum from given infos.
+	 * @param EnumName Name of the new enum.
+	 * @param ValueDefines Array of enum value defines.
+	 * @param ValueCount Count of enum value array.
+	 * @param bIsFlags Whether the C# enum was declared with [Flags]; sets EEnumFlags::Flags on the generated UEnum.
+	 * @return Newly generated enum if success, otherwise nullptr.
+	 */
+	static USsGeneratedEnum* GenerateEnum(const FName& EnumName, const FSsEnumValueDef* ValueDefines, int ValueCount, bool bIsFlags);
 
 	/**
 	 * Create new property by definition.

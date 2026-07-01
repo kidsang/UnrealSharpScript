@@ -18,10 +18,8 @@ public partial class USsTestGenClassManual : IStaticClass<USsTestGenClassManual>
 	private static readonly int Int_Offset;
 	private static readonly IntPtr Float_NativeProp;
 	private static readonly int Float_Offset;
-	// private static readonly IntPtr Enum_NativeProp;
-	// private static readonly int Enum_Offset;
-	// private static readonly IntPtr LongEnum_NativeProp;
-	// private static readonly int LongEnum_Offset;
+	private static readonly IntPtr Enum_NativeProp;
+	private static readonly int Enum_Offset;
 	private static readonly IntPtr String_NativeProp;
 	private static readonly int String_Offset;
 	private static readonly IntPtr Name_NativeProp;
@@ -69,6 +67,12 @@ public partial class USsTestGenClassManual : IStaticClass<USsTestGenClassManual>
 			{
 				PropName = "Float",
 				PropType = UDoubleProperty.StaticClass.NativeClass,
+			},
+			new()
+			{
+				PropName = "Enum",
+				PropType = UByteProperty.StaticClass.NativeClass,
+				UnderlyingType = ESsTestGenEnumManualNativeRef.NativeType,
 			},
 			new()
 			{
@@ -177,10 +181,8 @@ public partial class USsTestGenClassManual : IStaticClass<USsTestGenClassManual>
 		Int_Offset = TypeInterop.GetPropertyOffset(Int_NativeProp);
 		Float_NativeProp = propIter.FindNext("Float");
 		Float_Offset = TypeInterop.GetPropertyOffset(Float_NativeProp);
-		// Enum_NativeProp = propIter.FindNext("Enum");
-		// Enum_Offset = TypeInterop.GetPropertyOffset(Enum_NativeProp);
-		// LongEnum_NativeProp = propIter.FindNext("LongEnum");
-		// LongEnum_Offset = TypeInterop.GetPropertyOffset(LongEnum_NativeProp);
+		Enum_NativeProp = propIter.FindNext("Enum");
+		Enum_Offset = TypeInterop.GetPropertyOffset(Enum_NativeProp);
 		String_NativeProp = propIter.FindNext("String");
 		String_Offset = TypeInterop.GetPropertyOffset(String_NativeProp);
 		Name_NativeProp = propIter.FindNext("Name");
@@ -250,6 +252,20 @@ public partial class USsTestGenClassManual : IStaticClass<USsTestGenClassManual>
 		{
 			ThrowIfNotValid();
 			BlittableMarshaller<double>.ToNative(NativeObject + Float_Offset, value);
+		}
+	}
+
+	public partial ESsTestGenEnumManual Enum
+	{
+		get
+		{
+			ThrowIfNotValid();
+			return EnumMarshaller<ESsTestGenEnumManual>.FromNative(NativeObject + Enum_Offset);
+		}
+		set
+		{
+			ThrowIfNotValid();
+			EnumMarshaller<ESsTestGenEnumManual>.ToNative(NativeObject + Enum_Offset, value);
 		}
 	}
 

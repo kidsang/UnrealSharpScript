@@ -46,6 +46,24 @@ public struct PropertyDef
 	public IntPtr KeyUnderlyingType;
 }
 
+/// <summary>
+/// Meta info collected from csharp enum value definitions to create unreal enum.
+/// <br/> See: SsSubclassingUtils.h FSsEnumValueDef
+/// </summary>
+[StructLayout(LayoutKind.Sequential)]
+public struct EnumValueDef
+{
+	/// <summary>
+	/// Name of enum value.
+	/// </summary>
+	public FName Name;
+
+	/// <summary>
+	/// Underlying integer value of enum value.
+	/// </summary>
+	public long Value;
+}
+
 [NativeCallbacks]
 public static unsafe class SubclassingUtils
 {
@@ -62,5 +80,11 @@ public static unsafe class SubclassingUtils
 		IntPtr, /** PropertyDefines */
 		int, /** PropertyCount */
 		IntPtr> GenerateStruct;
+	internal static delegate* unmanaged[Cdecl]<
+		FName, /** EnumName */
+		IntPtr, /** ValueDefines */
+		int, /** ValueCount */
+		byte, /** bIsFlags */
+		IntPtr> GenerateEnum;
 #pragma warning restore CS0649
 }

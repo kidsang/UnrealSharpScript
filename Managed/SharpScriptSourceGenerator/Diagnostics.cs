@@ -53,4 +53,16 @@ internal static class Diagnostics
 		category: Category,
 		defaultSeverity: DiagnosticSeverity.Error,
 		isEnabledByDefault: true);
+
+	/// <summary>
+	/// A [UENUM] used an underlying type other than <c>byte</c>. The native subclassing
+	/// path only supports byte-backed enums (FByteProperty + UEnum).
+	/// </summary>
+	public static readonly DiagnosticDescriptor EnumMustBeByteBacked = new(
+		id: "SS1005",
+		title: "UENUM must be byte-backed",
+		messageFormat: "UENUM '{0}' must have an underlying type of 'byte' to be bound by the SharpScript generator",
+		category: Category,
+		defaultSeverity: DiagnosticSeverity.Error,
+		isEnabledByDefault: true);
 }

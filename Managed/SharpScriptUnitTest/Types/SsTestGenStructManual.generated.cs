@@ -18,10 +18,8 @@ public class FSsTestGenStructManualNativeRef(IntPtr nativePtr)
 	private static readonly int Int_Offset;
 	private static readonly IntPtr Float_NativeProp;
 	private static readonly int Float_Offset;
-	// private static readonly IntPtr Enum_NativeProp;
-	// private static readonly int Enum_Offset;
-	// private static readonly IntPtr LongEnum_NativeProp;
-	// private static readonly int LongEnum_Offset;
+	private static readonly IntPtr Enum_NativeProp;
+	private static readonly int Enum_Offset;
 	private static readonly IntPtr String_NativeProp;
 	private static readonly int String_Offset;
 	private static readonly IntPtr Name_NativeProp;
@@ -65,6 +63,12 @@ public class FSsTestGenStructManualNativeRef(IntPtr nativePtr)
 			{
 				PropName = "Float",
 				PropType = UDoubleProperty.StaticClass.NativeClass,
+			},
+			new()
+			{
+				PropName = "Enum",
+				PropType = UByteProperty.StaticClass.NativeClass,
+				UnderlyingType = ESsTestGenEnumManualNativeRef.NativeType,
 			},
 			new()
 			{
@@ -156,10 +160,8 @@ public class FSsTestGenStructManualNativeRef(IntPtr nativePtr)
 		Int_Offset = TypeInterop.GetPropertyOffset(Int_NativeProp);
 		Float_NativeProp = propIter.FindNext("Float");
 		Float_Offset = TypeInterop.GetPropertyOffset(Float_NativeProp);
-		// Enum_NativeProp = propIter.FindNext("Enum");
-		// Enum_Offset = TypeInterop.GetPropertyOffset(Enum_NativeProp);
-		// LongEnum_NativeProp = propIter.FindNext("LongEnum");
-		// LongEnum_Offset = TypeInterop.GetPropertyOffset(LongEnum_NativeProp);
+		Enum_NativeProp = propIter.FindNext("Enum");
+		Enum_Offset = TypeInterop.GetPropertyOffset(Enum_NativeProp);
 		String_NativeProp = propIter.FindNext("String");
 		String_Offset = TypeInterop.GetPropertyOffset(String_NativeProp);
 		Name_NativeProp = propIter.FindNext("Name");
@@ -204,17 +206,11 @@ public class FSsTestGenStructManualNativeRef(IntPtr nativePtr)
 		set => BlittableMarshaller<double>.ToNative(nativePtr + Float_Offset, value);
 	}
 
-	// public ESsTestEnum Enum
-	// {
-	// 	get => EnumMarshaller<ESsTestEnum>.FromNative(nativePtr + Enum_Offset);
-	// 	set => EnumMarshaller<ESsTestEnum>.ToNative(nativePtr + Enum_Offset, value);
-	// }
-	//
-	// public ESsTestLongEnum LongEnum
-	// {
-	// 	get => EnumMarshaller<ESsTestLongEnum>.FromNative(nativePtr + LongEnum_Offset);
-	// 	set => EnumMarshaller<ESsTestLongEnum>.ToNative(nativePtr + LongEnum_Offset, value);
-	// }
+	public ESsTestGenEnumManual Enum
+	{
+		get => EnumMarshaller<ESsTestGenEnumManual>.FromNative(nativePtr + Enum_Offset);
+		set => EnumMarshaller<ESsTestGenEnumManual>.ToNative(nativePtr + Enum_Offset, value);
+	}
 
 	public string String
 	{
@@ -290,8 +286,7 @@ public class FSsTestGenStructManualNativeRef(IntPtr nativePtr)
 			Bool = Bool,
 			Int = Int,
 			Float = Float,
-			// Enum = Enum,
-			// LongEnum = LongEnum,
+			Enum = Enum,
 			String = String,
 			Name = Name,
 			Text = Text,
@@ -312,8 +307,7 @@ public class FSsTestGenStructManualNativeRef(IntPtr nativePtr)
 		Bool = value.Bool;
 		Int = value.Int;
 		Float = value.Float;
-		// Enum = value.Enum;
-		// LongEnum = value.LongEnum;
+		Enum = value.Enum;
 		String = value.String;
 		Name = value.Name;
 		Text = value.Text;

@@ -2,6 +2,7 @@
 #include "SsCommon.h"
 #include "SsGeneratedClass.h"
 #include "SsGeneratedStruct.h"
+#include "SsGeneratedEnum.h"
 #include "SsTypeRegistry.h"
 #include "UObject/Package.h"
 #include "UObject/Class.h"
@@ -151,9 +152,7 @@ UPackage* USsSubclassingUtils::GetGeneratedPackageEditorOnly()
 }
 #endif
 
-USsGeneratedClass* USsSubclassingUtils::GenerateClass(const void* ManagedType, const FName& ClassName,
-                                                      UClass* SuperClass,
-                                                      const FSsPropertyDef* PropertyDefines, int PropertyCount)
+USsGeneratedClass* USsSubclassingUtils::GenerateClass(const void* ManagedType, const FName& ClassName, UClass* SuperClass, const FSsPropertyDef* PropertyDefines, int PropertyCount)
 {
 	check(IsInGameThread());
 	USsGeneratedClass* GenClass = USsGeneratedClass::GenerateClass(ClassName, SuperClass, PropertyDefines,
@@ -165,11 +164,16 @@ USsGeneratedClass* USsSubclassingUtils::GenerateClass(const void* ManagedType, c
 	return GenClass;
 }
 
-USsGeneratedStruct* USsSubclassingUtils::GenerateStruct(const FName& StructName, const FSsPropertyDef* PropertyDefines,
-                                                        int PropertyCount)
+USsGeneratedStruct* USsSubclassingUtils::GenerateStruct(const FName& StructName, const FSsPropertyDef* PropertyDefines, int PropertyCount)
 {
 	check(IsInGameThread());
 	return USsGeneratedStruct::GenerateStruct(StructName, PropertyDefines, PropertyCount);
+}
+
+USsGeneratedEnum* USsSubclassingUtils::GenerateEnum(const FName& EnumName, const FSsEnumValueDef* ValueDefines, int ValueCount, bool bIsFlags)
+{
+	check(IsInGameThread());
+	return USsGeneratedEnum::GenerateEnum(EnumName, ValueDefines, ValueCount, bIsFlags);
 }
 
 FProperty* USsSubclassingUtils::CreateProperty(FFieldVariant Owner, const FSsPropertyDef& PropDef)
@@ -208,7 +212,22 @@ FProperty* USsSubclassingUtils::CreateProperty(FFieldVariant Owner, const FSsPro
 			BytePropertyClass,
 			[](FFieldVariant Owner, const FSsPropertyDef& PropDef, EObjectFlags InObjectFlags) -> FProperty*
 			{
-				return new FByteProperty(Owner, PropDef.PropName, InObjectFlags);
+				auto Prop = new FByteProperty(Owner, PropDef.PropName, InObjectFlags);
+				// A byte property may be backed by a UEnum (a byte-backed enum property).
+				if (PropDef.UnderlyingType)
+				{
+					UEnum* Enum = Cast<UEnum>(PropDef.UnderlyingType);
+					if (!Enum)
+					{
+						UE_LOG(LogSharpScript, Error,
+							TEXT("Subclassing error! UnderlyingType of byte enum property %s must be a UEnum. Owner is %s"),
+							*PropDef.PropName.ToString(), *Owner.GetName());
+						delete Prop;
+						return nullptr;
+					}
+					Prop->Enum = Enum;
+				}
+				return Prop;
 			}
 		},
 		{
@@ -478,6 +497,7 @@ void USsSubclassingUtils::DoExportFunctions(FSsBindNativeCallbackFunc BindNative
 {
 	BindNativeCallbackFunc(&GenerateClass, TEXT("SubclassingUtils.GenerateClass"));
 	BindNativeCallbackFunc(&GenerateStruct, TEXT("SubclassingUtils.GenerateStruct"));
+	BindNativeCallbackFunc(&GenerateEnum, TEXT("SubclassingUtils.GenerateEnum"));
 }
 
 UPackage* USsSubclassingUtils::CoreUObjectPackage = nullptr;

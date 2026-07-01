@@ -19,6 +19,9 @@ public partial class USsTestGenClassManual : UObject
 	public partial double Float { get; set; }
 
 	[UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "CSharp|Internal")]
+	public partial ESsTestGenEnumManual Enum { get; set; }
+
+	[UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "CSharp|Internal")]
 	public partial string String { get; set; }
 
 	[UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "CSharp|Internal")]

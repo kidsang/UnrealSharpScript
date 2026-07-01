@@ -205,6 +205,21 @@ internal static class PropertyClassifier
 				return new PropertyModel { Kind = PropertyKind.Text, ManagedType = "FText", PropTypeClass = "UTextProperty" };
 		}
 
+		// UENUM: a byte-backed enum maps to a UByteProperty whose underlying UEnum is the generated <Enum>NativeRef.NativeType.
+		// Only byte-backed enums are supported by the native subclassing path (FByteProperty).
+		if (coreType.TypeKind == TypeKind.Enum && IsByteBackedEnum(coreType))
+		{
+			return new PropertyModel
+			{
+				Kind = PropertyKind.Enum,
+				ManagedType = managed,
+				PropTypeClass = "UByteProperty",
+				TargetType = managed,
+				UnderlyingTypeExpr = $"{managed}NativeRef.NativeType",
+				IsBlittable = true,
+			};
+		}
+
 		// Generic wrappers.
 		if (coreType is INamedTypeSymbol { IsGenericType: true } named)
 		{
@@ -383,6 +398,20 @@ internal static class PropertyClassifier
 		}
 
 		string managed = coreType.ToDisplayString(SymbolDisplayFormat.MinimallyQualifiedFormat);
+
+		// UENUM: a byte-backed enum maps to a UByteProperty whose underlying UEnum is the generated <Enum>NativeRef.NativeType.
+		// Only byte-backed enums are supported by the native subclassing path (FByteProperty).
+		if (coreType.TypeKind == TypeKind.Enum && IsByteBackedEnum(coreType))
+		{
+			return new ElementInfo
+			{
+				ManagedType = managed,
+				PropTypeClass = "UByteProperty",
+				UnderlyingTypeExpr = $"{managed}NativeRef.NativeType",
+				MarshallerInstanceExpr = $"EnumMarshaller<{managed}>.Instance",
+			};
+		}
+
 		switch (coreType.Name)
 		{
 			case "FName":
@@ -430,6 +459,15 @@ internal static class PropertyClassifier
 			SpecialType.System_Double => "double",
 			_ => type.Name,
 		};
+	}
+
+	/// <summary>
+	/// True when the enum's underlying type is <c>byte</c>. The native subclassing path only
+	/// supports byte-backed enums (FByteProperty + UEnum); other underlying types are rejected.
+	/// </summary>
+	private static bool IsByteBackedEnum(ITypeSymbol type)
+	{
+		return type is INamedTypeSymbol { EnumUnderlyingType.SpecialType: SpecialType.System_Byte };
 	}
 
 	/// <summary>

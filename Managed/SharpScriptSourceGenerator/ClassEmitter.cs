@@ -102,6 +102,9 @@ internal static class ClassEmitter
 			case PropertyKind.Blittable:
 				EmitValueAccessor(sb, prop, $"BlittableMarshaller<{prop.ManagedType}>");
 				break;
+			case PropertyKind.Enum:
+				EmitValueAccessor(sb, prop, $"EnumMarshaller<{prop.ManagedType}>");
+				break;
 			case PropertyKind.String:
 				EmitValueAccessor(sb, prop, "StringMarshaller");
 				break;

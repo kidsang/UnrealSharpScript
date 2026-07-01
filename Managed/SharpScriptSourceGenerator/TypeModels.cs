@@ -13,6 +13,10 @@ internal enum PropertyKind
 	/// <summary>Blittable numeric (int/float/double/...). Uses <c>BlittableMarshaller&lt;T&gt;</c>.</summary>
 	Blittable,
 
+	/// <summary>A byte-backed UENUM. Uses <c>EnumMarshaller&lt;T&gt;</c> and maps to <c>UByteProperty</c>
+	/// with the generated <c>&lt;Enum&gt;NativeRef.NativeType</c> as the underlying <c>UEnum</c>.</summary>
+	Enum,
+
 	/// <summary>string. Uses <c>StringMarshaller</c>.</summary>
 	String,
 
@@ -157,6 +161,43 @@ internal sealed class ClassModel
 
 	/// <summary>Hint name used for the generated source file.</summary>
 	public string HintName => $"{ClassName}.generated.cs";
+}
+
+/// <summary>
+/// A single value of a [UENUM] ready for code emission.
+/// </summary>
+internal sealed class EnumValueModel
+{
+	/// <summary>The C# member name, e.g. "One".</summary>
+	public string Name = "";
+}
+
+/// <summary>
+/// A fully analysed [UENUM] declaration ready for code emission.
+/// </summary>
+internal sealed class EnumModel
+{
+	public string Namespace = "";
+
+	/// <summary>C# enum name including the leading 'E' prefix, e.g. "ESsTestGenEnumManual".</summary>
+	public string EnumName = "";
+
+	/// <summary>The generated native-ref class name, e.g. "ESsTestGenEnumManualNativeRef".</summary>
+	public string NativeRefName => $"{EnumName}NativeRef";
+
+	/// <summary>UE enum name (C# name without the leading 'E'), e.g. "SsTestGenEnumManual".</summary>
+	public string UnrealName = "";
+
+	/// <summary>
+	/// True when the C# enum carries <c>[Flags]</c>. The generated UEnum is then created with
+	/// <c>EEnumFlags::Flags</c> so UE treats it as a bitmask enum.
+	/// </summary>
+	public bool IsFlags;
+
+	public readonly List<EnumValueModel> Values = new();
+
+	/// <summary>Hint name used for the generated source file.</summary>
+	public string HintName => $"{EnumName}.generated.cs";
 }
 
 /// <summary>

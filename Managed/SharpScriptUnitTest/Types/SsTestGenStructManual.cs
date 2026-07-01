@@ -18,6 +18,9 @@ public partial struct FSsTestGenStructManual
 	public double Float;
 
 	[UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "CSharp|Internal")]
+	public ESsTestGenEnumManual Enum;
+
+	[UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "CSharp|Internal")]
 	public string String;
 
 	[UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "CSharp|Internal")]
