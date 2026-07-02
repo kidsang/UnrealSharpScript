@@ -50,8 +50,13 @@ internal enum PropertyKind
 	/// <summary>TSet&lt;T&gt;. Lazy cached wrapper.</summary>
 	Set,
 
-	/// <summary>TMap&lt;K, V&gt;. Lazy cached wrapper.</summary>
+	/// <summary>TMap&lt;K, V&gt; of a simple value element. Lazy cached wrapper.</summary>
 	Map,
+
+	/// <summary>TMap&lt;K, V, VNativeRef&gt; whose value is a struct element. Lazy cached wrapper.
+	/// The wrapper constructor takes only the key marshaller; struct values are marshalled
+	/// through the generated value native-ref.</summary>
+	StructMap,
 
 	/// <summary>A struct native-ref property (FXxxNativeRef). Lazy cached wrapper.</summary>
 	StructNativeRef,
@@ -83,9 +88,16 @@ internal sealed class ElementInfo
 	/// <summary>
 	/// Expression giving the marshaller instance used by container wrappers,
 	/// e.g. "StringMarshaller.Instance" or "BlittableMarshaller&lt;int&gt;.Instance".
-	/// Null for struct elements (TArray struct variant takes no marshaller instance).
+	/// Null for struct elements (TArray/TMap struct variants take no value marshaller instance).
 	/// </summary>
 	public string? MarshallerInstanceExpr;
+
+	/// <summary>
+	/// For struct elements: the generated value native-ref type name (e.g. "FFooNativeRef").
+	/// Used as the third generic argument of struct container wrappers
+	/// (TArray&lt;T, TRef&gt; / TMap&lt;K, V, VRef&gt;). Null for non-struct elements.
+	/// </summary>
+	public string? NativeRefType;
 }
 
 /// <summary>

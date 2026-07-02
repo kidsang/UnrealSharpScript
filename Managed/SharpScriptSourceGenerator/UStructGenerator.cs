@@ -56,6 +56,7 @@ public sealed class UStructGenerator : IIncrementalGenerator
 			UnrealName = NamingUtils.StripTypePrefix(structSymbol.Name, 'F'),
 		};
 
+		bool hasUnboundInstanceField = false;
 		foreach (ISymbol member in structSymbol.GetMembers())
 		{
 			if (member is not IFieldSymbol fieldSymbol || fieldSymbol.IsStatic || fieldSymbol.IsImplicitlyDeclared)
@@ -65,6 +66,7 @@ public sealed class UStructGenerator : IIncrementalGenerator
 
 			if (!SymbolUtils.HasUPropertyAttribute(fieldSymbol))
 			{
+				hasUnboundInstanceField = true;
 				continue;
 			}
 
@@ -75,8 +77,10 @@ public sealed class UStructGenerator : IIncrementalGenerator
 			}
 		}
 
-		// A struct is blittable only when every bound field is a single blittable value.
-		model.IsBlittable = model.Properties.All(p => p.IsBlittable);
+		// A struct is blittable only when every bound field is a single blittable value
+		// AND there are no unbound (non-UPROPERTY) instance fields that would make the
+		// managed layout diverge from the UE-generated native layout.
+		model.IsBlittable = !hasUnboundInstanceField && model.Properties.All(p => p.IsBlittable);
 
 		string source = StructEmitter.Emit(model);
 		context.AddSource(model.HintName, SourceText.From(source, Encoding.UTF8));

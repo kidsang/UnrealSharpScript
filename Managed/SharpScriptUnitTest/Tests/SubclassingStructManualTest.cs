@@ -42,6 +42,10 @@ public class SubclassingStructManualTest : IUnitTestInterface
 			Utils.Assert(testStructDefault.Class == null);
 			Utils.Assert(testStructDefault.SoftClassPtr == null);
 			// Utils.Assert(testStructDefault.Interface == null);
+			Utils.Assert(testStructDefault.StructArray.SequenceEqual([]));
+			Utils.Assert(DictEquals(testStructDefault.IntStructMap, []));
+			Utils.Assert(testStructDefault.BlittableStructArray.SequenceEqual([]));
+			Utils.Assert(DictEquals(testStructDefault.IntBlittableStructMap, []));
 
 			// Create a struct filled with custom data, test if the struct reference and struct copy have equal values.
 			testStructCustomNativePtr = TypeInterop.CreateStructInstance(FSsTestGenStructManualNativeRef.NativeType);
@@ -64,6 +68,14 @@ public class SubclassingStructManualTest : IUnitTestInterface
 			UClass clsValue = USsTestGenClassManual.StaticClass!;
 			testStructCustomNativeRef.Class = clsValue;
 			testStructCustomNativeRef.SoftClassPtr = clsValue;
+			FSsArrayTestInnerGenStructManual innerA = new() { IntArray = [1, 2, 3] };
+			FSsArrayTestInnerGenStructManual innerB = new() { IntArray = [4, 5, 6] };
+			testStructCustomNativeRef.StructArray.CopyFrom([innerA, innerB]);
+			testStructCustomNativeRef.IntStructMap.CopyFrom(new Dictionary<int, FSsArrayTestInnerGenStructManual> { { 1, innerA }, { 2, innerB } });
+			FSsTestBlittableGenStructManual blittableA = new() { X = 1, Y = 2 };
+			FSsTestBlittableGenStructManual blittableB = new() { X = 3, Y = 4 };
+			testStructCustomNativeRef.BlittableStructArray.CopyFrom([blittableA, blittableB]);
+			testStructCustomNativeRef.IntBlittableStructMap.CopyFrom(new Dictionary<int, FSsTestBlittableGenStructManual> { { 1, blittableA }, { 2, blittableB } });
 			FSsTestGenStructManual testStructCustom = testStructCustomNativeRef;
 			TestFieldEquality(testStructCustomNativeRef, testStructCustom);
 
@@ -86,6 +98,10 @@ public class SubclassingStructManualTest : IUnitTestInterface
 			Utils.Assert(testStructCustom.Class == clsValue);
 			Utils.Assert(testStructCustom.SoftClassPtr == clsValue);
 			// Utils.Assert(testStructCustom.Interface == objValue);
+			Utils.Assert(testStructCustom.StructArray.SequenceEqual([innerA, innerB]));
+			Utils.Assert(DictEquals(testStructCustom.IntStructMap, new() { { 1, innerA }, { 2, innerB } }));
+			Utils.Assert(testStructCustom.BlittableStructArray.SequenceEqual([blittableA, blittableB]));
+			Utils.Assert(DictEquals(testStructCustom.IntBlittableStructMap, new() { { 1, blittableA }, { 2, blittableB } }));
 
 			// Fill values of the C# struct back into the C++ struct, and verify equality.
 			testStructDefaultNativeRef.FromManaged(testStructCustom);
@@ -130,5 +146,9 @@ public class SubclassingStructManualTest : IUnitTestInterface
 		Utils.Assert(structRef.Class == structVal.Class);
 		Utils.Assert(structRef.SoftClassPtr == structVal.SoftClassPtr);
 		// Utils.Assert(structRef.Interface == structVal.Interface);
+		Utils.Assert(structRef.StructArray.SequenceEqual(structVal.StructArray));
+		Utils.Assert(DictEquals(structRef.IntStructMap, structVal.IntStructMap));
+		Utils.Assert(structRef.BlittableStructArray.SequenceEqual(structVal.BlittableStructArray));
+		Utils.Assert(DictEquals(structRef.IntBlittableStructMap, structVal.IntBlittableStructMap));
 	}
 }

@@ -151,6 +151,10 @@ internal static class StructEmitter
 			case PropertyKind.Map:
 				EmitContainerFieldAccessor(sb, prop, $"{prop.Key!.MarshallerInstanceExpr}, {prop.Inner!.MarshallerInstanceExpr}");
 				break;
+			case PropertyKind.StructMap:
+				// Struct-value map: TMap<K, V, VRef> takes only the key marshaller.
+				EmitContainerFieldAccessor(sb, prop, prop.Key!.MarshallerInstanceExpr!);
+				break;
 			case PropertyKind.StructArray:
 				EmitStructArrayFieldAccessor(sb, prop);
 				break;
@@ -225,6 +229,7 @@ internal static class StructEmitter
 				case PropertyKind.Array:
 				case PropertyKind.Set:
 				case PropertyKind.Map:
+				case PropertyKind.StructMap:
 				case PropertyKind.StructArray:
 					sb.AppendLine($"\t\t{prop.Name}.CopyFrom(value.{prop.Name});");
 					break;

@@ -141,6 +141,9 @@ internal static class ClassEmitter
 			case PropertyKind.Map:
 				EmitMapAccessor(sb, prop);
 				break;
+			case PropertyKind.StructMap:
+				EmitStructMapAccessor(sb, prop);
+				break;
 			case PropertyKind.StructNativeRef:
 				EmitStructNativeRefAccessor(sb, prop);
 				break;
@@ -227,6 +230,23 @@ internal static class ClassEmitter
 		sb.AppendLine("\t\t{");
 		sb.AppendLine("\t\t\tThrowIfNotValid();");
 		sb.AppendLine($"\t\t\treturn {field} ??= new(NativeObject + {prop.Name}_Offset, {prop.Name}_NativeProp, {prop.Key!.MarshallerInstanceExpr}, {prop.Inner!.MarshallerInstanceExpr});");
+		sb.AppendLine("\t\t}");
+		sb.AppendLine("\t}");
+	}
+
+	private static void EmitStructMapAccessor(StringBuilder sb, PropertyModel prop)
+	{
+		// Struct-value map: TMap<K, V, VRef>. The wrapper marshals the struct value through
+		// its native-ref, so the constructor takes only the key marshaller.
+		string field = NamingUtils.BackingFieldName(prop.Name);
+		sb.AppendLine($"\tprivate {prop.ManagedType}? {field};");
+		sb.AppendLine();
+		sb.AppendLine($"\tpublic partial {prop.ManagedType} {prop.Name}");
+		sb.AppendLine("\t{");
+		sb.AppendLine("\t\tget");
+		sb.AppendLine("\t\t{");
+		sb.AppendLine("\t\t\tThrowIfNotValid();");
+		sb.AppendLine($"\t\t\treturn {field} ??= new(NativeObject + {prop.Name}_Offset, {prop.Name}_NativeProp, {prop.Key!.MarshallerInstanceExpr});");
 		sb.AppendLine("\t\t}");
 		sb.AppendLine("\t}");
 	}

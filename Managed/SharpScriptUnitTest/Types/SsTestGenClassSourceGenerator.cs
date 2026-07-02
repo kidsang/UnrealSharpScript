@@ -62,4 +62,13 @@ public partial class USsTestGenClassSourceGenerator : UObject
 
 	[UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "CSharp|Internal")]
 	public partial TSoftClassPtr<UObject> SoftClassPtr { get; set; }
+
+	[UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "CSharp|Internal")]
+	public partial TArray<UObject?> ObjectArray { get; }
+
+	[UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "CSharp|Internal")]
+	public partial TSet<UObject?> ObjectSet { get; }
+
+	[UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "CSharp|Internal")]
+	public partial TMap<int, UObject?> IntObjectMap { get; }
 }

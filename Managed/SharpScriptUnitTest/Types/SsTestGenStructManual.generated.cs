@@ -44,6 +44,14 @@ public class FSsTestGenStructManualNativeRef(IntPtr nativePtr)
 	private static readonly int Class_Offset;
 	private static readonly IntPtr SoftClassPtr_NativeProp;
 	private static readonly int SoftClassPtr_Offset;
+	private static readonly IntPtr StructArray_NativeProp;
+	private static readonly int StructArray_Offset;
+	private static readonly IntPtr IntStructMap_NativeProp;
+	private static readonly int IntStructMap_Offset;
+	private static readonly IntPtr BlittableStructArray_NativeProp;
+	private static readonly int BlittableStructArray_Offset;
+	private static readonly IntPtr IntBlittableStructMap_NativeProp;
+	private static readonly int IntBlittableStructMap_Offset;
 
 	static FSsTestGenStructManualNativeRef()
 	{
@@ -140,6 +148,36 @@ public class FSsTestGenStructManualNativeRef(IntPtr nativePtr)
 				PropType = USoftClassProperty.StaticClass.NativeClass,
 				UnderlyingType = UObject.StaticClass.NativeClass,
 			},
+			new()
+			{
+				PropName = "StructArray",
+				PropType = UArrayProperty.StaticClass.NativeClass,
+				InnerPropType = UStructProperty.StaticClass.NativeClass,
+				InnerUnderlyingType = FSsArrayTestInnerGenStructManualNativeRef.NativeType,
+			},
+			new()
+			{
+				PropName = "IntStructMap",
+				PropType = UMapProperty.StaticClass.NativeClass,
+				InnerPropType = UStructProperty.StaticClass.NativeClass,
+				InnerUnderlyingType = FSsArrayTestInnerGenStructManualNativeRef.NativeType,
+				KeyPropType = UIntProperty.StaticClass.NativeClass,
+			},
+			new()
+			{
+				PropName = "BlittableStructArray",
+				PropType = UArrayProperty.StaticClass.NativeClass,
+				InnerPropType = UStructProperty.StaticClass.NativeClass,
+				InnerUnderlyingType = FSsTestBlittableGenStructManualNativeRef.NativeType,
+			},
+			new()
+			{
+				PropName = "IntBlittableStructMap",
+				PropType = UMapProperty.StaticClass.NativeClass,
+				InnerPropType = UStructProperty.StaticClass.NativeClass,
+				InnerUnderlyingType = FSsTestBlittableGenStructManualNativeRef.NativeType,
+				KeyPropType = UIntProperty.StaticClass.NativeClass,
+			},
 		];
 
 		unsafe
@@ -186,6 +224,14 @@ public class FSsTestGenStructManualNativeRef(IntPtr nativePtr)
 		Class_Offset = TypeInterop.GetPropertyOffset(Class_NativeProp);
 		SoftClassPtr_NativeProp = propIter.FindNext("SoftClassPtr");
 		SoftClassPtr_Offset = TypeInterop.GetPropertyOffset(SoftClassPtr_NativeProp);
+		StructArray_NativeProp = propIter.FindNext("StructArray");
+		StructArray_Offset = TypeInterop.GetPropertyOffset(StructArray_NativeProp);
+		IntStructMap_NativeProp = propIter.FindNext("IntStructMap");
+		IntStructMap_Offset = TypeInterop.GetPropertyOffset(IntStructMap_NativeProp);
+		BlittableStructArray_NativeProp = propIter.FindNext("BlittableStructArray");
+		BlittableStructArray_Offset = TypeInterop.GetPropertyOffset(BlittableStructArray_NativeProp);
+		IntBlittableStructMap_NativeProp = propIter.FindNext("IntBlittableStructMap");
+		IntBlittableStructMap_Offset = TypeInterop.GetPropertyOffset(IntBlittableStructMap_NativeProp);
 	}
 
 	public bool Bool
@@ -279,6 +325,26 @@ public class FSsTestGenStructManualNativeRef(IntPtr nativePtr)
 		set => SoftClassPtrMarshaller<UObject>.ToNative(nativePtr + SoftClassPtr_Offset, value);
 	}
 
+	private TArray<FSsArrayTestInnerGenStructManual, FSsArrayTestInnerGenStructManualNativeRef>? _structArray;
+
+	public TArray<FSsArrayTestInnerGenStructManual, FSsArrayTestInnerGenStructManualNativeRef> StructArray => _structArray ??=
+		new(nativePtr + StructArray_Offset, StructArray_NativeProp);
+
+	private TMap<int, FSsArrayTestInnerGenStructManual, FSsArrayTestInnerGenStructManualNativeRef>? _intStructMap;
+
+	public TMap<int, FSsArrayTestInnerGenStructManual, FSsArrayTestInnerGenStructManualNativeRef> IntStructMap => _intStructMap ??=
+		new(nativePtr + IntStructMap_Offset, IntStructMap_NativeProp, BlittableMarshaller<int>.Instance);
+
+	private TArray<FSsTestBlittableGenStructManual, FSsTestBlittableGenStructManualNativeRef>? _blittableStructArray;
+
+	public TArray<FSsTestBlittableGenStructManual, FSsTestBlittableGenStructManualNativeRef> BlittableStructArray => _blittableStructArray ??=
+		new(nativePtr + BlittableStructArray_Offset, BlittableStructArray_NativeProp);
+
+	private TMap<int, FSsTestBlittableGenStructManual, FSsTestBlittableGenStructManualNativeRef>? _intBlittableStructMap;
+
+	public TMap<int, FSsTestBlittableGenStructManual, FSsTestBlittableGenStructManualNativeRef> IntBlittableStructMap => _intBlittableStructMap ??=
+		new(nativePtr + IntBlittableStructMap_Offset, IntBlittableStructMap_NativeProp, BlittableMarshaller<int>.Instance);
+
 	public FSsTestGenStructManual ToManaged()
 	{
 		return new FSsTestGenStructManual()
@@ -298,7 +364,11 @@ public class FSsTestGenStructManualNativeRef(IntPtr nativePtr)
 			SoftObjectPtr = SoftObjectPtr,
 			LazyObjectPtr = LazyObjectPtr,
 			Class = Class,
-			SoftClassPtr = SoftClassPtr
+			SoftClassPtr = SoftClassPtr,
+			StructArray = StructArray,
+			IntStructMap = IntStructMap,
+			BlittableStructArray = BlittableStructArray,
+			IntBlittableStructMap = IntBlittableStructMap
 		};
 	}
 
@@ -320,6 +390,10 @@ public class FSsTestGenStructManualNativeRef(IntPtr nativePtr)
 		LazyObjectPtr = value.LazyObjectPtr;
 		Class = value.Class;
 		SoftClassPtr = value.SoftClassPtr;
+		StructArray.CopyFrom(value.StructArray);
+		IntStructMap.CopyFrom(value.IntStructMap);
+		BlittableStructArray.CopyFrom(value.BlittableStructArray);
+		IntBlittableStructMap.CopyFrom(value.IntBlittableStructMap);
 	}
 
 	public static IStructNativeRef<FSsTestGenStructManual> CreateInstance(IntPtr valuePtr)

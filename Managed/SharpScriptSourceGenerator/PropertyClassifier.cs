@@ -92,19 +92,15 @@ internal static class PropertyClassifier
 				{
 					ElementInfo? inner = ClassifyElement(args[0]);
 					if (inner == null) return null;
-					return new PropertyModel
-					{
-						Kind = PropertyKind.Array,
-						ManagedType = $"TArray<{inner.ManagedType}>",
-						PropTypeClass = "UArrayProperty",
-						Inner = inner,
-						IsWrapper = true,
-					};
+					return MakeArrayFromElement(inner);
 				}
 				case "HashSet":
 				{
 					ElementInfo? inner = ClassifyElement(args[0]);
 					if (inner == null) return null;
+					// Struct elements have no TSet<T, TRef> wrapper; reject rather than emit
+					// an uncompilable set (a struct is not hashable as a UE set element anyway).
+					if (inner.NativeRefType != null) return null;
 					return new PropertyModel
 					{
 						Kind = PropertyKind.Set,
@@ -115,20 +111,7 @@ internal static class PropertyClassifier
 					};
 				}
 				case "Dictionary":
-				{
-					ElementInfo? key = ClassifyElement(args[0]);
-					ElementInfo? value = ClassifyElement(args[1]);
-					if (key == null || value == null) return null;
-					return new PropertyModel
-					{
-						Kind = PropertyKind.Map,
-						ManagedType = $"TMap<{key.ManagedType}, {value.ManagedType}>",
-						PropTypeClass = "UMapProperty",
-						Key = key,
-						Inner = value,
-						IsWrapper = true,
-					};
-				}
+					return MakeMap(args[0], args[1]);
 			}
 		}
 
@@ -240,6 +223,9 @@ internal static class PropertyClassifier
 				{
 					ElementInfo? inner = ClassifyElement(args[0]);
 					if (inner == null) return null;
+					// Struct elements have no TSet<T, TRef> wrapper; reject rather than emit
+					// an uncompilable set (a struct is not hashable as a UE set element anyway).
+					if (inner.NativeRefType != null) return null;
 					return new PropertyModel
 					{
 						Kind = PropertyKind.Set,
@@ -250,20 +236,7 @@ internal static class PropertyClassifier
 					};
 				}
 				case "TMap":
-				{
-					ElementInfo? key = ClassifyElement(args[0]);
-					ElementInfo? value = ClassifyElement(args[1]);
-					if (key == null || value == null) return null;
-					return new PropertyModel
-					{
-						Kind = PropertyKind.Map,
-						ManagedType = $"TMap<{key.ManagedType}, {value.ManagedType}>",
-						PropTypeClass = "UMapProperty",
-						Key = key,
-						Inner = value,
-						IsWrapper = true,
-					};
-				}
+					return MakeMap(args[0], args[1]);
 			}
 		}
 
@@ -357,15 +330,76 @@ internal static class PropertyClassifier
 			};
 		}
 
-		// TArray<T>: simple element variant.
+		// TArray<T>: simple element variant (or struct element via native-ref).
 		ElementInfo? simple = ClassifyElement(args[0]);
 		if (simple == null) return null;
+		return MakeArrayFromElement(simple);
+	}
+
+	/// <summary>
+	/// Builds an array property model from an already-classified element. A struct element
+	/// (carrying a native-ref) becomes a StructArray exposed as <c>TArray&lt;T, TRef&gt;</c>;
+	/// every other element becomes a simple <c>TArray&lt;T&gt;</c>.
+	/// </summary>
+	private static PropertyModel MakeArrayFromElement(ElementInfo inner)
+	{
+		if (inner.NativeRefType != null)
+		{
+			return new PropertyModel
+			{
+				Kind = PropertyKind.StructArray,
+				ManagedType = $"TArray<{inner.ManagedType}, {inner.NativeRefType}>",
+				PropTypeClass = "UArrayProperty",
+				Inner = inner,
+				IsWrapper = true,
+			};
+		}
+
 		return new PropertyModel
 		{
 			Kind = PropertyKind.Array,
-			ManagedType = $"TArray<{simple.ManagedType}>",
+			ManagedType = $"TArray<{inner.ManagedType}>",
 			PropTypeClass = "UArrayProperty",
-			Inner = simple,
+			Inner = inner,
+			IsWrapper = true,
+		};
+	}
+
+	/// <summary>
+	/// Builds a map property model from key/value element types. A struct value (carrying a
+	/// native-ref) becomes a StructMap exposed as <c>TMap&lt;K, V, VRef&gt;</c> (the wrapper takes
+	/// only the key marshaller); every other value becomes a simple <c>TMap&lt;K, V&gt;</c>.
+	/// Struct keys are unsupported (a struct is not hashable as a UE map key).
+	/// </summary>
+	private static PropertyModel? MakeMap(ITypeSymbol keyType, ITypeSymbol valueType)
+	{
+		ElementInfo? key = ClassifyElement(keyType);
+		ElementInfo? value = ClassifyElement(valueType);
+		if (key == null || value == null) return null;
+
+		// A struct key has no hashable map-key representation; reject it.
+		if (key.NativeRefType != null) return null;
+
+		if (value.NativeRefType != null)
+		{
+			return new PropertyModel
+			{
+				Kind = PropertyKind.StructMap,
+				ManagedType = $"TMap<{key.ManagedType}, {value.ManagedType}, {value.NativeRefType}>",
+				PropTypeClass = "UMapProperty",
+				Key = key,
+				Inner = value,
+				IsWrapper = true,
+			};
+		}
+
+		return new PropertyModel
+		{
+			Kind = PropertyKind.Map,
+			ManagedType = $"TMap<{key.ManagedType}, {value.ManagedType}>",
+			PropTypeClass = "UMapProperty",
+			Key = key,
+			Inner = value,
 			IsWrapper = true,
 		};
 	}
@@ -422,12 +456,30 @@ internal static class PropertyClassifier
 
 		if (SymbolUtils.IsUObjectDerived(coreType, includeSelf: true))
 		{
+			// ObjectMarshaller<T> implements IMarshaller<T?>, so the container element type is
+			// nullable (UObject?) to match the marshaller instance's generic argument.
 			return new ElementInfo
 			{
-				ManagedType = managed,
+				ManagedType = $"{managed}?",
 				PropTypeClass = "UObjectProperty",
 				UnderlyingTypeExpr = $"{managed}.StaticClass.NativeClass",
 				MarshallerInstanceExpr = $"ObjectMarshaller<{managed}>.Instance",
+			};
+		}
+
+		// User-defined USTRUCT used as a container element (array element / map value).
+		// Exposed through its generated FXxxNativeRef; the struct container wrappers
+		// (TArray<T, TRef> / TMap<K, V, VRef>) marshal through the native-ref rather than an
+		// IMarshaller instance, so MarshallerInstanceExpr stays null.
+		if (IsUserStructType(coreType))
+		{
+			string nativeRef = $"{managed}NativeRef";
+			return new ElementInfo
+			{
+				ManagedType = managed,
+				PropTypeClass = "UStructProperty",
+				UnderlyingTypeExpr = $"{nativeRef}.NativeType",
+				NativeRefType = nativeRef,
 			};
 		}
 

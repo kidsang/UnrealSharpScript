@@ -48,6 +48,12 @@ public partial class USsTestGenClassManual : IStaticClass<USsTestGenClassManual>
 	private static readonly int Class_Offset;
 	private static readonly IntPtr SoftClassPtr_NativeProp;
 	private static readonly int SoftClassPtr_Offset;
+	private static readonly IntPtr ObjectArray_NativeProp;
+	private static readonly int ObjectArray_Offset;
+	private static readonly IntPtr ObjectSet_NativeProp;
+	private static readonly int ObjectSet_Offset;
+	private static readonly IntPtr IntObjectMap_NativeProp;
+	private static readonly int IntObjectMap_Offset;
 
 	static USsTestGenClassManual()
 	{
@@ -157,6 +163,28 @@ public partial class USsTestGenClassManual : IStaticClass<USsTestGenClassManual>
 				PropType = USoftClassProperty.StaticClass.NativeClass,
 				UnderlyingType = UObject.StaticClass.NativeClass,
 			},
+			new()
+			{
+				PropName = "ObjectArray",
+				PropType = UArrayProperty.StaticClass.NativeClass,
+				InnerPropType = UObjectProperty.StaticClass.NativeClass,
+				InnerUnderlyingType = UObject.StaticClass.NativeClass,
+			},
+			new()
+			{
+				PropName = "ObjectSet",
+				PropType = USetProperty.StaticClass.NativeClass,
+				InnerPropType = UObjectProperty.StaticClass.NativeClass,
+				InnerUnderlyingType = UObject.StaticClass.NativeClass,
+			},
+			new()
+			{
+				PropName = "IntObjectMap",
+				PropType = UMapProperty.StaticClass.NativeClass,
+				InnerPropType = UObjectProperty.StaticClass.NativeClass,
+				InnerUnderlyingType = UObject.StaticClass.NativeClass,
+				KeyPropType = UIntProperty.StaticClass.NativeClass,
+			},
 		];
 
 		unsafe
@@ -211,6 +239,12 @@ public partial class USsTestGenClassManual : IStaticClass<USsTestGenClassManual>
 		Class_Offset = TypeInterop.GetPropertyOffset(Class_NativeProp);
 		SoftClassPtr_NativeProp = propIter.FindNext("SoftClassPtr");
 		SoftClassPtr_Offset = TypeInterop.GetPropertyOffset(SoftClassPtr_NativeProp);
+		ObjectArray_NativeProp = propIter.FindNext("ObjectArray");
+		ObjectArray_Offset = TypeInterop.GetPropertyOffset(ObjectArray_NativeProp);
+		ObjectSet_NativeProp = propIter.FindNext("ObjectSet");
+		ObjectSet_Offset = TypeInterop.GetPropertyOffset(ObjectSet_NativeProp);
+		IntObjectMap_NativeProp = propIter.FindNext("IntObjectMap");
+		IntObjectMap_Offset = TypeInterop.GetPropertyOffset(IntObjectMap_NativeProp);
 	}
 
 	public partial bool Bool
@@ -445,6 +479,39 @@ public partial class USsTestGenClassManual : IStaticClass<USsTestGenClassManual>
 		{
 			ThrowIfNotValid();
 			SoftClassPtrMarshaller<UObject>.ToNative(NativeObject + SoftClassPtr_Offset, value);
+		}
+	}
+
+	private TArray<UObject?>? _objectArray;
+
+	public partial TArray<UObject?> ObjectArray
+	{
+		get
+		{
+			ThrowIfNotValid();
+			return _objectArray ??= new(NativeObject + ObjectArray_Offset, ObjectArray_NativeProp, ObjectMarshaller<UObject>.Instance);
+		}
+	}
+
+	private TSet<UObject?>? _objectSet;
+
+	public partial TSet<UObject?> ObjectSet
+	{
+		get
+		{
+			ThrowIfNotValid();
+			return _objectSet ??= new(NativeObject + ObjectSet_Offset, ObjectSet_NativeProp, ObjectMarshaller<UObject>.Instance);
+		}
+	}
+
+	private TMap<int, UObject?>? _intObjectMap;
+
+	public partial TMap<int, UObject?> IntObjectMap
+	{
+		get
+		{
+			ThrowIfNotValid();
+			return _intObjectMap ??= new(NativeObject + IntObjectMap_Offset, IntObjectMap_NativeProp, BlittableMarshaller<int>.Instance, ObjectMarshaller<UObject>.Instance);
 		}
 	}
 }

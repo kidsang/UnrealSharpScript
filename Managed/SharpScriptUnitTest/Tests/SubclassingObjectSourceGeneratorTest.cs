@@ -245,6 +245,46 @@ public class SubclassingObjectSourceGeneratorTest : IUnitTestInterface
 		Utils.Assert(obj.BlittableStruct.X == 30);
 		Utils.Assert(obj.BlittableStruct.Y == 30);
 
+		TestObjectAsContainerValue(obj, objValue);
+
 		return true;
+	}
+
+	private static void TestObjectAsContainerValue(USsTestGenClassSourceGenerator obj, USsTestGenClassSourceGenerator objValue)
+	{
+		USsTestGenClassSourceGenerator objOne = NewObject<USsTestGenClassSourceGenerator>();
+		USsTestGenClassSourceGenerator objTwo = NewObject<USsTestGenClassSourceGenerator>();
+
+		// Default values: every object container starts empty.
+		Utils.Assert(obj.ObjectArray.SequenceEqual([]));
+		Utils.Assert(obj.ObjectSet.SequenceEqual([]));
+		Utils.Assert(DictEquals(obj.IntObjectMap, []));
+
+		// Object as TArray element.
+		obj.ObjectArray.CopyFrom([objOne, objTwo]);
+		Utils.Assert(obj.ObjectArray.SequenceEqual([objOne, objTwo]));
+		obj.ObjectArray[1] = objValue;
+		Utils.Assert(obj.ObjectArray[1] == objValue);
+		Utils.Assert(obj.ObjectArray.Contains(objOne));
+		obj.ObjectArray.Clear();
+		Utils.Assert(obj.ObjectArray.SequenceEqual([]));
+
+		// Object as TSet element.
+		obj.ObjectSet.CopyFrom([objOne, objTwo]);
+		Utils.Assert(obj.ObjectSet.SetEquals([objOne, objTwo]));
+		Utils.Assert(obj.ObjectSet.Contains(objOne));
+		Utils.Assert(!obj.ObjectSet.Contains(objValue));
+		obj.ObjectSet.Clear();
+		Utils.Assert(obj.ObjectSet.SequenceEqual([]));
+
+		// Object as TMap value.
+		Dictionary<int, UObject?> objValueDict = new() { { 1, objOne }, { 2, objTwo } };
+		obj.IntObjectMap.CopyFrom(objValueDict);
+		Utils.Assert(DictEquals(obj.IntObjectMap, objValueDict));
+		Utils.Assert(obj.IntObjectMap[1] == objOne);
+		obj.IntObjectMap[1] = objValue;
+		Utils.Assert(obj.IntObjectMap[1] == objValue);
+		obj.IntObjectMap.Clear();
+		Utils.Assert(DictEquals(obj.IntObjectMap, []));
 	}
 }

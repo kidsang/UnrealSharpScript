@@ -55,4 +55,16 @@ public partial struct FSsTestGenStructSourceGenerator
 
 	[UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "CSharp|Internal")]
 	public TSoftClassPtr<UObject> SoftClassPtr;
+
+	[UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "CSharp|Internal")]
+	public List<FSsArrayTestInnerGenStructManual> StructArray;
+
+	[UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "CSharp|Internal")]
+	public Dictionary<int, FSsArrayTestInnerGenStructManual> IntStructMap;
+
+	[UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "CSharp|Internal")]
+	public List<FSsTestBlittableGenStructManual> BlittableStructArray;
+
+	[UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "CSharp|Internal")]
+	public Dictionary<int, FSsTestBlittableGenStructManual> IntBlittableStructMap;
 }
