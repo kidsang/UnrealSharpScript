@@ -13,6 +13,7 @@ internal static class ClassEmitter
 		StringBuilder sb = new();
 
 		sb.AppendLine("#nullable enable");
+		sb.AppendLine("using System.Runtime.InteropServices;");
 		sb.AppendLine("using SharpScript;");
 		sb.AppendLine("using SharpScript.Interop;");
 		sb.AppendLine("using SharpScript.Subclassing;");
@@ -40,6 +41,19 @@ internal static class ClassEmitter
 			EmitAccessor(sb, prop);
 		}
 
+		if (model.Functions.Count > 0)
+		{
+			sb.AppendLine();
+			sb.AppendLine("\t// ------------------------------------------------------------------");
+			sb.AppendLine("\t// Native dispatch stubs (UE -> C#).");
+			sb.AppendLine("\t// ------------------------------------------------------------------");
+			foreach (FunctionModel func in model.Functions)
+			{
+				sb.AppendLine();
+				FunctionEmitter.EmitDispatchStub(sb, model.ClassName, func);
+			}
+		}
+
 		sb.AppendLine("}");
 		return sb.ToString();
 	}
@@ -54,12 +68,20 @@ internal static class ClassEmitter
 			sb.AppendLine($"\tprivate static readonly IntPtr {prop.Name}_NativeProp;");
 			sb.AppendLine($"\tprivate static readonly int {prop.Name}_Offset;");
 		}
+		foreach (FunctionModel func in model.Functions)
+		{
+			FunctionEmitter.EmitStaticFields(sb, func);
+		}
 	}
 
 	private static void EmitStaticConstructor(StringBuilder sb, ClassModel model)
 	{
-		sb.AppendLine($"\tstatic {model.ClassName}()");
+		bool hasFunctions = model.Functions.Count > 0;
+
+		// A function-carrying class needs 'unsafe' on the ctor itself (dispatch pointers via &).
+		sb.AppendLine($"\tstatic {(hasFunctions ? "unsafe " : "")}{model.ClassName}()");
 		sb.AppendLine("\t{");
+
 		sb.AppendLine("\t\tPropertyDef[] _propertyDefs =");
 		sb.AppendLine("\t\t[");
 		foreach (PropertyModel prop in model.Properties)
@@ -68,6 +90,45 @@ internal static class ClassEmitter
 		}
 		sb.AppendLine("\t\t];");
 		sb.AppendLine();
+
+		if (!hasFunctions)
+		{
+			EmitGenerateNoFunctions(sb, model);
+		}
+		else
+		{
+			EmitGenerateWithFunctions(sb, model);
+		}
+
+		sb.AppendLine();
+		sb.AppendLine($"\t\tStaticClass = new TSubclassOf<{model.ClassName}>(NativeType);");
+		sb.AppendLine($"\t\tHouseKeeper.AddBindedUnrealClass(StaticClass.Class!, typeof({model.ClassName}));");
+
+		if (model.Properties.Count > 0)
+		{
+			sb.AppendLine();
+			sb.AppendLine("\t\tPropertyIterator propIter = new PropertyIterator(NativeType);");
+			foreach (PropertyModel prop in model.Properties)
+			{
+				sb.AppendLine($"\t\t{prop.Name}_NativeProp = propIter.FindNext(\"{prop.Name}\");");
+				sb.AppendLine($"\t\t{prop.Name}_Offset = TypeInterop.GetPropertyOffset({prop.Name}_NativeProp);");
+			}
+		}
+
+		foreach (FunctionModel func in model.Functions)
+		{
+			sb.AppendLine();
+			FunctionEmitter.EmitResolution(sb, func);
+		}
+
+		sb.AppendLine("\t}");
+	}
+
+	/// <summary>
+	/// Property-only GenerateClass call: pin the property defs and pass a null function-def slot.
+	/// </summary>
+	private static void EmitGenerateNoFunctions(StringBuilder sb, ClassModel model)
+	{
 		sb.AppendLine("\t\tunsafe");
 		sb.AppendLine("\t\t{");
 		sb.AppendLine("\t\t\tfixed (PropertyDef* _propertyDefsPtr = _propertyDefs)");
@@ -76,20 +137,56 @@ internal static class ClassEmitter
 		sb.AppendLine($"\t\t\t\t\tRuntimeTypeHandle.ToIntPtr(typeof({model.ClassName}).TypeHandle),");
 		sb.AppendLine($"\t\t\t\t\t\"{model.UnrealName}\",");
 		sb.AppendLine($"\t\t\t\t\t{model.SuperClass}.StaticClass.NativeClass,");
-		sb.AppendLine("\t\t\t\t\t(IntPtr)_propertyDefsPtr, _propertyDefs.Length);");
+		sb.AppendLine("\t\t\t\t\t(IntPtr)_propertyDefsPtr, _propertyDefs.Length,");
+		sb.AppendLine("\t\t\t\t\tIntPtr.Zero, 0);");
 		sb.AppendLine("\t\t\t}");
 		sb.AppendLine("\t\t}");
-		sb.AppendLine();
-		sb.AppendLine($"\t\tStaticClass = new TSubclassOf<{model.ClassName}>(NativeType);");
-		sb.AppendLine($"\t\tHouseKeeper.AddBindedUnrealClass(StaticClass.Class!, typeof({model.ClassName}));");
-		sb.AppendLine();
-		sb.AppendLine("\t\tPropertyIterator propIter = new PropertyIterator(NativeType);");
-		foreach (PropertyModel prop in model.Properties)
+	}
+
+	/// <summary>
+	/// GenerateClass call with functions: build each function's FunctionParamDef[], pin them all,
+	/// build the FunctionDef[] (with managed dispatch pointers), pin it and the property defs,
+	/// then call GenerateClass with both blocks. Mirrors SsTestGenFunctionManual.generated.cs.
+	/// </summary>
+	private static void EmitGenerateWithFunctions(StringBuilder sb, ClassModel model)
+	{
+		// Emit each function's params array first (they are pinned below).
+		foreach (FunctionModel func in model.Functions)
 		{
-			sb.AppendLine($"\t\t{prop.Name}_NativeProp = propIter.FindNext(\"{prop.Name}\");");
-			sb.AppendLine($"\t\t{prop.Name}_Offset = TypeInterop.GetPropertyOffset({prop.Name}_NativeProp);");
+			FunctionEmitter.EmitParamsArray(sb, func);
 		}
-		sb.AppendLine("\t}");
+
+		// Pin the property defs and every function's params array in a single fixed cascade.
+		sb.AppendLine("\t\tfixed (PropertyDef* _propertyDefsPtr = _propertyDefs)");
+		string[] ptrNames = new string[model.Functions.Count];
+		for (int i = 0; i < model.Functions.Count; i++)
+		{
+			ptrNames[i] = $"_p{i}";
+			string local = FunctionEmitter.ParamsArrayLocal(model.Functions[i]);
+			sb.AppendLine($"\t\tfixed (FunctionParamDef* {ptrNames[i]} = {local})");
+		}
+		sb.AppendLine("\t\t{");
+
+		sb.AppendLine("\t\t\tFunctionDef[] _functionDefs =");
+		sb.AppendLine("\t\t\t[");
+		for (int i = 0; i < model.Functions.Count; i++)
+		{
+			FunctionModel func = model.Functions[i];
+			FunctionEmitter.EmitFunctionDef(sb, func, ptrNames[i], FunctionEmitter.ParamsArrayLocal(func));
+		}
+		sb.AppendLine("\t\t\t];");
+		sb.AppendLine();
+
+		sb.AppendLine("\t\t\tfixed (FunctionDef* _functionDefsPtr = _functionDefs)");
+		sb.AppendLine("\t\t\t{");
+		sb.AppendLine("\t\t\t\tNativeType = SubclassingUtils.GenerateClass(");
+		sb.AppendLine($"\t\t\t\t\tRuntimeTypeHandle.ToIntPtr(typeof({model.ClassName}).TypeHandle),");
+		sb.AppendLine($"\t\t\t\t\t\"{model.UnrealName}\",");
+		sb.AppendLine($"\t\t\t\t\t{model.SuperClass}.StaticClass.NativeClass,");
+		sb.AppendLine("\t\t\t\t\t(IntPtr)_propertyDefsPtr, _propertyDefs.Length,");
+		sb.AppendLine("\t\t\t\t\t(IntPtr)_functionDefsPtr, _functionDefs.Length);");
+		sb.AppendLine("\t\t\t}");
+		sb.AppendLine("\t\t}");
 	}
 
 	private static void EmitAccessor(StringBuilder sb, PropertyModel prop)

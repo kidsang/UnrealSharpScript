@@ -75,6 +75,79 @@ internal static class PropertyClassifier
 	}
 
 	/// <summary>
+	/// Classifies a UFUNCTION parameter (or return value) type into a <see cref="PropertyModel"/>.
+	/// Parameters use the same collection forms as struct fields (<c>List&lt;T&gt;</c> /
+	/// <c>HashSet&lt;T&gt;</c> / <c>Dictionary&lt;K,V&gt;</c>) and pass USTRUCTs by value. A USTRUCT
+	/// whose fields are all blittable is marshalled directly with <c>BlittableMarshaller&lt;T&gt;</c>
+	/// (matching the hand-written FuncBlittableStruct); otherwise it goes through its generated
+	/// <c>FXxxNativeRef</c> (matching FuncStruct).
+	/// </summary>
+	public static PropertyModel? ClassifyParam(ITypeSymbol type)
+	{
+		ITypeSymbol coreType = StripNullable(type).WithNullableAnnotation(NullableAnnotation.None);
+
+		// USTRUCT passed by value. A fully-blittable struct marshals via BlittableMarshaller<T>;
+		// a non-blittable one via its generated native-ref.
+		if (IsUserStructType(coreType))
+		{
+			string valueType = coreType.ToDisplayString(SymbolDisplayFormat.MinimallyQualifiedFormat);
+			string nativeRef = $"{valueType}NativeRef";
+			bool blittable = IsBlittableStruct(coreType);
+			return new PropertyModel
+			{
+				Kind = PropertyKind.StructNativeRef,
+				ManagedType = valueType,
+				PropTypeClass = "UStructProperty",
+				NativeRefType = nativeRef,
+				ValueStructType = valueType,
+				UnderlyingTypeExpr = $"{nativeRef}.NativeType",
+				IsBlittable = blittable,
+				IsWrapper = !blittable,
+			};
+		}
+
+		// Collection parameters use the field-style collection classification (List/HashSet/Dictionary).
+		if (coreType is INamedTypeSymbol { IsGenericType: true, Name: "List" or "HashSet" or "Dictionary" })
+		{
+			return ClassifyFieldType(type);
+		}
+
+		// Everything else (bool/numeric/string/FName/FText/enum/object/soft/lazy/subclass/soft-class/
+		// TArray/TSet/TMap wrapper forms) behaves identically to the class-property case.
+		return ClassifyType(type, isRefReturn: false);
+	}
+
+	/// <summary>
+	/// True when a USTRUCT is blittable, i.e. its managed layout matches the UE-generated native
+	/// layout so it can be marshalled with <c>BlittableMarshaller&lt;T&gt;</c>. Delegates to the shared
+	/// <see cref="IsBlittableStructType"/> so this stays identical to <c>UStructGenerator</c>'s rule
+	/// (an unbound instance field or any non-blittable [UPROPERTY] makes the struct non-blittable).
+	/// </summary>
+	private static bool IsBlittableStruct(ITypeSymbol structType)
+	{
+		foreach (ISymbol member in structType.GetMembers())
+		{
+			if (member is not IFieldSymbol fieldSymbol || fieldSymbol.IsStatic || fieldSymbol.IsImplicitlyDeclared)
+			{
+				continue;
+			}
+
+			if (!SymbolUtils.HasUPropertyAttribute(fieldSymbol))
+			{
+				return false;
+			}
+
+			PropertyModel? fieldModel = ClassifyFieldType(fieldSymbol.Type);
+			if (fieldModel == null || !fieldModel.IsBlittable)
+			{
+				return false;
+			}
+		}
+
+		return true;
+	}
+
+	/// <summary>
 	/// Maps a struct field's declared type onto a <see cref="PropertyModel"/>. Handles the
 	/// collection / nested-struct field forms, then delegates to the shared value/object
 	/// classification for everything else.

@@ -65,7 +65,8 @@ public partial class USsTestGenEnumContainerClassManual : IStaticClass<USsTestGe
 					RuntimeTypeHandle.ToIntPtr(typeof(USsTestGenEnumContainerClassManual).TypeHandle),
 					"SsTestGenEnumContainerClassManual",
 					UObject.StaticClass.NativeClass,
-					(IntPtr)_propertyDefsPtr, _propertyDefs.Length);
+					(IntPtr)_propertyDefsPtr, _propertyDefs.Length,
+					IntPtr.Zero, 0);
 			}
 		}
 

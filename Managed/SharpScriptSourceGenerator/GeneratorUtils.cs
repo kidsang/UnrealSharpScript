@@ -13,6 +13,7 @@ namespace SharpScriptSourceGenerator;
 internal static class SymbolUtils
 {
 	private const string UPropertyAttributeName = "UPROPERTYAttribute";
+	private const string UFunctionAttributeName = "UFUNCTIONAttribute";
 
 	/// <summary>
 	/// True when the symbol carries a <c>[UPROPERTY]</c> attribute.
@@ -22,6 +23,21 @@ internal static class SymbolUtils
 		foreach (AttributeData attr in symbol.GetAttributes())
 		{
 			if (attr.AttributeClass?.Name == UPropertyAttributeName)
+			{
+				return true;
+			}
+		}
+		return false;
+	}
+
+	/// <summary>
+	/// True when the symbol carries a <c>[UFUNCTION]</c> attribute.
+	/// </summary>
+	public static bool HasUFunctionAttribute(ISymbol symbol)
+	{
+		foreach (AttributeData attr in symbol.GetAttributes())
+		{
+			if (attr.AttributeClass?.Name == UFunctionAttributeName)
 			{
 				return true;
 			}

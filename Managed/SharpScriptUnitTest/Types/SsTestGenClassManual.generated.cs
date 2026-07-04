@@ -195,7 +195,8 @@ public partial class USsTestGenClassManual : IStaticClass<USsTestGenClassManual>
 					RuntimeTypeHandle.ToIntPtr(typeof(USsTestGenClassManual).TypeHandle),
 					"SsTestGenClassManual",
 					UObject.StaticClass.NativeClass,
-					(IntPtr)_propertyDefsPtr, _propertyDefs.Length);
+					(IntPtr)_propertyDefsPtr, _propertyDefs.Length,
+					IntPtr.Zero, 0);
 			}
 		}
 

@@ -67,25 +67,94 @@ public sealed class UClassGenerator : IIncrementalGenerator
 
 		foreach (ISymbol member in classSymbol.GetMembers())
 		{
-			if (member is not IPropertySymbol propertySymbol)
+			switch (member)
 			{
-				continue;
-			}
-
-			if (!SymbolUtils.HasUPropertyAttribute(propertySymbol))
-			{
-				continue;
-			}
-
-			PropertyModel? prop = PropertyClassifier.Classify(propertySymbol, context.ReportDiagnostic);
-			if (prop != null)
-			{
-				model.Properties.Add(prop);
+				case IPropertySymbol propertySymbol when SymbolUtils.HasUPropertyAttribute(propertySymbol):
+				{
+					PropertyModel? prop = PropertyClassifier.Classify(propertySymbol, context.ReportDiagnostic);
+					if (prop != null)
+					{
+						model.Properties.Add(prop);
+					}
+					break;
+				}
+				case IMethodSymbol { MethodKind: MethodKind.Ordinary } methodSymbol when SymbolUtils.HasUFunctionAttribute(methodSymbol):
+				{
+					FunctionModel? func = ClassifyFunction(methodSymbol, context.ReportDiagnostic);
+					if (func != null)
+					{
+						model.Functions.Add(func);
+					}
+					break;
+				}
 			}
 		}
 
 		string source = ClassEmitter.Emit(model);
 		context.AddSource(model.HintName, SourceText.From(source, Encoding.UTF8));
+	}
+
+	/// <summary>
+	/// Classifies a <c>[UFUNCTION]</c> method into a <see cref="FunctionModel"/>. Each ref/out
+	/// parameter becomes an out param, each by-value parameter an in param, and a non-void
+	/// return type produces the synthetic "ReturnValue" param. A parameter (or return) whose
+	/// type the subclassing path cannot express reports SS1001 and skips the whole function.
+	/// </summary>
+	private static FunctionModel? ClassifyFunction(IMethodSymbol method, Action<Diagnostic> report)
+	{
+		FunctionModel func = new()
+		{
+			Name = method.Name,
+			IsStatic = method.IsStatic,
+		};
+
+		// Return value (if any) becomes the synthetic "ReturnValue" parameter.
+		if (method.ReturnType.SpecialType != SpecialType.System_Void)
+		{
+			PropertyModel? retType = PropertyClassifier.ClassifyParam(method.ReturnType);
+			if (retType == null)
+			{
+				report(Diagnostic.Create(
+					Diagnostics.UnsupportedPropertyType,
+					method.Locations.FirstOrDefault(),
+					$"{method.Name} (return)",
+					method.ReturnType.ToDisplayString()));
+				return null;
+			}
+			func.ReturnParam = new FunctionParamModel
+			{
+				Name = "ReturnValue",
+				Role = ParamRole.Return,
+				Type = retType,
+				DeclaredType = method.ReturnType.ToDisplayString(SymbolDisplayFormat.MinimallyQualifiedFormat),
+			};
+		}
+
+		foreach (IParameterSymbol param in method.Parameters)
+		{
+			PropertyModel? paramType = PropertyClassifier.ClassifyParam(param.Type);
+			if (paramType == null)
+			{
+				report(Diagnostic.Create(
+					Diagnostics.UnsupportedPropertyType,
+					param.Locations.FirstOrDefault(),
+					$"{method.Name}.{param.Name}",
+					param.Type.ToDisplayString()));
+				return null;
+			}
+
+			// 'out'/'ref' parameters are copied back after the call; everything else is input.
+			ParamRole role = param.RefKind is RefKind.Out or RefKind.Ref ? ParamRole.Out : ParamRole.In;
+			func.Parameters.Add(new FunctionParamModel
+			{
+				Name = param.Name,
+				Role = role,
+				Type = paramType,
+				DeclaredType = param.Type.ToDisplayString(SymbolDisplayFormat.MinimallyQualifiedFormat),
+			});
+		}
+
+		return func;
 	}
 
 	/// <summary>

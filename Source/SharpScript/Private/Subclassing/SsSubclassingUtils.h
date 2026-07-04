@@ -56,10 +56,106 @@ struct FSsEnumValueDef
 };
 
 /**
+ * Engine-agnostic UFUNCTION parameter role flags supplied by the C# layer.
+ * <br/> The C# side must NOT hardcode UE EPropertyFlags (CPF_*), because those values may differ
+ * across engine versions. C# passes these stable values, and C++ translates them to CPF_* in
+ * TranslateParamFlags().
+ * <br/> See: SubclassingUtils.cs ESsFunctionParamFlags
+ */
+enum class ESsFunctionParamFlags : uint32
+{
+	None = 0,
+	/** Normal input parameter. */
+	InParam = 1 << 0,
+	/** Value is copied out after the call (out parameter). */
+	OutParam = 1 << 1,
+	/** The return value of the function. */
+	ReturnParam = 1 << 2,
+};
+
+ENUM_CLASS_FLAGS(ESsFunctionParamFlags);
+
+/**
+ * Engine-agnostic UFUNCTION role flags supplied by the C# layer.
+ * <br/> As with ESsFunctionParamFlags, the C# side must NOT hardcode UE EFunctionFlags (FUNC_*),
+ * because those values may differ across engine versions. C# passes these stable values, and C++
+ * translates them to FUNC_* in TranslateFunctionFlags().
+ * <br/> See: SubclassingUtils.cs SsFunctionFlags
+ */
+enum class ESsFunctionFlags : uint32
+{
+	None = 0,
+	/** The function is a C# static method (generated UFunction gets FUNC_Static, no "this" is resolved). */
+	Static = 1 << 0,
+};
+
+ENUM_CLASS_FLAGS(ESsFunctionFlags);
+
+/**
+ * Meta info collected from a csharp UFUNCTION parameter to create a UFunction parameter property.
+ * <br/> Shares the same shape as FSsPropertyDef, plus a flags field describing the parameter role
+ * (input / out / return / by-ref).
+ * <br/> See: SubclassingUtils.cs FunctionParamDef
+ */
+struct FSsFunctionParamDef
+{
+	/** Name of the parameter. */
+	FName ParamName;
+
+	/** Class of UProperty, eg. UIntProperty::StaticClass. */
+	UClass* PropType = nullptr;
+
+	/** Underlying type of this parameter, e.g. object property class / struct / enum. */
+	UField* UnderlyingType = nullptr;
+
+	/** For array/set inner or map value: the inner property class. */
+	UClass* InnerPropType = nullptr;
+
+	/** For array/set inner or map value: the inner underlying type. */
+	UField* InnerUnderlyingType = nullptr;
+
+	/** For map key: the key property class. */
+	UClass* KeyPropType = nullptr;
+
+	/** For map key: the key underlying type. */
+	UField* KeyUnderlyingType = nullptr;
+
+	/** Engine-agnostic parameter role flags. Translated to CPF_* by TranslateParamFlags(). */
+	ESsFunctionParamFlags ParamFlags = ESsFunctionParamFlags::None;
+};
+
+/**
+ * Meta info collected from a csharp UFUNCTION definition to create a UFunction on a generated class.
+ * <br/> See: SubclassingUtils.cs FunctionDef
+ */
+struct FSsFunctionDef
+{
+	/** Name of the function. */
+	FName FuncName;
+
+	/** Array of parameter defines (input params first, then out params, then return value). */
+	const FSsFunctionParamDef* Params = nullptr;
+
+	/** Count of parameter array. */
+	int ParamCount = 0;
+
+	/**
+	 * The managed dispatch function pointer for this function.
+	 * A csharp static [UnmanagedCallersOnly] stub with signature
+	 * void(IntPtr objectHandle, void* paramsBuffer) that reads params, calls the user method and writes back.
+	 * For static functions the objectHandle argument is unused (nullptr is passed).
+	 */
+	const void* ManagedDispatch = nullptr;
+
+	/** Engine-agnostic function role flags. Translated to FUNC_* by TranslateFunctionFlags(). */
+	ESsFunctionFlags FunctionFlags = ESsFunctionFlags::None;
+};
+
+/**
  * Provides functionality to register and create subclassing types in C#.
  */
 UCLASS()
-class USsSubclassingUtils : public USsNativeFuncExporter
+class USsSubclassingUtils final : public USsNativeFuncExporter
 {
 	GENERATED_BODY()
 
@@ -75,15 +171,24 @@ public:
 #endif
 
 	/**
-	 * Called by C#, generate a new unreal class from given infos.
+	 * Called by C#, generate a new unreal class from given infos. Optionally declares UFunctions
+	 * implemented in C#.
 	 * @param ManagedType The C# class which the new class will bind to.
 	 * @param ClassName Name of the new class.
 	 * @param SuperClass Base class of the new class.
 	 * @param PropertyDefines Array of property defines.
 	 * @param PropertyCount Count of property array.
+	 * @param FunctionDefines Array of function defines (may be null when FunctionCount is 0).
+	 * @param FunctionCount Count of function array.
 	 * @return Newly generated class if success, otherwise nullptr.
 	 */
-	static USsGeneratedClass* GenerateClass(const void* ManagedType, const FName& ClassName, UClass* SuperClass, const FSsPropertyDef* PropertyDefines, int PropertyCount);
+	static USsGeneratedClass* GenerateClass(const void* ManagedType, const FName& ClassName, UClass* SuperClass, const FSsPropertyDef* PropertyDefines, int PropertyCount, const FSsFunctionDef* FunctionDefines, int FunctionCount);
+
+	/** Translate engine-agnostic C# parameter flags to UE EPropertyFlags for the current engine version. */
+	static uint64 TranslateParamFlags(ESsFunctionParamFlags ParamFlags);
+
+	/** Translate engine-agnostic C# function flags to UE EFunctionFlags for the current engine version. */
+	static uint32 TranslateFunctionFlags(ESsFunctionFlags FunctionFlags);
 
 	/**
 	 * Called by C#, generate a new unreal struct from given infos.
@@ -112,7 +217,7 @@ public:
 	 */
 	static FProperty* CreateProperty(FFieldVariant Owner, const FSsPropertyDef& PropDef);
 
-private:
+protected:
 	virtual void DoExportFunctions(FSsBindNativeCallbackFunc BindNativeCallbackFunc) override;
 
 private:

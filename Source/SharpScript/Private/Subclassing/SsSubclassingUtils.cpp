@@ -152,16 +152,45 @@ UPackage* USsSubclassingUtils::GetGeneratedPackageEditorOnly()
 }
 #endif
 
-USsGeneratedClass* USsSubclassingUtils::GenerateClass(const void* ManagedType, const FName& ClassName, UClass* SuperClass, const FSsPropertyDef* PropertyDefines, int PropertyCount)
+USsGeneratedClass* USsSubclassingUtils::GenerateClass(const void* ManagedType, const FName& ClassName, UClass* SuperClass, const FSsPropertyDef* PropertyDefines, int PropertyCount, const FSsFunctionDef* FunctionDefines, int FunctionCount)
 {
 	check(IsInGameThread());
 	USsGeneratedClass* GenClass = USsGeneratedClass::GenerateClass(ClassName, SuperClass, PropertyDefines,
-	                                                               PropertyCount);
+	                                                               PropertyCount, FunctionDefines, FunctionCount);
 	if (GenClass)
 	{
 		USsTypeRegistry::RegisterClassType(GenClass, ManagedType);
 	}
 	return GenClass;
+}
+
+uint64 USsSubclassingUtils::TranslateParamFlags(ESsFunctionParamFlags ParamFlags)
+{
+	// Every parameter is at least CPF_Parm.
+	uint64 Result = CPF_Parm;
+	if (EnumHasAnyFlags(ParamFlags, ESsFunctionParamFlags::InParam))
+	{
+		// do nothing
+	}
+	else if (EnumHasAnyFlags(ParamFlags, ESsFunctionParamFlags::OutParam))
+	{
+		Result |= CPF_OutParm | CPF_ReferenceParm;
+	}
+	else if (EnumHasAnyFlags(ParamFlags, ESsFunctionParamFlags::ReturnParam))
+	{
+		Result |= CPF_OutParm | CPF_ReturnParm;
+	}
+	return Result;
+}
+
+uint32 USsSubclassingUtils::TranslateFunctionFlags(ESsFunctionFlags FunctionFlags)
+{
+	uint32 Result = 0;
+	if (EnumHasAnyFlags(FunctionFlags, ESsFunctionFlags::Static))
+	{
+		Result |= FUNC_Static;
+	}
+	return Result;
 }
 
 USsGeneratedStruct* USsSubclassingUtils::GenerateStruct(const FName& StructName, const FSsPropertyDef* PropertyDefines, int PropertyCount)

@@ -154,6 +154,116 @@ internal sealed class PropertyModel
 }
 
 /// <summary>
+/// The role of a UFUNCTION parameter, mirroring <c>SharpScript.Subclassing.ParamFlags</c>.
+/// </summary>
+internal enum ParamRole
+{
+	/// <summary>A normal input parameter.</summary>
+	In,
+
+	/// <summary>An <c>out</c> parameter, copied back after the call.</summary>
+	Out,
+
+	/// <summary>The function return value.</summary>
+	Return,
+}
+
+/// <summary>
+/// A single analysed UFUNCTION parameter (or the synthetic return value) ready for emission.
+/// Wraps the shared <see cref="PropertyModel"/> that describes how the value maps onto the
+/// native side, plus the parameter name and its <see cref="ParamRole"/>.
+/// </summary>
+internal sealed class FunctionParamModel
+{
+	/// <summary>The parameter name, e.g. "InValue"; the synthetic return uses "ReturnValue".</summary>
+	public string Name = "";
+
+	/// <summary>The parameter role (in / out / return).</summary>
+	public ParamRole Role;
+
+	/// <summary>Type mapping shared with the property path (Kind / marshaller / native type).</summary>
+	public PropertyModel Type = null!;
+
+	/// <summary>
+	/// The parameter's declared C# type exactly as written in the user method signature
+	/// (e.g. "List&lt;string&gt;", "UObject?", "int"). Used to declare the dispatch-stub local and the
+	/// <c>out</c> argument so it matches the user method — the wrapper read expression (e.g.
+	/// <c>new TArray&lt;string&gt;(...)</c>) converts into it. The native <see cref="Type"/> mapping
+	/// still drives marshalling, native prop class and offsets.
+	/// </summary>
+	public string DeclaredType = "";
+
+	/// <summary>The <c>ParamFlags</c> enum member name for this role.</summary>
+	public string ParamFlagsExpr => Role switch
+	{
+		ParamRole.Return => "ParamFlags.ReturnParam",
+		ParamRole.Out => "ParamFlags.OutParam",
+		_ => "ParamFlags.InParam",
+	};
+
+	/// <summary>True when a container/wrapper element needs a captured native property pointer.</summary>
+	public bool NeedsNativeProp => Type.IsWrapper;
+}
+
+/// <summary>
+/// A fully analysed [UFUNCTION] method ready for code emission.
+/// </summary>
+internal sealed class FunctionModel
+{
+	/// <summary>The C# method name (also the UE function name), e.g. "FuncInt32".</summary>
+	public string Name = "";
+
+	/// <summary>True when the method is a C# <c>static</c> method (maps to FUNC_Static).</summary>
+	public bool IsStatic;
+
+	/// <summary>The synthetic return-value parameter, or null for a void method.</summary>
+	public FunctionParamModel? ReturnParam;
+
+	/// <summary>The declared parameters in source order (in + out).</summary>
+	public readonly List<FunctionParamModel> Parameters = new();
+
+	/// <summary>
+	/// All params in the order emitted into the native FunctionParamDef[] array: the return
+	/// value first (if any), then out params, then in params — matching the hand-written
+	/// reference (SsTestGenFunctionManual.generated.cs).
+	/// </summary>
+	public IEnumerable<FunctionParamModel> NativeParamOrder()
+	{
+		if (ReturnParam != null)
+		{
+			yield return ReturnParam;
+		}
+		foreach (FunctionParamModel p in Parameters)
+		{
+			if (p.Role == ParamRole.Out)
+			{
+				yield return p;
+			}
+		}
+		foreach (FunctionParamModel p in Parameters)
+		{
+			if (p.Role == ParamRole.In)
+			{
+				yield return p;
+			}
+		}
+	}
+
+	/// <summary>All params (in + out + return) — used to declare offset / native-prop fields.</summary>
+	public IEnumerable<FunctionParamModel> AllParams()
+	{
+		foreach (FunctionParamModel p in Parameters)
+		{
+			yield return p;
+		}
+		if (ReturnParam != null)
+		{
+			yield return ReturnParam;
+		}
+	}
+}
+
+/// <summary>
 /// A fully analysed [UCLASS] declaration ready for code emission.
 /// </summary>
 internal sealed class ClassModel
@@ -170,6 +280,8 @@ internal sealed class ClassModel
 	public string SuperClass = "";
 
 	public readonly List<PropertyModel> Properties = new();
+
+	public readonly List<FunctionModel> Functions = new();
 
 	/// <summary>Hint name used for the generated source file.</summary>
 	public string HintName => $"{ClassName}.generated.cs";
