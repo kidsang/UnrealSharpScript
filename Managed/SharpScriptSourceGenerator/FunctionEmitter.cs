@@ -55,33 +55,10 @@ internal static class FunctionEmitter
 	/// <summary>Emits a single <c>FunctionParamDef</c> initializer.</summary>
 	private static void EmitParamDef(StringBuilder sb, FunctionParamModel p)
 	{
-		PropertyModel t = p.Type;
 		sb.AppendLine("\t\t\tnew()");
 		sb.AppendLine("\t\t\t{");
 		sb.AppendLine($"\t\t\t\tParamName = \"{p.Name}\",");
-		sb.AppendLine($"\t\t\t\tPropType = {t.PropTypeClass}.StaticClass.NativeClass,");
-
-		if (t.UnderlyingTypeExpr != null)
-		{
-			sb.AppendLine($"\t\t\t\tUnderlyingType = {t.UnderlyingTypeExpr},");
-		}
-		if (t.Inner != null)
-		{
-			sb.AppendLine($"\t\t\t\tInnerPropType = {t.Inner.PropTypeClass}.StaticClass.NativeClass,");
-			if (t.Inner.UnderlyingTypeExpr != null)
-			{
-				sb.AppendLine($"\t\t\t\tInnerUnderlyingType = {t.Inner.UnderlyingTypeExpr},");
-			}
-		}
-		if (t.Key != null)
-		{
-			sb.AppendLine($"\t\t\t\tKeyPropType = {t.Key.PropTypeClass}.StaticClass.NativeClass,");
-			if (t.Key.UnderlyingTypeExpr != null)
-			{
-				sb.AppendLine($"\t\t\t\tKeyUnderlyingType = {t.Key.UnderlyingTypeExpr},");
-			}
-		}
-
+		EmitUtils.EmitTypeDefBlock(sb, p.Type);
 		sb.AppendLine($"\t\t\t\tParamFlags = {p.ParamFlagsExpr},");
 		sb.AppendLine("\t\t\t},");
 	}
@@ -105,7 +82,7 @@ internal static class FunctionEmitter
 	/// </summary>
 	public static void EmitResolution(StringBuilder sb, FunctionModel func)
 	{
-		string iter = $"_{LowerFirst(func.Name)}Iter";
+		string iter = $"_{NamingUtils.LowerFirst(func.Name)}Iter";
 		sb.AppendLine($"\t\t{func.Name}_NativeFunc = TypeInterop.FindFunction(NativeType, \"{func.Name}\");");
 		sb.AppendLine($"\t\t{func.Name}_ParamsSize = TypeInterop.GetFunctionParamsSize({func.Name}_NativeFunc);");
 		sb.AppendLine($"\t\tPropertyIterator {iter} = new({func.Name}_NativeFunc);");
@@ -140,7 +117,7 @@ internal static class FunctionEmitter
 		{
 			if (p.Role == ParamRole.In)
 			{
-				string local = LowerFirst(p.Name);
+				string local = NamingUtils.LowerFirst(p.Name);
 				string offset = $"paramsBuffer + {func.Name}_{p.Name}_Offset";
 				sb.AppendLine($"\t\t{ParamDeclType(p)} {local} = {ReadExpr(func, p, offset)};");
 			}
@@ -150,26 +127,12 @@ internal static class FunctionEmitter
 		List<string> args = new();
 		foreach (FunctionParamModel p in func.Parameters)
 		{
-			if (p.Role == ParamRole.In)
-			{
-				args.Add(LowerFirst(p.Name));
-			}
-			else
-			{
-				args.Add($"out {ParamDeclType(p)} {LowerFirst(p.Name)}");
-			}
+			args.Add(p.Role == ParamRole.In ? NamingUtils.LowerFirst(p.Name) : $"out {ParamDeclType(p)} {NamingUtils.LowerFirst(p.Name)}");
 		}
 		string argList = string.Join(", ", args);
 		string target = func.IsStatic ? func.Name : $"self.{func.Name}";
 
-		if (func.ReturnParam != null)
-		{
-			sb.AppendLine($"\t\t{ParamDeclType(func.ReturnParam)} returnValue = {target}({argList});");
-		}
-		else
-		{
-			sb.AppendLine($"\t\t{target}({argList});");
-		}
+		sb.AppendLine(func.ReturnParam != null ? $"\t\t{ParamDeclType(func.ReturnParam)} returnValue = {target}({argList});" : $"\t\t{target}({argList});");
 
 		// Write out-params back.
 		foreach (FunctionParamModel p in func.Parameters)
@@ -177,7 +140,7 @@ internal static class FunctionEmitter
 			if (p.Role == ParamRole.Out)
 			{
 				string offset = $"paramsBuffer + {func.Name}_{p.Name}_Offset";
-				sb.AppendLine($"\t\t{WriteStmt(func, p, offset, LowerFirst(p.Name))}");
+				sb.AppendLine($"\t\t{WriteStmt(func, p, offset, NamingUtils.LowerFirst(p.Name))}");
 			}
 		}
 
@@ -246,31 +209,25 @@ internal static class FunctionEmitter
 	/// </summary>
 	private static string ValueMarshaller(PropertyModel t)
 	{
-		return t.Kind switch
+		if (t.Kind == PropertyKind.StructNativeRef)
 		{
-			PropertyKind.Bool => "BoolMarshaller",
-			PropertyKind.Blittable => $"BlittableMarshaller<{t.ManagedType}>",
-			PropertyKind.Enum => $"EnumMarshaller<{t.ManagedType}>",
-			PropertyKind.String => "StringMarshaller",
-			PropertyKind.Name => "NameMarshaller",
-			PropertyKind.Text => "TextMarshaller",
-			PropertyKind.Object => $"ObjectMarshaller<{t.TargetType}>",
-			PropertyKind.SoftObjectPtr => $"SoftObjectPtrMarshaller<{t.TargetType}>",
-			PropertyKind.LazyObjectPtr => $"LazyObjectPtrMarshaller<{t.TargetType}>",
-			PropertyKind.SubclassOf => $"SubclassOfMarshaller<{t.TargetType}>",
-			PropertyKind.SoftClassPtr => $"SoftClassPtrMarshaller<{t.TargetType}>",
-			// Blittable USTRUCT passed by value.
-			PropertyKind.StructNativeRef => $"BlittableMarshaller<{t.ValueStructType}>",
-			_ => $"BlittableMarshaller<{t.ManagedType}>",
-		};
+			// Blittable USTRUCT passed by value — marshals via BlittableMarshaller with the struct value type.
+			return $"BlittableMarshaller<{t.ValueStructType}>";
+		}
+
+		if (EmitUtils.IsSimpleValueKind(t.Kind))
+		{
+			return EmitUtils.GetValueMarshallerName(t);
+		}
+
+		// Fallback for any unrecognized kind that makes it into the function path.
+		return $"BlittableMarshaller<{t.ManagedType}>";
 	}
 
 	private static string NativeProp(FunctionModel func, FunctionParamModel p)
 		=> $"{func.Name}_{p.Name}_NativeProp";
 
 	/// <summary>The params-array local name for a function, e.g. "_funcInt32Params".</summary>
-	public static string ParamsArrayLocal(FunctionModel func) => $"_{LowerFirst(func.Name)}Params";
+	public static string ParamsArrayLocal(FunctionModel func) => $"_{NamingUtils.LowerFirst(func.Name)}Params";
 
-	private static string LowerFirst(string s)
-		=> s.Length == 0 ? s : char.ToLowerInvariant(s[0]) + s.Substring(1);
 }

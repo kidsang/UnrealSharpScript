@@ -52,164 +52,10 @@ internal static class PropertyClassifier
 	}
 
 	/// <summary>
-	/// Classifies a USTRUCT member field. Struct fields use the managed collection types
-	/// (<c>List&lt;T&gt;</c> / <c>HashSet&lt;T&gt;</c> / <c>Dictionary&lt;K,V&gt;</c>) and nested
-	/// USTRUCTs by value (<c>FXxx</c>), which the generated native-ref exposes as
-	/// <c>TArray</c>/<c>TSet</c>/<c>TMap</c> and <c>FXxxNativeRef</c> respectively.
+	/// Classifies a property's C# type into a <see cref="PropertyModel"/>.
+	/// Each classification step is extracted as a focused Try* method returning a
+	/// <see cref="PropertyModel"/> or null; the pipeline short-circuits on the first match.
 	/// </summary>
-	public static PropertyModel? ClassifyField(IFieldSymbol fieldSymbol, Action<Diagnostic> report)
-	{
-		PropertyModel? model = ClassifyFieldType(fieldSymbol.Type);
-		if (model == null)
-		{
-			report(Diagnostic.Create(
-				Diagnostics.UnsupportedPropertyType,
-				fieldSymbol.Locations.FirstOrDefault(),
-				fieldSymbol.Name,
-				fieldSymbol.Type.ToDisplayString()));
-			return null;
-		}
-
-		model.Name = fieldSymbol.Name;
-		return model;
-	}
-
-	/// <summary>
-	/// Classifies a UFUNCTION parameter (or return value) type into a <see cref="PropertyModel"/>.
-	/// Parameters use the same collection forms as struct fields (<c>List&lt;T&gt;</c> /
-	/// <c>HashSet&lt;T&gt;</c> / <c>Dictionary&lt;K,V&gt;</c>) and pass USTRUCTs by value. A USTRUCT
-	/// whose fields are all blittable is marshalled directly with <c>BlittableMarshaller&lt;T&gt;</c>
-	/// (matching the hand-written FuncBlittableStruct); otherwise it goes through its generated
-	/// <c>FXxxNativeRef</c> (matching FuncStruct).
-	/// </summary>
-	public static PropertyModel? ClassifyParam(ITypeSymbol type)
-	{
-		ITypeSymbol coreType = StripNullable(type).WithNullableAnnotation(NullableAnnotation.None);
-
-		// USTRUCT passed by value. A fully-blittable struct marshals via BlittableMarshaller<T>;
-		// a non-blittable one via its generated native-ref.
-		if (IsUserStructType(coreType))
-		{
-			string valueType = coreType.ToDisplayString(SymbolDisplayFormat.MinimallyQualifiedFormat);
-			string nativeRef = $"{valueType}NativeRef";
-			bool blittable = IsBlittableStruct(coreType);
-			return new PropertyModel
-			{
-				Kind = PropertyKind.StructNativeRef,
-				ManagedType = valueType,
-				PropTypeClass = "UStructProperty",
-				NativeRefType = nativeRef,
-				ValueStructType = valueType,
-				UnderlyingTypeExpr = $"{nativeRef}.NativeType",
-				IsBlittable = blittable,
-				IsWrapper = !blittable,
-			};
-		}
-
-		// Collection parameters use the field-style collection classification (List/HashSet/Dictionary).
-		if (coreType is INamedTypeSymbol { IsGenericType: true, Name: "List" or "HashSet" or "Dictionary" })
-		{
-			return ClassifyFieldType(type);
-		}
-
-		// Everything else (bool/numeric/string/FName/FText/enum/object/soft/lazy/subclass/soft-class/
-		// TArray/TSet/TMap wrapper forms) behaves identically to the class-property case.
-		return ClassifyType(type, isRefReturn: false);
-	}
-
-	/// <summary>
-	/// True when a USTRUCT is blittable, i.e. its managed layout matches the UE-generated native
-	/// layout so it can be marshalled with <c>BlittableMarshaller&lt;T&gt;</c>. Delegates to the shared
-	/// <see cref="IsBlittableStructType"/> so this stays identical to <c>UStructGenerator</c>'s rule
-	/// (an unbound instance field or any non-blittable [UPROPERTY] makes the struct non-blittable).
-	/// </summary>
-	private static bool IsBlittableStruct(ITypeSymbol structType)
-	{
-		foreach (ISymbol member in structType.GetMembers())
-		{
-			if (member is not IFieldSymbol fieldSymbol || fieldSymbol.IsStatic || fieldSymbol.IsImplicitlyDeclared)
-			{
-				continue;
-			}
-
-			if (!SymbolUtils.HasUPropertyAttribute(fieldSymbol))
-			{
-				return false;
-			}
-
-			PropertyModel? fieldModel = ClassifyFieldType(fieldSymbol.Type);
-			if (fieldModel == null || !fieldModel.IsBlittable)
-			{
-				return false;
-			}
-		}
-
-		return true;
-	}
-
-	/// <summary>
-	/// Maps a struct field's declared type onto a <see cref="PropertyModel"/>. Handles the
-	/// collection / nested-struct field forms, then delegates to the shared value/object
-	/// classification for everything else.
-	/// </summary>
-	private static PropertyModel? ClassifyFieldType(ITypeSymbol type)
-	{
-		ITypeSymbol coreType = StripNullable(type).WithNullableAnnotation(NullableAnnotation.None);
-
-		if (coreType is INamedTypeSymbol { IsGenericType: true } named)
-		{
-			ImmutableArrayLike<ITypeSymbol> args = new(named.TypeArguments);
-			switch (named.Name)
-			{
-				case "List":
-				{
-					ElementInfo? inner = ClassifyElement(args[0]);
-					if (inner == null) return null;
-					return MakeArrayFromElement(inner);
-				}
-				case "HashSet":
-				{
-					ElementInfo? inner = ClassifyElement(args[0]);
-					if (inner == null) return null;
-					// Struct elements have no TSet<T, TRef> wrapper; reject rather than emit
-					// an uncompilable set (a struct is not hashable as a UE set element anyway).
-					if (inner.NativeRefType != null) return null;
-					return new PropertyModel
-					{
-						Kind = PropertyKind.Set,
-						ManagedType = $"TSet<{inner.ManagedType}>",
-						PropTypeClass = "USetProperty",
-						Inner = inner,
-						IsWrapper = true,
-					};
-				}
-				case "Dictionary":
-					return MakeMap(args[0], args[1]);
-			}
-		}
-
-		// Nested USTRUCT by value: 'FXxx Field;' is exposed as a lazy FXxxNativeRef.
-		if (IsUserStructType(coreType))
-		{
-			string valueType = coreType.ToDisplayString(SymbolDisplayFormat.MinimallyQualifiedFormat);
-			string nativeRef = $"{valueType}NativeRef";
-			return new PropertyModel
-			{
-				Kind = PropertyKind.StructNativeRef,
-				ManagedType = valueType,
-				PropTypeClass = "UStructProperty",
-				NativeRefType = nativeRef,
-				ValueStructType = valueType,
-				UnderlyingTypeExpr = $"{nativeRef}.NativeType",
-				IsWrapper = true,
-			};
-		}
-
-		// Everything else (bool/numeric/string/FName/FText/object/soft/lazy/subclass/...)
-		// behaves identically to the class-property case.
-		return ClassifyType(type, isRefReturn: false);
-	}
-
 	private static PropertyModel? ClassifyType(ITypeSymbol type, bool isRefReturn)
 	{
 		bool isNullable = type.NullableAnnotation == NullableAnnotation.Annotated;
@@ -218,141 +64,121 @@ internal static class PropertyClassifier
 		// separately via isNullable and re-applied only where appropriate (e.g. UObject?).
 		ITypeSymbol coreType = StripNullable(type).WithNullableAnnotation(NullableAnnotation.None);
 
-		// Special predefined value types.
-		switch (coreType.SpecialType)
+		return ClassifySpecial(coreType)
+			?? ClassifyNumeric(coreType)
+			?? ClassifyNamed(coreType)
+			?? ClassifyUEnum(coreType)
+			?? ClassifyGeneric(coreType)
+			?? ClassifyObject(coreType, isNullable)
+			?? ClassifyStructRef(coreType, isRefReturn);
+	}
+
+	/// <summary>bool / string.</summary>
+	private static PropertyModel? ClassifySpecial(ITypeSymbol coreType) => coreType.SpecialType switch
+	{
+		SpecialType.System_Boolean => new PropertyModel
 		{
-			case SpecialType.System_Boolean:
-				return new PropertyModel
-				{
-					Kind = PropertyKind.Bool,
-					ManagedType = "bool",
-					PropTypeClass = "UBoolProperty",
-				};
-			case SpecialType.System_String:
-				return new PropertyModel
-				{
-					Kind = PropertyKind.String,
-					ManagedType = "string",
-					PropTypeClass = "UStrProperty",
-				};
-		}
+			Kind = PropertyKind.Bool, ManagedType = "bool", PropTypeClass = "UBoolProperty",
+		},
+		SpecialType.System_String => new PropertyModel
+		{
+			Kind = PropertyKind.String, ManagedType = "string", PropTypeClass = "UStrProperty",
+		},
+		_ => null,
+	};
 
-		string typeName = coreType.Name;
-		string managed = coreType.ToDisplayString(SymbolDisplayFormat.MinimallyQualifiedFormat);
-
-		// Blittable numeric primitives.
+	/// <summary>Blittable numeric primitives (int / float / double / ...).</summary>
+	private static PropertyModel? ClassifyNumeric(ITypeSymbol coreType)
+	{
 		string keyword = ToKeyword(coreType);
 		if (BlittableNumericToProperty.TryGetValue(keyword, out string? numericProp))
 		{
 			return new PropertyModel
 			{
-				Kind = PropertyKind.Blittable,
-				ManagedType = keyword,
-				PropTypeClass = numericProp,
-				IsBlittable = true,
+				Kind = PropertyKind.Blittable, ManagedType = keyword, PropTypeClass = numericProp, IsBlittable = true,
 			};
 		}
+		return null;
+	}
 
-		switch (typeName)
+	/// <summary>FName / FText.</summary>
+	private static PropertyModel? ClassifyNamed(ITypeSymbol coreType) => coreType.Name switch
+	{
+		"FName" => new PropertyModel { Kind = PropertyKind.Name, ManagedType = "FName", PropTypeClass = "UNameProperty" },
+		"FText" => new PropertyModel { Kind = PropertyKind.Text, ManagedType = "FText", PropTypeClass = "UTextProperty" },
+		_ => null,
+	};
+
+	/// <summary>Byte-backed C# enum → UByteProperty whose underlying UEnum is the generated NativeType.</summary>
+	private static PropertyModel? ClassifyUEnum(ITypeSymbol coreType)
+	{
+		if (coreType.TypeKind != TypeKind.Enum || !IsByteBackedEnum(coreType)) return null;
+		string managed = coreType.ToDisplayString(SymbolDisplayFormat.MinimallyQualifiedFormat);
+		return new PropertyModel
 		{
-			case "FName":
-				return new PropertyModel { Kind = PropertyKind.Name, ManagedType = "FName", PropTypeClass = "UNameProperty" };
-			case "FText":
-				return new PropertyModel { Kind = PropertyKind.Text, ManagedType = "FText", PropTypeClass = "UTextProperty" };
-		}
+			Kind = PropertyKind.Enum, ManagedType = managed, PropTypeClass = "UByteProperty",
+			TargetType = managed, UnderlyingTypeExpr = $"{managed}NativeRef.NativeType", IsBlittable = true,
+		};
+	}
 
-		// UENUM: a byte-backed enum maps to a UByteProperty whose underlying UEnum is the generated <Enum>NativeRef.NativeType.
-		// Only byte-backed enums are supported by the native subclassing path (FByteProperty).
-		if (coreType.TypeKind == TypeKind.Enum && IsByteBackedEnum(coreType))
+	/// <summary>Generic wrappers: TSoftObjectPtr / TLazyObjectPtr / TSubclassOf / TSoftClassPtr / TArray / TSet / TMap.</summary>
+	private static PropertyModel? ClassifyGeneric(ITypeSymbol coreType)
+	{
+		if (coreType is not INamedTypeSymbol { IsGenericType: true } named) return null;
+		ImmutableArrayLike<ITypeSymbol> args = new(named.TypeArguments);
+		return named.Name switch
+		{
+			"TSoftObjectPtr" => MakePointerLike(PropertyKind.SoftObjectPtr, "USoftObjectProperty", args[0]),
+			"TLazyObjectPtr" => MakePointerLike(PropertyKind.LazyObjectPtr, "ULazyObjectProperty", args[0]),
+			"TSubclassOf"   => MakePointerLike(PropertyKind.SubclassOf, "UClassProperty", args[0]),
+			"TSoftClassPtr" => MakePointerLike(PropertyKind.SoftClassPtr, "USoftClassProperty", args[0]),
+			"TArray" => MakeArray(args),
+			"TSet"   => MakeSet(args),
+			"TMap"   => MakeMap(args[0], args[1]),
+			_ => null,
+		};
+	}
+
+	/// <summary>UObject-derived reference type.</summary>
+	private static PropertyModel? ClassifyObject(ITypeSymbol coreType, bool isNullable)
+	{
+		if (!SymbolUtils.IsUObjectDerived(coreType, includeSelf: true)) return null;
+		string managed = coreType.ToDisplayString(SymbolDisplayFormat.MinimallyQualifiedFormat);
+		return new PropertyModel
+		{
+			Kind = PropertyKind.Object, ManagedType = managed, IsNullable = isNullable,
+			PropTypeClass = "UObjectProperty", TargetType = managed,
+			UnderlyingTypeExpr = $"{managed}.StaticClass.NativeClass",
+		};
+	}
+
+	/// <summary>
+	/// FXxxNativeRef (lazy wrapper) or <c>ref FFoo</c> blittable struct by reference.
+	/// </summary>
+	private static PropertyModel? ClassifyStructRef(ITypeSymbol coreType, bool isRefReturn)
+	{
+		string managed = coreType.ToDisplayString(SymbolDisplayFormat.MinimallyQualifiedFormat);
+
+		// FXxxNativeRef — exposed as a lazy wrapper.
+		if (coreType.Name.EndsWith("NativeRef"))
 		{
 			return new PropertyModel
 			{
-				Kind = PropertyKind.Enum,
-				ManagedType = managed,
-				PropTypeClass = "UByteProperty",
-				TargetType = managed,
-				UnderlyingTypeExpr = $"{managed}NativeRef.NativeType",
-				IsBlittable = true,
-			};
-		}
-
-		// Generic wrappers.
-		if (coreType is INamedTypeSymbol { IsGenericType: true } named)
-		{
-			ImmutableArrayLike<ITypeSymbol> args = new(named.TypeArguments);
-			switch (typeName)
-			{
-				case "TSoftObjectPtr":
-					return MakePointerLike(PropertyKind.SoftObjectPtr, "USoftObjectProperty", args[0]);
-				case "TLazyObjectPtr":
-					return MakePointerLike(PropertyKind.LazyObjectPtr, "ULazyObjectProperty", args[0]);
-				case "TSubclassOf":
-					return MakePointerLike(PropertyKind.SubclassOf, "UClassProperty", args[0]);
-				case "TSoftClassPtr":
-					return MakePointerLike(PropertyKind.SoftClassPtr, "USoftClassProperty", args[0]);
-				case "TArray":
-					return MakeArray(args);
-				case "TSet":
-				{
-					ElementInfo? inner = ClassifyElement(args[0]);
-					if (inner == null) return null;
-					// Struct elements have no TSet<T, TRef> wrapper; reject rather than emit
-					// an uncompilable set (a struct is not hashable as a UE set element anyway).
-					if (inner.NativeRefType != null) return null;
-					return new PropertyModel
-					{
-						Kind = PropertyKind.Set,
-						ManagedType = $"TSet<{inner.ManagedType}>",
-						PropTypeClass = "USetProperty",
-						Inner = inner,
-						IsWrapper = true,
-					};
-				}
-				case "TMap":
-					return MakeMap(args[0], args[1]);
-			}
-		}
-
-		// UObject reference (the C# type derives from UObject).
-		if (SymbolUtils.IsUObjectDerived(coreType, includeSelf: true))
-		{
-			return new PropertyModel
-			{
-				Kind = PropertyKind.Object,
-				ManagedType = managed,
-				IsNullable = isNullable,
-				PropTypeClass = "UObjectProperty",
-				TargetType = managed,
-				UnderlyingTypeExpr = $"{managed}.StaticClass.NativeClass",
-			};
-		}
-
-		// Struct native ref (FXxxNativeRef) — exposed as a lazy wrapper.
-		if (typeName.EndsWith("NativeRef"))
-		{
-			return new PropertyModel
-			{
-				Kind = PropertyKind.StructNativeRef,
-				ManagedType = managed,
-				PropTypeClass = "UStructProperty",
-				NativeRefType = managed,
-				UnderlyingTypeExpr = $"{managed}.NativeType",
-				IsWrapper = true,
+				Kind = PropertyKind.StructNativeRef, ManagedType = managed,
+				PropTypeClass = "UStructProperty", NativeRefType = managed,
+				UnderlyingTypeExpr = $"{managed}.NativeType", IsWrapper = true,
 			};
 		}
 
 		// Blittable struct exposed by reference: 'ref FFoo Prop { get; }'.
-		if (isRefReturn && typeName.StartsWith("F"))
+		if (isRefReturn && coreType.Name.StartsWith("F"))
 		{
 			string nativeRef = $"{managed}NativeRef";
 			return new PropertyModel
 			{
-				Kind = PropertyKind.BlittableStructRef,
-				ManagedType = managed,
-				PropTypeClass = "UStructProperty",
-				ValueStructType = managed,
-				NativeRefType = nativeRef,
-				UnderlyingTypeExpr = $"{nativeRef}.NativeType",
+				Kind = PropertyKind.BlittableStructRef, ManagedType = managed,
+				PropTypeClass = "UStructProperty", ValueStructType = managed,
+				NativeRefType = nativeRef, UnderlyingTypeExpr = $"{nativeRef}.NativeType",
 			};
 		}
 
@@ -407,6 +233,23 @@ internal static class PropertyClassifier
 		ElementInfo? simple = ClassifyElement(args[0]);
 		if (simple == null) return null;
 		return MakeArrayFromElement(simple);
+	}
+
+	/// <summary>
+	/// Builds a set property model. Struct elements are rejected (not hashable as UE set elements).
+	/// </summary>
+	private static PropertyModel? MakeSet(ImmutableArrayLike<ITypeSymbol> args)
+	{
+		ElementInfo? inner = ClassifyElement(args[0]);
+		if (inner == null || inner.NativeRefType != null) return null;
+		return new PropertyModel
+		{
+			Kind = PropertyKind.Set,
+			ManagedType = $"TSet<{inner.ManagedType}>",
+			PropTypeClass = "USetProperty",
+			Inner = inner,
+			IsWrapper = true,
+		};
 	}
 
 	/// <summary>
@@ -615,16 +458,157 @@ internal static class PropertyClassifier
 		}
 		return false;
 	}
-}
 
-/// <summary>
-/// Thin index-able wrapper over an immutable array of type arguments to keep
-/// the classifier code readable without taking a hard dependency on the exact
-/// ImmutableArray API surface in this file.
-/// </summary>
-internal readonly struct ImmutableArrayLike<T>(System.Collections.Immutable.ImmutableArray<T> items)
-{
-	public T this[int index] => items[index];
+	/// <summary>
+	/// Classifies a USTRUCT member field. Struct fields use the managed collection types
+	/// (<c>List&lt;T&gt;</c> / <c>HashSet&lt;T&gt;</c> / <c>Dictionary&lt;K,V&gt;</c>) and nested
+	/// USTRUCTs by value (<c>FXxx</c>), which the generated native-ref exposes as
+	/// <c>TArray</c>/<c>TSet</c>/<c>TMap</c> and <c>FXxxNativeRef</c> respectively.
+	/// </summary>
+	public static PropertyModel? ClassifyField(IFieldSymbol fieldSymbol, Action<Diagnostic> report)
+	{
+		PropertyModel? model = ClassifyFieldType(fieldSymbol.Type);
+		if (model == null)
+		{
+			report(Diagnostic.Create(
+				Diagnostics.UnsupportedPropertyType,
+				fieldSymbol.Locations.FirstOrDefault(),
+				fieldSymbol.Name,
+				fieldSymbol.Type.ToDisplayString()));
+			return null;
+		}
 
-	public int Length => items.Length;
+		model.Name = fieldSymbol.Name;
+		return model;
+	}
+
+	/// <summary>
+	/// Classifies a UFUNCTION parameter (or return value) type into a <see cref="PropertyModel"/>.
+	/// Parameters use the same collection forms as struct fields (<c>List&lt;T&gt;</c> /
+	/// <c>HashSet&lt;T&gt;</c> / <c>Dictionary&lt;K,V&gt;</c>) and pass USTRUCTs by value.
+	/// A fully-blittable struct marshals via <c>BlittableMarshaller&lt;T&gt;</c>; otherwise it
+	/// goes through its generated <c>FXxxNativeRef</c>.
+	/// </summary>
+	public static PropertyModel? ClassifyParam(ITypeSymbol type)
+	{
+		ITypeSymbol coreType = StripNullable(type).WithNullableAnnotation(NullableAnnotation.None);
+
+		// USTRUCT passed by value.
+		if (IsUserStructType(coreType))
+		{
+			string valueType = coreType.ToDisplayString(SymbolDisplayFormat.MinimallyQualifiedFormat);
+			string nativeRef = $"{valueType}NativeRef";
+			bool blittable = IsBlittableStruct(coreType);
+			return new PropertyModel
+			{
+				Kind = PropertyKind.StructNativeRef,
+				ManagedType = valueType,
+				PropTypeClass = "UStructProperty",
+				NativeRefType = nativeRef,
+				ValueStructType = valueType,
+				UnderlyingTypeExpr = $"{nativeRef}.NativeType",
+				IsBlittable = blittable,
+				IsWrapper = !blittable,
+			};
+		}
+
+		// Collection parameters use the field-style collection classification (List/HashSet/Dictionary).
+		if (coreType is INamedTypeSymbol { IsGenericType: true, Name: "List" or "HashSet" or "Dictionary" })
+		{
+			return ClassifyFieldType(type);
+		}
+
+		// Everything else behaves identically to the class-property case.
+		return ClassifyType(type, isRefReturn: false);
+	}
+
+	/// <summary>
+	/// True when a USTRUCT is blittable, i.e. its managed layout matches the UE-generated
+	/// native layout. An unbound instance field or any non-blittable [UPROPERTY] makes the
+	/// struct non-blittable.
+	/// </summary>
+	private static bool IsBlittableStruct(ITypeSymbol structType)
+	{
+		foreach (ISymbol member in structType.GetMembers())
+		{
+			if (member is not IFieldSymbol fieldSymbol || fieldSymbol.IsStatic || fieldSymbol.IsImplicitlyDeclared)
+			{
+				continue;
+			}
+
+			if (!SymbolUtils.HasUPropertyAttribute(fieldSymbol))
+			{
+				return false;
+			}
+
+			PropertyModel? fieldModel = ClassifyFieldType(fieldSymbol.Type);
+			if (fieldModel == null || !fieldModel.IsBlittable)
+			{
+				return false;
+			}
+		}
+
+		return true;
+	}
+
+	/// <summary>
+	/// Maps a struct field's declared type onto a <see cref="PropertyModel"/>. Handles
+	/// collection / nested-struct field forms, then delegates to the shared
+	/// <see cref="ClassifyType"/> for everything else.
+	/// </summary>
+	private static PropertyModel? ClassifyFieldType(ITypeSymbol type)
+	{
+		ITypeSymbol coreType = StripNullable(type).WithNullableAnnotation(NullableAnnotation.None);
+
+		if (coreType is INamedTypeSymbol { IsGenericType: true } named)
+		{
+			ImmutableArrayLike<ITypeSymbol> args = new(named.TypeArguments);
+			switch (named.Name)
+			{
+				case "List":
+				{
+					ElementInfo? inner = ClassifyElement(args[0]);
+					if (inner == null) return null;
+					return MakeArrayFromElement(inner);
+				}
+				case "HashSet":
+				{
+					ElementInfo? inner = ClassifyElement(args[0]);
+					if (inner == null) return null;
+					if (inner.NativeRefType != null) return null;
+					return new PropertyModel
+					{
+						Kind = PropertyKind.Set,
+						ManagedType = $"TSet<{inner.ManagedType}>",
+						PropTypeClass = "USetProperty",
+						Inner = inner,
+						IsWrapper = true,
+					};
+				}
+				case "Dictionary":
+					return MakeMap(args[0], args[1]);
+			}
+		}
+
+		// Nested USTRUCT by value: 'FXxx Field;' is exposed as a lazy FXxxNativeRef.
+		if (IsUserStructType(coreType))
+		{
+			string valueType = coreType.ToDisplayString(SymbolDisplayFormat.MinimallyQualifiedFormat);
+			string nativeRef = $"{valueType}NativeRef";
+			return new PropertyModel
+			{
+				Kind = PropertyKind.StructNativeRef,
+				ManagedType = valueType,
+				PropTypeClass = "UStructProperty",
+				NativeRefType = nativeRef,
+				ValueStructType = valueType,
+				UnderlyingTypeExpr = $"{nativeRef}.NativeType",
+				IsWrapper = true,
+			};
+		}
+
+		// Everything else behaves identically to the class-property case.
+		return ClassifyType(type, isRefReturn: false);
+	}
+
 }

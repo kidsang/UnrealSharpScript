@@ -123,24 +123,92 @@ internal static class NamingUtils
 		}
 		return "_" + char.ToLowerInvariant(propName[0]) + propName.Substring(1);
 	}
+
+	/// <summary>
+	/// Lower-cases the first character of <paramref name="s"/> for use as a local variable
+	/// name, e.g. "FuncName" → "funcName". Empty string returns as-is.
+	/// </summary>
+	public static string LowerFirst(string s)
+	{
+		return s.Length == 0 ? s : char.ToLowerInvariant(s[0]) + s.Substring(1);
+	}
 }
 
 /// <summary>
-/// Shared code-emission helpers used by both the class and struct emitters.
+/// Shared code-emission helpers used by all emitters.
 /// </summary>
 internal static class EmitUtils
 {
 	/// <summary>
-	/// Emits a single <c>PropertyDef</c> initializer into the static-constructor array.
-	/// Every member line carries a trailing comma (a trailing comma is legal C# in an
-	/// object/collection initializer), which keeps the emitter branches simple and the
-	/// output identical between the class and struct paths.
+	/// Emits a <c>namespace Xxx;</c> file-scoped declaration when <paramref name="ns"/>
+	/// is non-empty, followed by a blank line. A no-op for global namespace types.
 	/// </summary>
-	public static void EmitPropertyDef(StringBuilder sb, PropertyModel prop)
+	public static void EmitNamespace(StringBuilder sb, string ns)
 	{
-		sb.AppendLine("\t\t\tnew()");
-		sb.AppendLine("\t\t\t{");
-		sb.AppendLine($"\t\t\t\tPropName = \"{prop.Name}\",");
+		if (!string.IsNullOrEmpty(ns))
+		{
+			sb.AppendLine($"namespace {ns};");
+			sb.AppendLine();
+		}
+	}
+
+	/// <summary>
+	/// True when the <see cref="PropertyKind"/> is a simple value marshalled through
+	/// a single static <c>XMarshaller.FromNative/ToNative</c> pair (i.e. not a container
+	/// or struct-native-ref wrapper).
+	/// </summary>
+	public static bool IsSimpleValueKind(PropertyKind kind)
+	{
+		return kind switch
+		{
+			PropertyKind.Bool
+				or PropertyKind.Blittable
+				or PropertyKind.Enum
+				or PropertyKind.String
+				or PropertyKind.Name
+				or PropertyKind.Text
+				or PropertyKind.Object
+				or PropertyKind.SoftObjectPtr
+				or PropertyKind.LazyObjectPtr
+				or PropertyKind.SubclassOf
+				or PropertyKind.SoftClassPtr
+				=> true,
+			_ => false,
+		};
+	}
+
+	/// <summary>
+	/// Returns the marshaller type name for a simple value <see cref="PropertyModel"/>,
+	/// e.g. <c>"BoolMarshaller"</c>, <c>"ObjectMarshaller&lt;UObject&gt;"</c>.
+	/// Must only be called when <see cref="IsSimpleValueKind"/> returns true.
+	/// </summary>
+	public static string GetValueMarshallerName(PropertyModel prop)
+	{
+		return prop.Kind switch
+		{
+			PropertyKind.Bool => "BoolMarshaller",
+			PropertyKind.Blittable => $"BlittableMarshaller<{prop.ManagedType}>",
+			PropertyKind.Enum => $"EnumMarshaller<{prop.ManagedType}>",
+			PropertyKind.String => "StringMarshaller",
+			PropertyKind.Name => "NameMarshaller",
+			PropertyKind.Text => "TextMarshaller",
+			PropertyKind.Object => $"ObjectMarshaller<{prop.TargetType}>",
+			PropertyKind.SoftObjectPtr => $"SoftObjectPtrMarshaller<{prop.TargetType}>",
+			PropertyKind.LazyObjectPtr => $"LazyObjectPtrMarshaller<{prop.TargetType}>",
+			PropertyKind.SubclassOf => $"SubclassOfMarshaller<{prop.TargetType}>",
+			PropertyKind.SoftClassPtr => $"SoftClassPtrMarshaller<{prop.TargetType}>",
+			_ => throw new ArgumentException($"PropertyKind.{prop.Kind} is not a simple value kind."),
+		};
+	}
+
+	/// <summary>
+	/// Shared PropType / UnderlyingType / Inner / Key emission for both
+	/// <c>PropertyDef</c> and <c>FunctionParamDef</c> initializers.
+	/// The caller is responsible for emitting <c>new() {{</c> and the
+	/// name line (<c>PropName</c> or <c>ParamName</c>) before calling this.
+	/// </summary>
+	public static void EmitTypeDefBlock(StringBuilder sb, PropertyModel prop)
+	{
 		sb.AppendLine($"\t\t\t\tPropType = {prop.PropTypeClass}.StaticClass.NativeClass,");
 
 		if (prop.UnderlyingTypeExpr != null)
@@ -165,7 +233,29 @@ internal static class EmitUtils
 				sb.AppendLine($"\t\t\t\tKeyUnderlyingType = {prop.Key.UnderlyingTypeExpr},");
 			}
 		}
+	}
 
+	/// <summary>
+	/// Emits a single <c>PropertyDef</c> initializer into the static-constructor array.
+	/// </summary>
+	public static void EmitPropertyDef(StringBuilder sb, PropertyModel prop)
+	{
+		sb.AppendLine("\t\t\tnew()");
+		sb.AppendLine("\t\t\t{");
+		sb.AppendLine($"\t\t\t\tPropName = \"{prop.Name}\",");
+		EmitTypeDefBlock(sb, prop);
 		sb.AppendLine("\t\t\t},");
 	}
+}
+
+/// <summary>
+/// Thin index-able wrapper over an immutable array of type arguments to keep
+/// the classifier code readable without taking a hard dependency on the exact
+/// ImmutableArray API surface in this file.
+/// </summary>
+internal readonly struct ImmutableArrayLike<T>(System.Collections.Immutable.ImmutableArray<T> items)
+{
+	public T this[int index] => items[index];
+
+	public int Length => items.Length;
 }

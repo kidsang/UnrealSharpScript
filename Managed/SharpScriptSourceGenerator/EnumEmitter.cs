@@ -22,12 +22,7 @@ internal static class EnumEmitter
 		sb.AppendLine("using UnrealEngine.Intrinsic;");
 		sb.AppendLine();
 
-		bool hasNamespace = !string.IsNullOrEmpty(model.Namespace);
-		if (hasNamespace)
-		{
-			sb.AppendLine($"namespace {model.Namespace};");
-			sb.AppendLine();
-		}
+		EmitUtils.EmitNamespace(sb, model.Namespace);
 
 		sb.AppendLine($"public static class {model.NativeRefName}");
 		sb.AppendLine("{");

@@ -36,7 +36,7 @@ internal static class StructEmitter
 		sb.AppendLine("using UnrealEngine.CoreUObject;");
 		sb.AppendLine("using UnrealEngine.Intrinsic;");
 		sb.AppendLine();
-		EmitNamespace(sb, model.Namespace);
+		EmitUtils.EmitNamespace(sb, model.Namespace);
 
 		// NativeRef class.
 		sb.AppendLine($"public class {model.NativeRefName}(IntPtr nativePtr)");
@@ -56,7 +56,7 @@ internal static class StructEmitter
 		foreach (PropertyModel prop in model.Properties)
 		{
 			sb.AppendLine();
-			EmitFieldAccessor(sb, prop);
+			EmitAccessor(sb, prop);
 		}
 
 		sb.AppendLine();
@@ -107,64 +107,46 @@ internal static class StructEmitter
 	}
 
 	/// <summary>Emits a single accessor on the NativeRef class (against nativePtr + offset).</summary>
-	private static void EmitFieldAccessor(StringBuilder sb, PropertyModel prop)
+	private static void EmitAccessor(StringBuilder sb, PropertyModel prop)
 	{
+		if (EmitUtils.IsSimpleValueKind(prop.Kind))
+		{
+			EmitValueAccessor(sb, prop, EmitUtils.GetValueMarshallerName(prop),
+				prop is { Kind: PropertyKind.Object, IsNullable: true });
+			return;
+		}
+
 		switch (prop.Kind)
 		{
-			case PropertyKind.Bool:
-				EmitValueFieldAccessor(sb, prop, "BoolMarshaller");
-				break;
-			case PropertyKind.Blittable:
-				EmitValueFieldAccessor(sb, prop, $"BlittableMarshaller<{prop.ManagedType}>");
-				break;
-			case PropertyKind.Enum:
-				EmitValueFieldAccessor(sb, prop, $"EnumMarshaller<{prop.ManagedType}>");
-				break;
-			case PropertyKind.String:
-				EmitValueFieldAccessor(sb, prop, "StringMarshaller");
-				break;
-			case PropertyKind.Name:
-				EmitValueFieldAccessor(sb, prop, "NameMarshaller");
-				break;
-			case PropertyKind.Text:
-				EmitValueFieldAccessor(sb, prop, "TextMarshaller");
-				break;
-			case PropertyKind.Object:
-				EmitValueFieldAccessor(sb, prop, $"ObjectMarshaller<{prop.TargetType}>", prop.IsNullable);
-				break;
-			case PropertyKind.SoftObjectPtr:
-				EmitValueFieldAccessor(sb, prop, $"SoftObjectPtrMarshaller<{prop.TargetType}>");
-				break;
-			case PropertyKind.LazyObjectPtr:
-				EmitValueFieldAccessor(sb, prop, $"LazyObjectPtrMarshaller<{prop.TargetType}>");
-				break;
-			case PropertyKind.SubclassOf:
-				EmitValueFieldAccessor(sb, prop, $"SubclassOfMarshaller<{prop.TargetType}>");
-				break;
-			case PropertyKind.SoftClassPtr:
-				EmitValueFieldAccessor(sb, prop, $"SoftClassPtrMarshaller<{prop.TargetType}>");
-				break;
 			case PropertyKind.Array:
-			case PropertyKind.Set:
-				EmitContainerFieldAccessor(sb, prop, prop.Inner!.MarshallerInstanceExpr!);
-				break;
-			case PropertyKind.Map:
-				EmitContainerFieldAccessor(sb, prop, $"{prop.Key!.MarshallerInstanceExpr}, {prop.Inner!.MarshallerInstanceExpr}");
-				break;
-			case PropertyKind.StructMap:
-				// Struct-value map: TMap<K, V, VRef> takes only the key marshaller.
-				EmitContainerFieldAccessor(sb, prop, prop.Key!.MarshallerInstanceExpr!);
+				EmitCachedWrapperAccessor(sb, prop, prop.ManagedType,
+					$"{prop.Name}_NativeProp, {prop.Inner!.MarshallerInstanceExpr}");
 				break;
 			case PropertyKind.StructArray:
-				EmitStructArrayFieldAccessor(sb, prop);
+				EmitCachedWrapperAccessor(sb, prop, prop.ManagedType, $"{prop.Name}_NativeProp");
+				break;
+			case PropertyKind.Set:
+				EmitCachedWrapperAccessor(sb, prop, prop.ManagedType,
+					$"{prop.Name}_NativeProp, {prop.Inner!.MarshallerInstanceExpr}");
+				break;
+			case PropertyKind.Map:
+				EmitCachedWrapperAccessor(sb, prop, prop.ManagedType,
+					$"{prop.Name}_NativeProp, {prop.Key!.MarshallerInstanceExpr}, {prop.Inner!.MarshallerInstanceExpr}");
+				break;
+			case PropertyKind.StructMap:
+				EmitCachedWrapperAccessor(sb, prop, prop.ManagedType,
+					$"{prop.Name}_NativeProp, {prop.Key!.MarshallerInstanceExpr}");
 				break;
 			case PropertyKind.StructNativeRef:
-				EmitStructNativeRefFieldAccessor(sb, prop);
+				EmitCachedWrapperAccessor(sb, prop, prop.NativeRefType!, "");
 				break;
 		}
 	}
 
-	private static void EmitValueFieldAccessor(StringBuilder sb, PropertyModel prop, string marshaller, bool nullable = false)
+	/// <summary>
+	/// Simple value property with get + set via a marshaller's static FromNative/ToNative.
+	/// </summary>
+	private static void EmitValueAccessor(StringBuilder sb, PropertyModel prop, string marshaller, bool nullable = false)
 	{
 		string returnType = nullable ? $"{prop.ManagedType}?" : prop.ManagedType;
 		sb.AppendLine($"\tpublic {returnType} {prop.Name}");
@@ -174,30 +156,21 @@ internal static class StructEmitter
 		sb.AppendLine("\t}");
 	}
 
-	private static void EmitContainerFieldAccessor(StringBuilder sb, PropertyModel prop, string marshallerArgs)
+	/// <summary>
+	/// Emits a lazy-cached wrapper property accessor. <paramref name="constructorArgs"/> is
+	/// the comma-separated additional arguments after the offset expression. Use
+	/// <see cref="string.Empty"/> when the wrapper constructor takes only the offset
+	/// (e.g. StructNativeRef).
+	/// </summary>
+	private static void EmitCachedWrapperAccessor(StringBuilder sb, PropertyModel prop, string typeName, string constructorArgs)
 	{
 		string field = NamingUtils.BackingFieldName(prop.Name);
-		sb.AppendLine($"\tprivate {prop.ManagedType}? {field};");
+		sb.AppendLine($"\tprivate {typeName}? {field};");
 		sb.AppendLine();
-		sb.AppendLine($"\tpublic {prop.ManagedType} {prop.Name} => {field} ??=");
-		sb.AppendLine($"\t\tnew(nativePtr + {prop.Name}_Offset, {prop.Name}_NativeProp, {marshallerArgs});");
-	}
-
-	private static void EmitStructArrayFieldAccessor(StringBuilder sb, PropertyModel prop)
-	{
-		string field = NamingUtils.BackingFieldName(prop.Name);
-		sb.AppendLine($"\tprivate {prop.ManagedType}? {field};");
-		sb.AppendLine();
-		sb.AppendLine($"\tpublic {prop.ManagedType} {prop.Name} => {field} ??=");
-		sb.AppendLine($"\t\tnew(nativePtr + {prop.Name}_Offset, {prop.Name}_NativeProp);");
-	}
-
-	private static void EmitStructNativeRefFieldAccessor(StringBuilder sb, PropertyModel prop)
-	{
-		string field = NamingUtils.BackingFieldName(prop.Name);
-		sb.AppendLine($"\tprivate {prop.NativeRefType}? {field};");
-		sb.AppendLine();
-		sb.AppendLine($"\tpublic {prop.NativeRefType} {prop.Name} => {field} ??= new(nativePtr + {prop.Name}_Offset);");
+		string ctor = string.IsNullOrEmpty(constructorArgs)
+			? $"new(nativePtr + {prop.Name}_Offset)"
+			: $"new(nativePtr + {prop.Name}_Offset, {constructorArgs})";
+		sb.AppendLine($"\tpublic {typeName} {prop.Name} => {field} ??= {ctor};");
 	}
 
 	private static void EmitToManaged(StringBuilder sb, StructModel model)
@@ -258,7 +231,7 @@ internal static class StructEmitter
 		sb.AppendLine("using SharpScript.Subclassing;");
 		sb.AppendLine("using UnrealEngine.CoreUObject;");
 		sb.AppendLine();
-		EmitNamespace(sb, model.Namespace);
+		EmitUtils.EmitNamespace(sb, model.Namespace);
 
 		sb.AppendLine($"public class {model.NativeRefName}(IntPtr nativePtr) : IStructNativeRef<{model.StructName}>");
 		sb.AppendLine("{");
@@ -368,12 +341,4 @@ internal static class StructEmitter
 		sb.AppendLine("}");
 	}
 
-	private static void EmitNamespace(StringBuilder sb, string ns)
-	{
-		if (!string.IsNullOrEmpty(ns))
-		{
-			sb.AppendLine($"namespace {ns};");
-			sb.AppendLine();
-		}
-	}
 }

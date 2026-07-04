@@ -21,12 +21,7 @@ internal static class ClassEmitter
 		sb.AppendLine("using UnrealEngine.Intrinsic;");
 		sb.AppendLine();
 
-		bool hasNamespace = !string.IsNullOrEmpty(model.Namespace);
-		if (hasNamespace)
-		{
-			sb.AppendLine($"namespace {model.Namespace};");
-			sb.AppendLine();
-		}
+		EmitUtils.EmitNamespace(sb, model.Namespace);
 
 		sb.AppendLine($"public partial class {model.ClassName} : IStaticClass<{model.ClassName}>");
 		sb.AppendLine("{");
@@ -189,60 +184,39 @@ internal static class ClassEmitter
 		sb.AppendLine("\t\t}");
 	}
 
+	/// <summary>Emits a single accessor on the NativeRef class (against nativePtr + offset).</summary>
 	private static void EmitAccessor(StringBuilder sb, PropertyModel prop)
 	{
+		if (EmitUtils.IsSimpleValueKind(prop.Kind))
+		{
+			EmitValueAccessor(sb, prop, EmitUtils.GetValueMarshallerName(prop),
+				prop is { Kind: PropertyKind.Object, IsNullable: true });
+			return;
+		}
+
 		switch (prop.Kind)
 		{
-			case PropertyKind.Bool:
-				EmitValueAccessor(sb, prop, "BoolMarshaller");
-				break;
-			case PropertyKind.Blittable:
-				EmitValueAccessor(sb, prop, $"BlittableMarshaller<{prop.ManagedType}>");
-				break;
-			case PropertyKind.Enum:
-				EmitValueAccessor(sb, prop, $"EnumMarshaller<{prop.ManagedType}>");
-				break;
-			case PropertyKind.String:
-				EmitValueAccessor(sb, prop, "StringMarshaller");
-				break;
-			case PropertyKind.Name:
-				EmitValueAccessor(sb, prop, "NameMarshaller");
-				break;
-			case PropertyKind.Text:
-				EmitValueAccessor(sb, prop, "TextMarshaller");
-				break;
-			case PropertyKind.Object:
-				EmitValueAccessor(sb, prop, $"ObjectMarshaller<{prop.TargetType}>", prop.IsNullable);
-				break;
-			case PropertyKind.SoftObjectPtr:
-				EmitValueAccessor(sb, prop, $"SoftObjectPtrMarshaller<{prop.TargetType}>");
-				break;
-			case PropertyKind.LazyObjectPtr:
-				EmitValueAccessor(sb, prop, $"LazyObjectPtrMarshaller<{prop.TargetType}>");
-				break;
-			case PropertyKind.SubclassOf:
-				EmitValueAccessor(sb, prop, $"SubclassOfMarshaller<{prop.TargetType}>");
-				break;
-			case PropertyKind.SoftClassPtr:
-				EmitValueAccessor(sb, prop, $"SoftClassPtrMarshaller<{prop.TargetType}>");
-				break;
 			case PropertyKind.Array:
-				EmitArrayAccessor(sb, prop);
+				EmitCachedWrapperAccessor(sb, prop, prop.ManagedType,
+					$"{prop.Name}_NativeProp, {prop.Inner!.MarshallerInstanceExpr}");
 				break;
 			case PropertyKind.StructArray:
-				EmitStructArrayAccessor(sb, prop);
+				EmitCachedWrapperAccessor(sb, prop, prop.ManagedType, $"{prop.Name}_NativeProp");
 				break;
 			case PropertyKind.Set:
-				EmitSetAccessor(sb, prop);
+				EmitCachedWrapperAccessor(sb, prop, prop.ManagedType,
+					$"{prop.Name}_NativeProp, {prop.Inner!.MarshallerInstanceExpr}");
 				break;
 			case PropertyKind.Map:
-				EmitMapAccessor(sb, prop);
+				EmitCachedWrapperAccessor(sb, prop, prop.ManagedType,
+					$"{prop.Name}_NativeProp, {prop.Key!.MarshallerInstanceExpr}, {prop.Inner!.MarshallerInstanceExpr}");
 				break;
 			case PropertyKind.StructMap:
-				EmitStructMapAccessor(sb, prop);
+				EmitCachedWrapperAccessor(sb, prop, prop.ManagedType,
+					$"{prop.Name}_NativeProp, {prop.Key!.MarshallerInstanceExpr}");
 				break;
 			case PropertyKind.StructNativeRef:
-				EmitStructNativeRefAccessor(sb, prop);
+				EmitCachedWrapperAccessor(sb, prop, prop.NativeRefType!, "");
 				break;
 			case PropertyKind.BlittableStructRef:
 				EmitBlittableStructRefAccessor(sb, prop);
@@ -271,94 +245,26 @@ internal static class ClassEmitter
 		sb.AppendLine("\t}");
 	}
 
-	private static void EmitArrayAccessor(StringBuilder sb, PropertyModel prop)
+	/// <summary>
+	/// Emits a lazy-cached wrapper property accessor. <paramref name="constructorArgs"/> is
+	/// the comma-separated additional arguments after the offset expression. Use
+	/// <see cref="string.Empty"/> when the wrapper constructor takes only the offset
+	/// (e.g. StructNativeRef).
+	/// </summary>
+	private static void EmitCachedWrapperAccessor(StringBuilder sb, PropertyModel prop, string typeName, string constructorArgs)
 	{
 		string field = NamingUtils.BackingFieldName(prop.Name);
-		sb.AppendLine($"\tprivate {prop.ManagedType}? {field};");
+		sb.AppendLine($"\tprivate {typeName}? {field};");
 		sb.AppendLine();
-		sb.AppendLine($"\tpublic partial {prop.ManagedType} {prop.Name}");
+		sb.AppendLine($"\tpublic partial {typeName} {prop.Name}");
 		sb.AppendLine("\t{");
 		sb.AppendLine("\t\tget");
 		sb.AppendLine("\t\t{");
 		sb.AppendLine("\t\t\tThrowIfNotValid();");
-		sb.AppendLine($"\t\t\treturn {field} ??= new(NativeObject + {prop.Name}_Offset, {prop.Name}_NativeProp, {prop.Inner!.MarshallerInstanceExpr});");
-		sb.AppendLine("\t\t}");
-		sb.AppendLine("\t}");
-	}
-
-	private static void EmitStructArrayAccessor(StringBuilder sb, PropertyModel prop)
-	{
-		string field = NamingUtils.BackingFieldName(prop.Name);
-		sb.AppendLine($"\tprivate {prop.ManagedType}? {field};");
-		sb.AppendLine();
-		sb.AppendLine($"\tpublic partial {prop.ManagedType} {prop.Name}");
-		sb.AppendLine("\t{");
-		sb.AppendLine("\t\tget");
-		sb.AppendLine("\t\t{");
-		sb.AppendLine("\t\t\tThrowIfNotValid();");
-		sb.AppendLine($"\t\t\treturn {field} ??= new(NativeObject + {prop.Name}_Offset, {prop.Name}_NativeProp);");
-		sb.AppendLine("\t\t}");
-		sb.AppendLine("\t}");
-	}
-
-	private static void EmitSetAccessor(StringBuilder sb, PropertyModel prop)
-	{
-		string field = NamingUtils.BackingFieldName(prop.Name);
-		sb.AppendLine($"\tprivate {prop.ManagedType}? {field};");
-		sb.AppendLine();
-		sb.AppendLine($"\tpublic partial {prop.ManagedType} {prop.Name}");
-		sb.AppendLine("\t{");
-		sb.AppendLine("\t\tget");
-		sb.AppendLine("\t\t{");
-		sb.AppendLine("\t\t\tThrowIfNotValid();");
-		sb.AppendLine($"\t\t\treturn {field} ??= new(NativeObject + {prop.Name}_Offset, {prop.Name}_NativeProp, {prop.Inner!.MarshallerInstanceExpr});");
-		sb.AppendLine("\t\t}");
-		sb.AppendLine("\t}");
-	}
-
-	private static void EmitMapAccessor(StringBuilder sb, PropertyModel prop)
-	{
-		string field = NamingUtils.BackingFieldName(prop.Name);
-		sb.AppendLine($"\tprivate {prop.ManagedType}? {field};");
-		sb.AppendLine();
-		sb.AppendLine($"\tpublic partial {prop.ManagedType} {prop.Name}");
-		sb.AppendLine("\t{");
-		sb.AppendLine("\t\tget");
-		sb.AppendLine("\t\t{");
-		sb.AppendLine("\t\t\tThrowIfNotValid();");
-		sb.AppendLine($"\t\t\treturn {field} ??= new(NativeObject + {prop.Name}_Offset, {prop.Name}_NativeProp, {prop.Key!.MarshallerInstanceExpr}, {prop.Inner!.MarshallerInstanceExpr});");
-		sb.AppendLine("\t\t}");
-		sb.AppendLine("\t}");
-	}
-
-	private static void EmitStructMapAccessor(StringBuilder sb, PropertyModel prop)
-	{
-		// Struct-value map: TMap<K, V, VRef>. The wrapper marshals the struct value through
-		// its native-ref, so the constructor takes only the key marshaller.
-		string field = NamingUtils.BackingFieldName(prop.Name);
-		sb.AppendLine($"\tprivate {prop.ManagedType}? {field};");
-		sb.AppendLine();
-		sb.AppendLine($"\tpublic partial {prop.ManagedType} {prop.Name}");
-		sb.AppendLine("\t{");
-		sb.AppendLine("\t\tget");
-		sb.AppendLine("\t\t{");
-		sb.AppendLine("\t\t\tThrowIfNotValid();");
-		sb.AppendLine($"\t\t\treturn {field} ??= new(NativeObject + {prop.Name}_Offset, {prop.Name}_NativeProp, {prop.Key!.MarshallerInstanceExpr});");
-		sb.AppendLine("\t\t}");
-		sb.AppendLine("\t}");
-	}
-
-	private static void EmitStructNativeRefAccessor(StringBuilder sb, PropertyModel prop)
-	{
-		string field = NamingUtils.BackingFieldName(prop.Name);
-		sb.AppendLine($"\tprivate {prop.NativeRefType}? {field};");
-		sb.AppendLine();
-		sb.AppendLine($"\tpublic partial {prop.NativeRefType} {prop.Name}");
-		sb.AppendLine("\t{");
-		sb.AppendLine("\t\tget");
-		sb.AppendLine("\t\t{");
-		sb.AppendLine("\t\t\tThrowIfNotValid();");
-		sb.AppendLine($"\t\t\treturn {field} ??= new(NativeObject + {prop.Name}_Offset);");
+		string ctor = string.IsNullOrEmpty(constructorArgs)
+			? $"new(NativeObject + {prop.Name}_Offset)"
+			: $"new(NativeObject + {prop.Name}_Offset, {constructorArgs})";
+		sb.AppendLine($"\t\t\treturn {field} ??= {ctor};");
 		sb.AppendLine("\t\t}");
 		sb.AppendLine("\t}");
 	}
