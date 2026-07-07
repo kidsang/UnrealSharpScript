@@ -312,12 +312,21 @@ public partial class USsTestGenFunctionManual : IStaticClass<USsTestGenFunctionM
 
 			fixed (FunctionDef* _functionDefsPtr = _functionDefs)
 			{
+				ClassDef _classDef = new()
+				{
+					ClassName = "SsTestGenFunctionManual",
+					SuperClass = UObject.StaticClass.NativeClass,
+					PropertyDefines = IntPtr.Zero,
+					PropertyCount = 0,
+					FunctionDefines = (IntPtr)_functionDefsPtr,
+					FunctionCount = _functionDefs.Length,
+					Specifiers = 0UL,
+					MetaEntries = IntPtr.Zero,
+					MetaCount = 0,
+				};
 				NativeType = SubclassingUtils.GenerateClass(
 					RuntimeTypeHandle.ToIntPtr(typeof(USsTestGenFunctionManual).TypeHandle),
-					"SsTestGenFunctionManual",
-					UObject.StaticClass.NativeClass,
-					IntPtr.Zero, 0,
-					(IntPtr)_functionDefsPtr, _functionDefs.Length);
+					(IntPtr)(&_classDef));
 			}
 		}
 

@@ -21,5 +21,11 @@ private:
 
 	static const void* GetDefaultObject(const UClass* InClass, int bCreateIfNeeded);
 
+	static int HasMetaData(const UClass* InClass, const TCHAR* Key);
+
+	static void GetMetaData(const UClass* InClass, const TCHAR* Key, FString& OutValue);
+
+	static FName GetClassConfigName(const UClass* InClass);
+
 	virtual void DoExportFunctions(FSsBindNativeCallbackFunc BindNativeCallbackFunc) override;
 };

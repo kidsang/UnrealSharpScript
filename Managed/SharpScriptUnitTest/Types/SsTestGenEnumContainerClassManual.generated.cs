@@ -1,4 +1,5 @@
 #nullable enable
+using System.Runtime.InteropServices;
 using SharpScript;
 using SharpScript.Interop;
 using SharpScript.Subclassing;
@@ -61,12 +62,21 @@ public partial class USsTestGenEnumContainerClassManual : IStaticClass<USsTestGe
 		{
 			fixed (PropertyDef* _propertyDefsPtr = _propertyDefs)
 			{
+				ClassDef _classDef = new()
+				{
+					ClassName = "SsTestGenEnumContainerClassManual",
+					SuperClass = UObject.StaticClass.NativeClass,
+					PropertyDefines = (IntPtr)_propertyDefsPtr,
+					PropertyCount = _propertyDefs.Length,
+					FunctionDefines = IntPtr.Zero,
+					FunctionCount = 0,
+					Specifiers = 0UL,
+					MetaEntries = IntPtr.Zero,
+					MetaCount = 0,
+				};
 				NativeType = SubclassingUtils.GenerateClass(
 					RuntimeTypeHandle.ToIntPtr(typeof(USsTestGenEnumContainerClassManual).TypeHandle),
-					"SsTestGenEnumContainerClassManual",
-					UObject.StaticClass.NativeClass,
-					(IntPtr)_propertyDefsPtr, _propertyDefs.Length,
-					IntPtr.Zero, 0);
+					(IntPtr)(&_classDef));
 			}
 		}
 

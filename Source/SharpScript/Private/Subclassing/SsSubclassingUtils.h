@@ -9,6 +9,19 @@ class USsGeneratedStruct;
 class USsGeneratedEnum;
 
 /**
+ * A single metadata key/value pair applied to a generated type.
+ * <br/> See: SubclassingUtils.cs MetaDataEntry
+ */
+struct FSsMetaDataEntry
+{
+	/** Metadata key. */
+	FName Key;
+
+	/** Null-terminated metadata value string (TCHAR). Owned by the caller for the call duration. */
+	const TCHAR* Value = nullptr;
+};
+
+/**
  * Meta info collected from csharp property definitions to create unreal property.
  * <br/> See: SubclassingUtils.cs PropertyDef
  */
@@ -152,6 +165,47 @@ struct FSsFunctionDef
 };
 
 /**
+ * Meta info collected from a csharp [UCLASS] definition to create a unreal class.
+ * <br/> See: SubclassingUtils.cs ClassDef
+ */
+struct FSsClassDef
+{
+	/** Name of the class. */
+	FName ClassName;
+
+	/** Native super UClass pointer. */
+	UClass* SuperClass = nullptr;
+
+	/** Array of property defines. */
+	const FSsPropertyDef* PropertyDefines = nullptr;
+
+	/** Count of property array. */
+	int PropertyCount = 0;
+
+	/** Array of function defines (may be null when FunctionCount is 0). */
+	const FSsFunctionDef* FunctionDefines = nullptr;
+
+	/** Count of function array. */
+	int FunctionCount = 0;
+
+	/** The raw C# ClassSpecs bit set, passed through unchanged. Expanded by SsClassSpecifiers. */
+	uint64 Specifiers = 0;
+
+	/** Array of metadata entries (may be null when MetaCount is 0). */
+	const FSsMetaDataEntry* MetaEntries = nullptr;
+
+	/** Count of metadata entry array. */
+	int MetaCount = 0;
+
+	/**
+	 * Configuration file name for this class (equivalent to UCLASS(Config=X)).
+	 * May be null when no Config was specified; in that case the class inherits
+	 * ClassConfigName from its super class.
+	 */
+	const TCHAR* ConfigName = nullptr;
+};
+
+/**
  * Provides functionality to register and create subclassing types in C#.
  */
 UCLASS()
@@ -174,15 +228,10 @@ public:
 	 * Called by C#, generate a new unreal class from given infos. Optionally declares UFunctions
 	 * implemented in C#.
 	 * @param ManagedType The C# class which the new class will bind to.
-	 * @param ClassName Name of the new class.
-	 * @param SuperClass Base class of the new class.
-	 * @param PropertyDefines Array of property defines.
-	 * @param PropertyCount Count of property array.
-	 * @param FunctionDefines Array of function defines (may be null when FunctionCount is 0).
-	 * @param FunctionCount Count of function array.
+	 * @param ClassDef The class definition bundle (name, super, properties, functions, specifiers, metadata).
 	 * @return Newly generated class if success, otherwise nullptr.
 	 */
-	static USsGeneratedClass* GenerateClass(const void* ManagedType, const FName& ClassName, UClass* SuperClass, const FSsPropertyDef* PropertyDefines, int PropertyCount, const FSsFunctionDef* FunctionDefines, int FunctionCount);
+	static USsGeneratedClass* GenerateClass(const void* ManagedType, const FSsClassDef* ClassDef);
 
 	/** Translate engine-agnostic C# parameter flags to UE EPropertyFlags for the current engine version. */
 	static uint64 TranslateParamFlags(ESsFunctionParamFlags ParamFlags);

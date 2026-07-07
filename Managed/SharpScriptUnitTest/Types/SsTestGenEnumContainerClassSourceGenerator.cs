@@ -1,7 +1,6 @@
 using SharpScript.Subclassing;
 using UnrealEngine.CoreUObject;
 using UnrealEngine.Intrinsic;
-using static SharpScript.Subclassing.ClassSpecs;
 using static SharpScript.Subclassing.PropSpecs;
 
 namespace SharpScriptUnitTest.Types;
@@ -12,7 +11,7 @@ namespace SharpScriptUnitTest.Types;
 /// key/value. Paired with <see cref="USsTestGenEnumContainerClassManual"/> (hand-written
 /// bindings) to prove the generator output is equivalent.
 /// </summary>
-[UCLASS(BlueprintType)]
+[UCLASS]
 public partial class USsTestGenEnumContainerClassSourceGenerator : UObject
 {
 	[UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "CSharp|Internal")]

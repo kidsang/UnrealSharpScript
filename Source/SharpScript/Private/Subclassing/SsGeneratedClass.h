@@ -6,6 +6,7 @@
 
 struct FSsPropertyDef;
 struct FSsFunctionDef;
+struct FSsClassDef;
 
 /**
  * The managed dispatch function that is invoked from a generated UFunction's native thunk.
@@ -49,15 +50,10 @@ class USsGeneratedClass : public UBlueprintGeneratedClass
 public:
 	/**
 	 * Generate a new unreal class from given infos.
-	 * @param ClassName Name of the new class.
-	 * @param SuperClass Base class of the new class.
-	 * @param PropertyDefines Array of property defines.
-	 * @param PropertyCount Count of property array.
-	 * @param FunctionDefines Array of function defines.
-	 * @param FunctionCount Count of function array.
+	 * @param ClassDef The class definition bundle (name, super, properties, functions, specifiers, metadata).
 	 * @return Newly generated class if success, otherwise nullptr.
 	 */
-	static USsGeneratedClass* GenerateClass(const FName& ClassName, UClass* SuperClass, const FSsPropertyDef* PropertyDefines, int PropertyCount, const FSsFunctionDef* FunctionDefines, int FunctionCount);
+	static USsGeneratedClass* GenerateClass(const FSsClassDef& ClassDef);
 
 private:
 	/** UObject constructor. */

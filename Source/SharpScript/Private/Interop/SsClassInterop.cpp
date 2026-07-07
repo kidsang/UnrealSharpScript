@@ -8,8 +8,7 @@ uint32 USsClassInterop::GetClassFlags(const UClass* InClass)
 
 const void* USsClassInterop::GetSuperClass(const UClass* InClass)
 {
-	const UClass* SuperClass = InClass->GetSuperClass();
-	if (SuperClass)
+	if (const UClass* SuperClass = InClass->GetSuperClass())
 	{
 		return USsHouseKeeper::GetManagedObject(SuperClass);
 	}
@@ -30,12 +29,37 @@ int USsClassInterop::ImplementsInterface(const UClass* InClass, const UClass* In
 
 const void* USsClassInterop::GetDefaultObject(const UClass* InClass, int bCreateIfNeeded)
 {
-	const UObject* CDO = InClass->GetDefaultObject(bool(bCreateIfNeeded));
-	if (CDO)
+	if (const UObject* CDO = InClass->GetDefaultObject(static_cast<bool>(bCreateIfNeeded)))
 	{
 		return USsHouseKeeper::GetManagedObject(CDO);
 	}
 	return nullptr;
+}
+
+int USsClassInterop::HasMetaData(const UClass* InClass, const TCHAR* Key)
+{
+#if WITH_EDITORONLY_DATA
+	return InClass->HasMetaData(Key) ? 1 : 0;
+#else
+	return 0;
+#endif
+}
+
+void USsClassInterop::GetMetaData(const UClass* InClass, const TCHAR* Key, FString& OutValue)
+{
+#if WITH_EDITORONLY_DATA
+	if (InClass->HasMetaData(Key))
+	{
+		OutValue = InClass->GetMetaData(Key);
+		return;
+	}
+#endif
+	OutValue.Reset();
+}
+
+FName USsClassInterop::GetClassConfigName(const UClass* InClass)
+{
+	return InClass->ClassConfigName;
 }
 
 void USsClassInterop::DoExportFunctions(FSsBindNativeCallbackFunc BindNativeCallbackFunc)
@@ -45,4 +69,7 @@ void USsClassInterop::DoExportFunctions(FSsBindNativeCallbackFunc BindNativeCall
 	BindNativeCallbackFunc(&IsChildOf, TEXT("ClassInterop.IsChildOf"));
 	BindNativeCallbackFunc(&ImplementsInterface, TEXT("ClassInterop.ImplementsInterface"));
 	BindNativeCallbackFunc(&GetDefaultObject, TEXT("ClassInterop.GetDefaultObject"));
+	BindNativeCallbackFunc(&HasMetaData, TEXT("ClassInterop.HasMetaData"));
+	BindNativeCallbackFunc(&GetMetaData, TEXT("ClassInterop.GetMetaData"));
+	BindNativeCallbackFunc(&GetClassConfigName, TEXT("ClassInterop.GetClassConfigName"));
 }

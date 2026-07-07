@@ -279,6 +279,48 @@ internal sealed class ClassModel
 	/// <summary>The C# base type name, e.g. "UObject".</summary>
 	public string SuperClass = "";
 
+	/// <summary>
+	/// The <c>ClassSpecs</c> enum member names from the [UCLASS] attribute (e.g. "BlueprintType"),
+	/// carried through and emitted as <c>(ulong)(ClassSpecs.A | ClassSpecs.B)</c>. The generator never
+	/// interprets these — the C++ layer expands the bit set into EClassFlags + metadata. Empty = 0.
+	/// </summary>
+	public readonly List<string> SpecifierNames = new();
+
+	/// <summary>
+	/// The C# expression emitted for <c>ClassDef.Specifiers</c>: <c>(ulong)(ClassSpecs.A | ...)</c>,
+	/// or <c>0UL</c> when no specifiers were given.
+	/// </summary>
+	public string SpecifiersExpr
+	{
+		get
+		{
+			if (SpecifierNames.Count == 0)
+			{
+				return "0UL";
+			}
+			string[] qualified = new string[SpecifierNames.Count];
+			for (int i = 0; i < SpecifierNames.Count; i++)
+			{
+				qualified[i] = $"ClassSpecs.{SpecifierNames[i]}";
+			}
+			return $"(ulong)({string.Join(" | ", qualified)})";
+		}
+	}
+
+	/// <summary>
+	/// Free-form metadata key/value pairs applied to the generated class (from DisplayName / Category /
+	/// the Meta array on the attribute). Emitted verbatim into the native <c>MetaDataEntry[]</c>.
+	/// </summary>
+	public readonly List<(string Key, string Value)> Metadata = new();
+
+	/// <summary>
+	/// Configuration file name from <c>[UCLASS(Config = "...")]</c>. When non-null, the generated
+	/// code emits this as a pinned TCHAR string and passes it to <c>ClassDef.ConfigName</c>,
+	/// which the C++ side sets as <c>ClassConfigName</c>. Null means the class inherits config
+	/// from its super class.
+	/// </summary>
+	public string? ConfigName;
+
 	public readonly List<PropertyModel> Properties = new();
 
 	public readonly List<FunctionModel> Functions = new();

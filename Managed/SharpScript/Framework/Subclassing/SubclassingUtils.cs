@@ -4,6 +4,25 @@ using UnrealEngine.Intrinsic;
 namespace SharpScript.Subclassing;
 
 /// <summary>
+/// A single metadata key/value pair applied to a generated type.
+/// <br/> See: SsSubclassingUtils.h FSsMetaDataEntry
+/// </summary>
+[StructLayout(LayoutKind.Sequential)]
+public unsafe struct MetaDataEntry
+{
+	/// <summary>
+	/// Metadata key.
+	/// </summary>
+	public FName Key;
+
+	/// <summary>
+	/// Pointer to a null-terminated UTF-16 (wchar_t / TCHAR) metadata value string. The caller must
+	/// keep the underlying string pinned/alive for the duration of the GenerateClass call.
+	/// </summary>
+	public char* Value;
+}
+
+/// <summary>
 /// Meta info collected from csharp property definitions to create unreal property.
 /// <br/> See: SsSubclassingUtils.h FSsPropertyDef
 /// </summary>
@@ -189,18 +208,73 @@ public struct FunctionDef
 	public SsFunctionFlags FunctionFlags;
 }
 
+/// <summary>
+/// Meta info collected from a csharp [UCLASS] definition to create a unreal class.
+/// <br/> See: SsSubclassingUtils.h FSsClassDef
+/// </summary>
+[StructLayout(LayoutKind.Sequential)]
+public struct ClassDef
+{
+	/// <summary>
+	/// Name of the class.
+	/// </summary>
+	public FName ClassName;
+
+	/// <summary>
+	/// Native super UClass pointer.
+	/// </summary>
+	public IntPtr SuperClass;
+
+	/// <summary>
+	/// Array of property defines.
+	/// </summary>
+	public IntPtr PropertyDefines;
+
+	/// <summary>
+	/// Count of property array.
+	/// </summary>
+	public int PropertyCount;
+
+	/// <summary>
+	/// Array of function defines (may be IntPtr.Zero when FunctionCount is 0).
+	/// </summary>
+	public IntPtr FunctionDefines;
+
+	/// <summary>
+	/// Count of function array.
+	/// </summary>
+	public int FunctionCount;
+
+	/// <summary>
+	/// The raw <c>ClassSpecs</c> bit set, passed through unchanged. The C++ layer expands it.
+	/// </summary>
+	public ulong Specifiers;
+
+	/// <summary>
+	/// Array of <see cref="MetaDataEntry"/> (may be IntPtr.Zero when MetaCount is 0).
+	/// </summary>
+	public IntPtr MetaEntries;
+
+	/// <summary>
+	/// Count of metadata entry array.
+	/// </summary>
+	public int MetaCount;
+
+	/// <summary>
+	/// Pointer to a null-terminated TCHAR configuration file name (UCLASS(Config=X)).
+	/// May be IntPtr.Zero when no Config was specified; in that case the class inherits
+	/// ClassConfigName from its super class.
+	/// </summary>
+	public IntPtr ConfigName;
+}
+
 [NativeCallbacks]
 public static unsafe class SubclassingUtils
 {
 #pragma warning disable CS0649
 	internal static delegate* unmanaged[Cdecl]<
 		IntPtr, /** ManagedType */
-		FName, /** ClassName */
-		IntPtr, /** SuperClass */
-		IntPtr, /** PropertyDefines */
-		int, /** PropertyCount */
-		IntPtr, /** FunctionDefines */
-		int, /** FunctionCount */
+		IntPtr, /** ClassDef* */
 		IntPtr> GenerateClass;
 	internal static delegate* unmanaged[Cdecl]<
 		FName, /** StructName */

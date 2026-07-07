@@ -1,11 +1,10 @@
 using SharpScript.Subclassing;
 using UnrealEngine.CoreUObject;
 using UnrealEngine.Intrinsic;
-using static SharpScript.Subclassing.ClassSpecs;
 
 namespace SharpScriptUnitTest.Types;
 
-[UCLASS(BlueprintType)]
+[UCLASS]
 public partial class USsTestGenFunctionManual : UObject
 {
 	[UFUNCTION]

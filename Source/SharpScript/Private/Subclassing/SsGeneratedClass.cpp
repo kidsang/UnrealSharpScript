@@ -2,12 +2,13 @@
 #include "SsCommon.h"
 #include "SsHouseKeeper.h"
 #include "SsSubclassingUtils.h"
+#include "SsClassSpecifiers.h"
 #include "Runtime/Launch/Resources/Version.h"
 
 class FSsGeneratedClassBuilder
 {
 public:
-	FSsGeneratedClassBuilder(const FName& ClassName, UClass* SuperClass);
+	explicit FSsGeneratedClassBuilder(const FSsClassDef& ClassDef);
 
 	~FSsGeneratedClassBuilder();
 
@@ -33,29 +34,27 @@ private:
 	void TransferClassMembers();
 
 private:
-	FName ClassName;
-	UClass* SuperClass;
+	const FSsClassDef& ClassDef;
 	USsGeneratedClass* OldClass;
 	USsGeneratedClass* NewClass;
 	USsGeneratedClass* FinalClass;
 };
 
-FSsGeneratedClassBuilder::FSsGeneratedClassBuilder(const FName& ClassName, UClass* SuperClass)
-	: ClassName(ClassName)
-	, SuperClass(SuperClass)
+FSsGeneratedClassBuilder::FSsGeneratedClassBuilder(const FSsClassDef& InClassDef)
+	: ClassDef(InClassDef)
 {
-	check(SuperClass);
-	UPackage* ClassOuter = GetGenClassOuter(SuperClass);
+	check(ClassDef.SuperClass);
+	UPackage* ClassOuter = GetGenClassOuter(ClassDef.SuperClass);
 
 	// Find any existing class with the name we want to use
-	OldClass = FindOldClass(ClassName);
+	OldClass = FindOldClass(ClassDef.ClassName);
 
 	// Create a new class with a temporary name; we will rename it as part of Finalize
-	const FName NewClassName = MakeUniqueObjectName(ClassOuter, USsGeneratedClass::StaticClass(), *FString::Printf(TEXT("%s_NEWINST"), *ClassName.ToString()));
+	const FName NewClassName = MakeUniqueObjectName(ClassOuter, USsGeneratedClass::StaticClass(), *FString::Printf(TEXT("%s_NEWINST"), *ClassDef.ClassName.ToString()));
 	NewClass = NewObject<USsGeneratedClass>(ClassOuter, *NewClassName.ToString(), RF_Public | RF_Standalone | RF_Transient);
 	NewClass->AddToRoot();
-	NewClass->SetSuperStruct(SuperClass);
-	NewClass->ClassFlags = (SuperClass->ClassFlags & CLASS_ScriptInherit);
+	NewClass->SetSuperStruct(ClassDef.SuperClass);
+	NewClass->ClassFlags = (ClassDef.SuperClass->ClassFlags & CLASS_ScriptInherit);
 
 	// If there are old class, reuse the old class as the final generated class.
 	// In this way, we don't need to fix the references to the old class.
@@ -85,25 +84,38 @@ USsGeneratedClass* FSsGeneratedClassBuilder::Finalize()
 	else
 	{
 		check(FinalClass == NewClass);
-		NewClass->Rename(*ClassName.ToString(), nullptr, REN_DontCreateRedirectors);
+		NewClass->Rename(*ClassDef.ClassName.ToString(), nullptr, REN_DontCreateRedirectors);
 	}
 
 	// Records the most derived native super class.
-	if (USsGeneratedClass* GeneratedSuperClass = Cast<USsGeneratedClass>(SuperClass))
+	if (USsGeneratedClass* GeneratedSuperClass = Cast<USsGeneratedClass>(ClassDef.SuperClass))
 	{
 		FinalClass->NativeSuperClass = GeneratedSuperClass->NativeSuperClass;
 	}
 	else
 	{
-		FinalClass->NativeSuperClass = SuperClass;
+		FinalClass->NativeSuperClass = ClassDef.SuperClass;
 	}
 	check(FinalClass->NativeSuperClass);
 	check(FinalClass->NativeSuperClass->HasAnyClassFlags(CLASS_Native));
 
+	// Expand the C# class specifiers (EClassFlags + metadata) onto the final class. On the reload path
+	// TransferClassMembers already copied NewClass->ClassFlags onto OldClass, but metadata is not carried
+	// across, so we (re)apply directly to FinalClass here to cover both fresh and reused-class cases.
+	FSsClassSpecifiers::Apply(FinalClass, ClassDef.Specifiers, ClassDef.MetaEntries, ClassDef.MetaCount);
+
 	FinalClass->ClassConstructor = USsGeneratedClass::StaticObjectConstructor;
 
 	// Finalize the class
-	FinalClass->ClassConfigName = SuperClass->ClassConfigName;
+	if (ClassDef.ConfigName && ClassDef.ConfigName[0] != TEXT('\0'))
+	{
+		FinalClass->ClassConfigName = ClassDef.ConfigName;
+		FinalClass->ClassFlags |= CLASS_Config;
+	}
+	else
+	{
+		FinalClass->ClassConfigName = ClassDef.SuperClass->ClassConfigName;
+	}
 	FinalClass->Bind();
 	FinalClass->StaticLink(true);
 	FinalClass->AssembleReferenceTokenStream(true);
@@ -129,10 +141,10 @@ bool FSsGeneratedClassBuilder::CreatePropertyFromDefinition(const FSsPropertyDef
 {
 	// Resolve the property name to match any previously exported properties from the parent type
 	const FName& PropName = PropDef.PropName;
-	if (SuperClass->FindPropertyByName(PropName))
+	if (ClassDef.SuperClass->FindPropertyByName(PropName))
 	{
 		UE_LOG(LogSharpScript, Error, TEXT("%s: Property %s cannot override a property from the base type"),
-		       *ClassName.ToString(), *PropDef.GetFriendlyName());
+		       *ClassDef.ClassName.ToString(), *PropDef.GetFriendlyName());
 		return false;
 	}
 
@@ -141,7 +153,7 @@ bool FSsGeneratedClassBuilder::CreatePropertyFromDefinition(const FSsPropertyDef
 	if (!Prop)
 	{
 		UE_LOG(LogSharpScript, Error, TEXT("%s: Failed to create property for %s"),
-		       *ClassName.ToString(), *PropDef.GetFriendlyName());
+		       *ClassDef.ClassName.ToString(), *PropDef.GetFriendlyName());
 		return false;
 	}
 
@@ -159,17 +171,17 @@ bool FSsGeneratedClassBuilder::CreateFunctionFromDefinition(const FSsFunctionDef
 	const FName& FuncName = FuncDef.FuncName;
 
 	// Overriding a base-class function is not supported by the subclassing UFunction feature yet.
-	if (SuperClass->FindFunctionByName(FuncName))
+	if (ClassDef.SuperClass->FindFunctionByName(FuncName))
 	{
 		UE_LOG(LogSharpScript, Error, TEXT("%s: Function %s cannot override a function from the base type"),
-		       *ClassName.ToString(), *FuncName.ToString());
+		       *ClassDef.ClassName.ToString(), *FuncName.ToString());
 		return false;
 	}
 
 	if (!FuncDef.ManagedDispatch)
 	{
 		UE_LOG(LogSharpScript, Error, TEXT("%s: Function %s has no managed dispatch"),
-		       *ClassName.ToString(), *FuncName.ToString());
+		       *ClassDef.ClassName.ToString(), *FuncName.ToString());
 		return false;
 	}
 
@@ -203,7 +215,7 @@ bool FSsGeneratedClassBuilder::CreateFunctionFromDefinition(const FSsFunctionDef
 		if (!ParamProp)
 		{
 			UE_LOG(LogSharpScript, Error, TEXT("%s: Failed to create parameter %s for function %s"),
-			       *ClassName.ToString(), *ParamDef.ParamName.ToString(), *FuncName.ToString());
+			       *ClassDef.ClassName.ToString(), *ParamDef.ParamName.ToString(), *FuncName.ToString());
 			return false;
 		}
 
@@ -326,34 +338,32 @@ void USsGeneratedClass::MoveGeneratedFunctionsAside()
 	GeneratedFunctions.Empty();
 }
 
-USsGeneratedClass* USsGeneratedClass::GenerateClass(const FName& ClassName, UClass* SuperClass,
-                                                    const FSsPropertyDef* PropertyDefines, int PropertyCount,
-                                                    const FSsFunctionDef* FunctionDefines, int FunctionCount)
+USsGeneratedClass* USsGeneratedClass::GenerateClass(const FSsClassDef& ClassDef)
 {
-	FSsGeneratedClassBuilder ClassBuilder(ClassName, SuperClass);
+	FSsGeneratedClassBuilder ClassBuilder(ClassDef);
 
 #if !WITH_EDITOR
 	if (ClassBuilder.HasOldClass())
 	{
 		// The Subclassing class only supports reload in editor mode.
 		UE_LOG(LogSharpScript, Error, TEXT("Regenerate subclassing class '%s' is not allowed in standalone build"),
-		       *ClassName.ToString());
+		       *ClassDef.ClassDef.ClassName.ToString());
 		return nullptr;
 	}
 #endif
 
-	for (int i = 0; i < PropertyCount; ++i)
+	for (int i = 0; i < ClassDef.PropertyCount; ++i)
 	{
-		const FSsPropertyDef& PropDef = PropertyDefines[i];
+		const FSsPropertyDef& PropDef = ClassDef.PropertyDefines[i];
 		if (!ClassBuilder.CreatePropertyFromDefinition(PropDef))
 		{
 			return nullptr;
 		}
 	}
 
-	for (int i = 0; i < FunctionCount; ++i)
+	for (int i = 0; i < ClassDef.FunctionCount; ++i)
 	{
-		const FSsFunctionDef& FuncDef = FunctionDefines[i];
+		const FSsFunctionDef& FuncDef = ClassDef.FunctionDefines[i];
 		if (!ClassBuilder.CreateFunctionFromDefinition(FuncDef))
 		{
 			return nullptr;

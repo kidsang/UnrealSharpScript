@@ -120,28 +120,107 @@ internal static class ClassEmitter
 	}
 
 	/// <summary>
-	/// Property-only GenerateClass call: pin the property defs and pass a null function-def slot.
+	/// Emits the <c>fixed (char* metaValueN = "...")</c> pin lines for each metadata value, one per line,
+	/// at the given indent, wrapped in <c>#if WITH_EDITOR</c> / <c>#endif</c>. These join the surrounding
+	/// fixed cascade so the pinned pointers stay valid through the GenerateClass call.
+	/// Returns the pin variable names (aligned with model.Metadata order).
+	/// </summary>
+	private static string[] EmitMetaValueFixeds(StringBuilder sb, ClassModel model, string indent)
+	{
+		string[] names = new string[model.Metadata.Count];
+		for (int i = 0; i < model.Metadata.Count; i++)
+		{
+			names[i] = $"_metaValue{i}";
+			sb.AppendLine($"{indent}#if WITH_EDITOR");
+			sb.AppendLine($"{indent}fixed (char* {names[i]} = {EmitUtils.ToLiteral(model.Metadata[i].Value)})");
+			sb.AppendLine($"{indent}#endif");
+		}
+		return names;
+	}
+
+	/// <summary>
+	/// Emits, inside an already-open unsafe/fixed scope (with the property/function def pointers and the
+	/// metadata value char* pins already fixed), the inline <c>MetaDataEntry[]</c> (built from the
+	/// <paramref name="metaVarNames"/> pins with <c>#if WITH_EDITOR</c> guards), then pins it, constructs
+	/// the <c>ClassDef</c> and calls <c>SubclassingUtils.GenerateClass</c>. No heap marshalling — every
+	/// string is pinned by the caller's fixed cascade. <paramref name="indent"/> is the leading tab string;
+	/// <paramref name="funcPtrExpr"/>/<paramref name="funcCountExpr"/> supply the function-def slot;
+	/// <paramref name="configExpr"/> is <c>(IntPtr)_configName</c> or <c>IntPtr.Zero</c>.
+	/// </summary>
+	private static void EmitClassDefAndCall(StringBuilder sb, ClassModel model, string indent,
+		string funcPtrExpr, string funcCountExpr, string[] metaVarNames, string configExpr)
+	{
+		sb.AppendLine($"{indent}MetaDataEntry[] _metaEntries =");
+		sb.AppendLine($"{indent}[");
+		for (int i = 0; i < model.Metadata.Count; i++)
+		{
+			sb.AppendLine($"{indent}#if WITH_EDITOR");
+			sb.AppendLine($"{indent}\tnew() {{ Key = \"{model.Metadata[i].Key}\", Value = {metaVarNames[i]} }},");
+			sb.AppendLine($"{indent}#endif");
+		}
+		sb.AppendLine($"{indent}];");
+		sb.AppendLine();
+		sb.AppendLine($"{indent}fixed (MetaDataEntry* _metaEntriesPtr = _metaEntries)");
+		sb.AppendLine($"{indent}{{");
+		sb.AppendLine($"{indent}\tClassDef _classDef = new()");
+		sb.AppendLine($"{indent}\t{{");
+		sb.AppendLine($"{indent}\t\tClassName = \"{model.UnrealName}\",");
+		sb.AppendLine($"{indent}\t\tSuperClass = {model.SuperClass}.StaticClass.NativeClass,");
+		sb.AppendLine($"{indent}\t\tPropertyDefines = (IntPtr)_propertyDefsPtr,");
+		sb.AppendLine($"{indent}\t\tPropertyCount = _propertyDefs.Length,");
+		sb.AppendLine($"{indent}\t\tFunctionDefines = {funcPtrExpr},");
+		sb.AppendLine($"{indent}\t\tFunctionCount = {funcCountExpr},");
+		sb.AppendLine($"{indent}\t\tSpecifiers = {model.SpecifiersExpr},");
+		sb.AppendLine($"{indent}\t\tMetaEntries = (IntPtr)_metaEntriesPtr,");
+		sb.AppendLine($"{indent}\t\tMetaCount = _metaEntries.Length,");
+		sb.AppendLine($"{indent}\t\tConfigName = {configExpr},");
+		sb.AppendLine($"{indent}\t}};");
+		sb.AppendLine($"{indent}\tNativeType = SubclassingUtils.GenerateClass(");
+		sb.AppendLine($"{indent}\t\tRuntimeTypeHandle.ToIntPtr(typeof({model.ClassName}).TypeHandle),");
+		sb.AppendLine($"{indent}\t\t(IntPtr)(&_classDef));");
+		sb.AppendLine($"{indent}}}");
+	}
+
+	/// <summary>
+	/// Property-only GenerateClass call: pin the metadata value strings (WITH_EDITOR guarded), the
+	/// config name (if any), and property defs in one fixed cascade, build the MetaDataEntry[] /
+	/// ClassDef and call GenerateClass.
 	/// </summary>
 	private static void EmitGenerateNoFunctions(StringBuilder sb, ClassModel model)
 	{
 		sb.AppendLine("\t\tunsafe");
 		sb.AppendLine("\t\t{");
+		string configExpr = EmitConfigFixed(sb, model, "\t\t\t");
+		string[] metaVars = EmitMetaValueFixeds(sb, model, "\t\t\t");
 		sb.AppendLine("\t\t\tfixed (PropertyDef* _propertyDefsPtr = _propertyDefs)");
 		sb.AppendLine("\t\t\t{");
-		sb.AppendLine("\t\t\t\tNativeType = SubclassingUtils.GenerateClass(");
-		sb.AppendLine($"\t\t\t\t\tRuntimeTypeHandle.ToIntPtr(typeof({model.ClassName}).TypeHandle),");
-		sb.AppendLine($"\t\t\t\t\t\"{model.UnrealName}\",");
-		sb.AppendLine($"\t\t\t\t\t{model.SuperClass}.StaticClass.NativeClass,");
-		sb.AppendLine("\t\t\t\t\t(IntPtr)_propertyDefsPtr, _propertyDefs.Length,");
-		sb.AppendLine("\t\t\t\t\tIntPtr.Zero, 0);");
+		EmitClassDefAndCall(sb, model, "\t\t\t\t", "IntPtr.Zero", "0", metaVars, configExpr);
 		sb.AppendLine("\t\t\t}");
 		sb.AppendLine("\t\t}");
 	}
 
 	/// <summary>
-	/// GenerateClass call with functions: build each function's FunctionParamDef[], pin them all,
-	/// build the FunctionDef[] (with managed dispatch pointers), pin it and the property defs,
-	/// then call GenerateClass with both blocks. Mirrors SsTestGenFunctionManual.generated.cs.
+	/// Emits a <c>fixed (char* _configName = "...")</c> line when <c>model.ConfigName</c> is non-null,
+	/// and returns the expression to use for <c>ClassDef.ConfigName</c> (<c>(IntPtr)_configName</c> or
+	/// <c>IntPtr.Zero</c>). Unlike metadata, Config is NOT wrapped in <c>#if WITH_EDITOR</c> because
+	/// configuration classes must function in non-editor builds as well.
+	/// <paramref name="indent"/> is the leading tab string for the fixed line.
+	/// </summary>
+	private static string EmitConfigFixed(StringBuilder sb, ClassModel model, string indent)
+	{
+		if (model.ConfigName != null)
+		{
+			sb.AppendLine($"{indent}fixed (char* _configName = {EmitUtils.ToLiteral(model.ConfigName)})");
+			return "(IntPtr)_configName";
+		}
+		return "IntPtr.Zero";
+	}
+
+	/// <summary>
+	/// GenerateClass call with functions: build each function's FunctionParamDef[], pin them all
+	/// along with metadata values (WITH_EDITOR guarded), config name and the function defs, build
+	/// the FunctionDef[] (with managed dispatch pointers), then call GenerateClass with both blocks.
+	/// Mirrors SsTestGenFunctionManual.generated.cs.
 	/// </summary>
 	private static void EmitGenerateWithFunctions(StringBuilder sb, ClassModel model)
 	{
@@ -151,7 +230,11 @@ internal static class ClassEmitter
 			FunctionEmitter.EmitParamsArray(sb, func);
 		}
 
-		// Pin the property defs and every function's params array in a single fixed cascade.
+		// Pin the config name (always, not editor-only), the metadata value strings (WITH_EDITOR
+		// guarded), the property defs and every function's params array in a single fixed cascade
+		// so all pointers stay valid through the GenerateClass call.
+		string configExpr = EmitConfigFixed(sb, model, "\t\t");
+		string[] metaVars = EmitMetaValueFixeds(sb, model, "\t\t");
 		sb.AppendLine("\t\tfixed (PropertyDef* _propertyDefsPtr = _propertyDefs)");
 		string[] ptrNames = new string[model.Functions.Count];
 		for (int i = 0; i < model.Functions.Count; i++)
@@ -174,12 +257,7 @@ internal static class ClassEmitter
 
 		sb.AppendLine("\t\t\tfixed (FunctionDef* _functionDefsPtr = _functionDefs)");
 		sb.AppendLine("\t\t\t{");
-		sb.AppendLine("\t\t\t\tNativeType = SubclassingUtils.GenerateClass(");
-		sb.AppendLine($"\t\t\t\t\tRuntimeTypeHandle.ToIntPtr(typeof({model.ClassName}).TypeHandle),");
-		sb.AppendLine($"\t\t\t\t\t\"{model.UnrealName}\",");
-		sb.AppendLine($"\t\t\t\t\t{model.SuperClass}.StaticClass.NativeClass,");
-		sb.AppendLine("\t\t\t\t\t(IntPtr)_propertyDefsPtr, _propertyDefs.Length,");
-		sb.AppendLine("\t\t\t\t\t(IntPtr)_functionDefsPtr, _functionDefs.Length);");
+		EmitClassDefAndCall(sb, model, "\t\t\t\t", "(IntPtr)_functionDefsPtr", "_functionDefs.Length", metaVars, configExpr);
 		sb.AppendLine("\t\t\t}");
 		sb.AppendLine("\t\t}");
 	}

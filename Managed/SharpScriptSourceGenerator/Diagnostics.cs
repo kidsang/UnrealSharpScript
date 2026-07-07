@@ -65,4 +65,16 @@ internal static class Diagnostics
 		category: Category,
 		defaultSeverity: DiagnosticSeverity.Error,
 		isEnabledByDefault: true);
+
+	/// <summary>
+	/// A [UCLASS] declares mutually exclusive class specifiers (e.g. Transient and NonTransient).
+	/// These cannot be applied together on the same class.
+	/// </summary>
+	public static readonly DiagnosticDescriptor MutuallyExclusiveSpecifiers = new(
+		id: "SS1006",
+		title: "Mutually exclusive class specifiers",
+		messageFormat: "UCLASS '{0}' has mutually exclusive specifiers: {1}. Only one may be used at a time.",
+		category: Category,
+		defaultSeverity: DiagnosticSeverity.Error,
+		isEnabledByDefault: true);
 }

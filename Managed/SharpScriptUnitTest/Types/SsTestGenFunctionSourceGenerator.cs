@@ -1,7 +1,6 @@
 using SharpScript.Subclassing;
 using UnrealEngine.CoreUObject;
 using UnrealEngine.Intrinsic;
-using static SharpScript.Subclassing.ClassSpecs;
 
 namespace SharpScriptUnitTest.Types;
 
@@ -12,7 +11,7 @@ namespace SharpScriptUnitTest.Types;
 /// <see cref="SharpScriptUnitTest.Tests.SubclassingFunctionSourceGeneratorTest"/> can assert the
 /// generated dispatch/marshalling round-trips every supported parameter type.
 /// </summary>
-[UCLASS(BlueprintType)]
+[UCLASS]
 public partial class USsTestGenFunctionSourceGenerator : UObject
 {
 	[UFUNCTION]

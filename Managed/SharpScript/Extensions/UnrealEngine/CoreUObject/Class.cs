@@ -92,4 +92,62 @@ public partial class UClass
 			return GCHandle.FromIntPtr(handlePtr).Target as UObject;
 		}
 	}
+
+	/// <summary>
+	/// Determines if the property has any metadata associated with the key
+	/// </summary>
+	/// <remarks>
+	/// Metadata only exists in editor builds, so this always returns false in non-editor builds.
+	/// </remarks>
+	public bool HasMetaData(string key)
+	{
+		ThrowIfNotValid();
+		unsafe
+		{
+			fixed (char* keyPtr = key)
+			{
+				return ClassInterop.HasMetaData(NativeObject, (IntPtr)keyPtr) != 0;
+			}
+		}
+	}
+
+	/// <summary>
+	/// Find the metadata value associated with the key
+	/// </summary>
+	/// <remarks>
+	/// Metadata only exists in editor builds, so this always returns an empty string in non-editor builds.
+	/// </remarks>
+	public string GetMetaData(string key)
+	{
+		ThrowIfNotValid();
+		unsafe
+		{
+			NativeString buffer = new NativeString();
+			try
+			{
+				fixed (char* keyPtr = key)
+				{
+					ClassInterop.GetMetaData(NativeObject, (IntPtr)keyPtr, ref buffer);
+				}
+
+				return buffer.ToString();
+			}
+			finally
+			{
+				ArrayInterop.Destroy(ref buffer.Array);
+			}
+		}
+	}
+
+	/// <summary>
+	/// Returns the config category name (the FName used to resolve this class's config .ini section).
+	/// </summary>
+	public FName GetClassConfigName()
+	{
+		ThrowIfNotValid();
+		unsafe
+		{
+			return ClassInterop.GetClassConfigName(NativeObject);
+		}
+	}
 }

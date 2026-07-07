@@ -153,6 +153,31 @@ internal static class EmitUtils
 	}
 
 	/// <summary>
+	/// Renders a string as a C# double-quoted string literal (including the surrounding quotes),
+	/// escaping backslashes, quotes and common control characters. Used to embed metadata values.
+	/// </summary>
+	public static string ToLiteral(string value)
+	{
+		StringBuilder sb = new();
+		sb.Append('"');
+		foreach (char c in value)
+		{
+			switch (c)
+			{
+				case '\\': sb.Append("\\\\"); break;
+				case '"': sb.Append("\\\""); break;
+				case '\n': sb.Append("\\n"); break;
+				case '\r': sb.Append("\\r"); break;
+				case '\t': sb.Append("\\t"); break;
+				case '\0': sb.Append("\\0"); break;
+				default: sb.Append(c); break;
+			}
+		}
+		sb.Append('"');
+		return sb.ToString();
+	}
+
+	/// <summary>
 	/// True when the <see cref="PropertyKind"/> is a simple value marshalled through
 	/// a single static <c>XMarshaller.FromNative/ToNative</c> pair (i.e. not a container
 	/// or struct-native-ref wrapper).

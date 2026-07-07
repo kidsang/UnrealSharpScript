@@ -29,6 +29,11 @@ public class SubclassingObjectSourceGeneratorTest : IUnitTestInterface
 		Utils.Assert(obj.GetClass().GetSuperClass() == UObject.StaticClass.Class);
 		Utils.Assert(obj.GetClass().GetSuperClass()!.GetSuperClass() == null);
 
+		// Test class specifiers were expanded onto the generated UClass.
+		// ReSharper disable once InconsistentNaming
+		const uint CLASS_NotPlaceable = 0x00000200u;
+		Utils.Assert((obj.GetClass().GetClassFlags() & CLASS_NotPlaceable) != 0);
+
 		// Test package properties
 		UPackage package = obj.GetPackage();
 		Utils.Assert(obj.GetOuter() == package);

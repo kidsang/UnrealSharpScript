@@ -152,11 +152,11 @@ UPackage* USsSubclassingUtils::GetGeneratedPackageEditorOnly()
 }
 #endif
 
-USsGeneratedClass* USsSubclassingUtils::GenerateClass(const void* ManagedType, const FName& ClassName, UClass* SuperClass, const FSsPropertyDef* PropertyDefines, int PropertyCount, const FSsFunctionDef* FunctionDefines, int FunctionCount)
+USsGeneratedClass* USsSubclassingUtils::GenerateClass(const void* ManagedType, const FSsClassDef* ClassDef)
 {
 	check(IsInGameThread());
-	USsGeneratedClass* GenClass = USsGeneratedClass::GenerateClass(ClassName, SuperClass, PropertyDefines,
-	                                                               PropertyCount, FunctionDefines, FunctionCount);
+	check(ClassDef);
+	USsGeneratedClass* GenClass = USsGeneratedClass::GenerateClass(*ClassDef);
 	if (GenClass)
 	{
 		USsTypeRegistry::RegisterClassType(GenClass, ManagedType);

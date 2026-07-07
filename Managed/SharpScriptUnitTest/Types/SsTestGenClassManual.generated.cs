@@ -189,14 +189,36 @@ public partial class USsTestGenClassManual : IStaticClass<USsTestGenClassManual>
 
 		unsafe
 		{
+#if WITH_EDITOR
+			fixed (char* _metaValue0 = "CSharp|Internal")
+#endif
 			fixed (PropertyDef* _propertyDefsPtr = _propertyDefs)
 			{
-				NativeType = SubclassingUtils.GenerateClass(
-					RuntimeTypeHandle.ToIntPtr(typeof(USsTestGenClassManual).TypeHandle),
-					"SsTestGenClassManual",
-					UObject.StaticClass.NativeClass,
-					(IntPtr)_propertyDefsPtr, _propertyDefs.Length,
-					IntPtr.Zero, 0);
+				MetaDataEntry[] _metaEntries =
+				[
+#if WITH_EDITOR
+					new() { Key = "Category", Value = _metaValue0 },
+#endif
+				];
+
+				fixed (MetaDataEntry* _metaEntriesPtr = _metaEntries)
+				{
+					ClassDef _classDef = new()
+					{
+						ClassName = "SsTestGenClassManual",
+						SuperClass = UObject.StaticClass.NativeClass,
+						PropertyDefines = (IntPtr)_propertyDefsPtr,
+						PropertyCount = _propertyDefs.Length,
+						FunctionDefines = IntPtr.Zero,
+						FunctionCount = 0,
+						Specifiers = (ulong)(ClassSpecs.BlueprintType | ClassSpecs.NotPlaceable),
+						MetaEntries = (IntPtr)_metaEntriesPtr,
+						MetaCount = _metaEntries.Length,
+					};
+					NativeType = SubclassingUtils.GenerateClass(
+						RuntimeTypeHandle.ToIntPtr(typeof(USsTestGenClassManual).TypeHandle),
+						(IntPtr)(&_classDef));
+				}
 			}
 		}
 
