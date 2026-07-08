@@ -36,27 +36,6 @@ const void* USsClassInterop::GetDefaultObject(const UClass* InClass, int bCreate
 	return nullptr;
 }
 
-int USsClassInterop::HasMetaData(const UClass* InClass, const TCHAR* Key)
-{
-#if WITH_EDITORONLY_DATA
-	return InClass->HasMetaData(Key) ? 1 : 0;
-#else
-	return 0;
-#endif
-}
-
-void USsClassInterop::GetMetaData(const UClass* InClass, const TCHAR* Key, FString& OutValue)
-{
-#if WITH_EDITORONLY_DATA
-	if (InClass->HasMetaData(Key))
-	{
-		OutValue = InClass->GetMetaData(Key);
-		return;
-	}
-#endif
-	OutValue.Reset();
-}
-
 FName USsClassInterop::GetClassConfigName(const UClass* InClass)
 {
 	return InClass->ClassConfigName;
@@ -69,7 +48,5 @@ void USsClassInterop::DoExportFunctions(FSsBindNativeCallbackFunc BindNativeCall
 	BindNativeCallbackFunc(&IsChildOf, TEXT("ClassInterop.IsChildOf"));
 	BindNativeCallbackFunc(&ImplementsInterface, TEXT("ClassInterop.ImplementsInterface"));
 	BindNativeCallbackFunc(&GetDefaultObject, TEXT("ClassInterop.GetDefaultObject"));
-	BindNativeCallbackFunc(&HasMetaData, TEXT("ClassInterop.HasMetaData"));
-	BindNativeCallbackFunc(&GetMetaData, TEXT("ClassInterop.GetMetaData"));
 	BindNativeCallbackFunc(&GetClassConfigName, TEXT("ClassInterop.GetClassConfigName"));
 }

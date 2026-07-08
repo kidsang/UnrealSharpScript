@@ -201,10 +201,11 @@ USsGeneratedStruct* USsSubclassingUtils::GenerateStruct(const FSsStructDef* Stru
 	return USsGeneratedStruct::GenerateStruct(*StructDef);
 }
 
-USsGeneratedEnum* USsSubclassingUtils::GenerateEnum(const FName& EnumName, const FSsEnumValueDef* ValueDefines, int ValueCount, bool bIsFlags)
+USsGeneratedEnum* USsSubclassingUtils::GenerateEnum(const FSsEnumDef* EnumDef)
 {
 	check(IsInGameThread());
-	return USsGeneratedEnum::GenerateEnum(EnumName, ValueDefines, ValueCount, bIsFlags);
+	check(EnumDef);
+	return USsGeneratedEnum::GenerateEnum(*EnumDef);
 }
 
 FProperty* USsSubclassingUtils::CreateProperty(FFieldVariant Owner, const FSsPropertyDef& PropDef)

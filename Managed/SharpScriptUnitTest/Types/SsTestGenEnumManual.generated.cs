@@ -38,9 +38,24 @@ public static class ESsTestGenEnumManualNativeRef
 		{
 			fixed (EnumValueDef* _valueDefsPtr = _valueDefs)
 			{
-				NativeType = SubclassingUtils.GenerateEnum(
-					"SsTestGenEnumManual",
-					(IntPtr)_valueDefsPtr, _valueDefs.Length, 1);
+				MetaDataEntry[] _metaEntries =
+				[
+				];
+
+				fixed (MetaDataEntry* _metaEntriesPtr = _metaEntries)
+				{
+					EnumDef _enumDef = new()
+					{
+						EnumName = "SsTestGenEnumManual",
+						ValueDefines = (IntPtr)_valueDefsPtr,
+						ValueCount = _valueDefs.Length,
+						IsFlags = 1,
+						Specifiers = (ulong)(EnumSpecs.BlueprintType),
+						MetaEntries = (IntPtr)_metaEntriesPtr,
+						MetaCount = _metaEntries.Length,
+					};
+					NativeType = SubclassingUtils.GenerateEnum((IntPtr)(&_enumDef));
+				}
 			}
 		}
 	}

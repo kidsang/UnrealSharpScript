@@ -78,6 +78,34 @@ struct FSsEnumValueDef
 };
 
 /**
+ * Meta info collected from a csharp [UENUM] definition to create a unreal enum.
+ * <br/> See: SubclassingUtils.cs EnumDef
+ */
+struct FSsEnumDef
+{
+	/** Name of the enum. */
+	FName EnumName;
+
+	/** Array of enum value defines. */
+	const FSsEnumValueDef* ValueDefines = nullptr;
+
+	/** Count of enum value array. */
+	int ValueCount = 0;
+
+	/** Whether the C# enum was declared with [Flags]; sets EEnumFlags::Flags on the generated UEnum. */
+	uint8 IsFlags = 0;
+
+	/** The raw C# EnumSpecs bit set, passed through unchanged. Expanded by SsEnumSpecifiers. */
+	uint64 Specifiers = 0;
+
+	/** Array of metadata entries (may be null when MetaCount is 0). */
+	const FSsMetaDataEntry* MetaEntries = nullptr;
+
+	/** Count of metadata entry array. */
+	int MetaCount = 0;
+};
+
+/**
  * Engine-agnostic UFUNCTION parameter role flags supplied by the C# layer.
  * <br/> The C# side must NOT hardcode UE EPropertyFlags (CPF_*), because those values may differ
  * across engine versions. C# passes these stable values, and C++ translates them to CPF_* in
@@ -282,13 +310,10 @@ public:
 
 	/**
 	 * Called by C#, generate a new unreal enum from given infos.
-	 * @param EnumName Name of the new enum.
-	 * @param ValueDefines Array of enum value defines.
-	 * @param ValueCount Count of enum value array.
-	 * @param bIsFlags Whether the C# enum was declared with [Flags]; sets EEnumFlags::Flags on the generated UEnum.
+	 * @param EnumDef The enum definition bundle (name, values, flags, specifiers, metadata).
 	 * @return Newly generated enum if success, otherwise nullptr.
 	 */
-	static USsGeneratedEnum* GenerateEnum(const FName& EnumName, const FSsEnumValueDef* ValueDefines, int ValueCount, bool bIsFlags);
+	static USsGeneratedEnum* GenerateEnum(const FSsEnumDef* EnumDef);
 
 	/**
 	 * Create new property by definition.

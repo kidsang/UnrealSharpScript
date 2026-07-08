@@ -395,6 +395,41 @@ internal sealed class EnumModel
 	/// </summary>
 	public bool IsFlags;
 
+	/// <summary>
+	/// The <c>EnumSpecs</c> enum member names from the [UENUM] attribute (e.g. "BlueprintType"),
+	/// carried through and emitted as <c>(ulong)(EnumSpecs.A | EnumSpecs.B)</c>. The generator never
+	/// interprets these — the C++ layer expands the bit set into editor-only metadata. Empty = 0.
+	/// </summary>
+	public readonly List<string> SpecifierNames = new();
+
+	/// <summary>
+	/// The C# expression emitted for <c>EnumDef.Specifiers</c>: <c>(ulong)(EnumSpecs.A | ...)</c>,
+	/// or <c>0UL</c> when no specifiers were given.
+	/// </summary>
+	public string SpecifiersExpr
+	{
+		get
+		{
+			if (SpecifierNames.Count == 0)
+			{
+				return "0UL";
+			}
+			string[] qualified = new string[SpecifierNames.Count];
+			for (int i = 0; i < SpecifierNames.Count; i++)
+			{
+				qualified[i] = $"EnumSpecs.{SpecifierNames[i]}";
+			}
+			return $"(ulong)({string.Join(" | ", qualified)})";
+		}
+	}
+
+	/// <summary>
+	/// Free-form metadata key/value pairs applied to the generated enum (from DisplayName / Category /
+	/// the Meta array on the attribute). Emitted verbatim into the native <c>MetaDataEntry[]</c>
+	/// (WITH_EDITOR guarded).
+	/// </summary>
+	public readonly List<(string Key, string Value)> Metadata = new();
+
 	public readonly List<EnumValueModel> Values = new();
 
 	/// <summary>Hint name used for the generated source file.</summary>

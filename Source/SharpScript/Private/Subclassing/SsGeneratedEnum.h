@@ -4,6 +4,7 @@
 #include "SsGeneratedEnum.generated.h"
 
 struct FSsEnumValueDef;
+struct FSsEnumDef;
 
 /**
  * An Unreal enum that was generated from a C# type.
@@ -16,11 +17,8 @@ class USsGeneratedEnum : public UEnum
 public:
 	/**
 	 * Generate a new unreal enum from given infos.
-	 * @param EnumName Name of the new enum.
-	 * @param ValueDefines Array of enum value defines.
-	 * @param ValueCount Count of enum value array.
-	 * @param bIsFlags Whether the C# enum was declared with [Flags]; sets EEnumFlags::Flags on the generated UEnum.
+	 * @param EnumDef The enum definition bundle (name, values, flags, specifiers, metadata).
 	 * @return Newly generated enum if success, otherwise nullptr.
 	 */
-	static USsGeneratedEnum* GenerateEnum(const FName& EnumName, const FSsEnumValueDef* ValueDefines, int ValueCount, bool bIsFlags);
+	static USsGeneratedEnum* GenerateEnum(const FSsEnumDef& EnumDef);
 };

@@ -60,6 +60,10 @@ public sealed class UEnumGenerator : IIncrementalGenerator
 			IsFlags = HasFlagsAttribute(enumSymbol),
 		};
 
+		// Carry the [UENUM] specifiers + metadata through to the model. The generator only transports
+		// these values; the C++ layer is solely responsible for interpreting/expanding them.
+		ParseEnumAttribute(enumSymbol, model);
+
 		foreach (ISymbol member in enumSymbol.GetMembers())
 		{
 			if (member is IFieldSymbol { IsStatic: true, ConstantValue: not null } fieldSymbol)
@@ -70,6 +74,25 @@ public sealed class UEnumGenerator : IIncrementalGenerator
 
 		string source = EnumEmitter.Emit(model);
 		context.AddSource(model.HintName, SourceText.From(source, Encoding.UTF8));
+	}
+
+	/// <summary>
+	/// Reads the <c>[UENUM]</c> attribute off the enum symbol and copies its specifier bits and
+	/// metadata (DisplayName / Category / Meta) into the model. Purely a transport step: the raw
+	/// <c>EnumSpecs</c> bit set is OR-folded into <see cref="EnumModel.SpecifierNames"/> and the
+	/// name/value metadata is collected verbatim; no bit is interpreted here.
+	/// </summary>
+	private static void ParseEnumAttribute(INamedTypeSymbol enumSymbol, EnumModel model)
+	{
+		AttributeData? attr = enumSymbol.GetAttributes().FirstOrDefault(
+			a => a.AttributeClass?.ToDisplayString() == UEnumAttributeFullName);
+		if (attr == null)
+		{
+			return;
+		}
+
+		AttributeParsing.CollectSpecifierNames(attr, model.SpecifierNames);
+		AttributeParsing.CollectMetadata(attr, model.Metadata);
 	}
 
 	/// <summary>

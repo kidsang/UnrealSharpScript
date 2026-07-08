@@ -296,10 +296,10 @@ public static unsafe class TypeInterop
 	}
 
 	/// <summary>
-	/// Determines if the type (UClass / UScriptStruct / UEnum ... any UStruct) has any metadata
+	/// Determines if the type (UClass / UScriptStruct / UEnum ... any UField) has any metadata
 	/// associated with the key.
 	/// </summary>
-	/// <param name="nativeType">UStruct pointer (e.g. a generated struct's NativeType).</param>
+	/// <param name="nativeType">UField pointer (e.g. a UClass's NativeObject or a generated struct/enum's NativeType).</param>
 	/// <param name="key">Metadata key</param>
 	/// <remarks>
 	/// Metadata only exists in editor builds, so this always returns false in non-editor builds.
@@ -313,9 +313,9 @@ public static unsafe class TypeInterop
 	}
 
 	/// <summary>
-	/// Find the metadata value associated with the key on the type (UClass / UScriptStruct / ...).
+	/// Find the metadata value associated with the key on the type (UClass / UScriptStruct / UEnum ...).
 	/// </summary>
-	/// <param name="nativeType">UStruct pointer (e.g. a generated struct's NativeType).</param>
+	/// <param name="nativeType">UField pointer (e.g. a UClass's NativeObject or a generated struct/enum's NativeType).</param>
 	/// <param name="key">Metadata key</param>
 	/// <remarks>
 	/// Metadata only exists in editor builds, so this always returns an empty string in non-editor builds.

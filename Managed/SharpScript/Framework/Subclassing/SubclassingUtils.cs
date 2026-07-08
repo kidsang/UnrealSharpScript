@@ -102,6 +102,52 @@ public struct EnumValueDef
 }
 
 /// <summary>
+/// Meta info collected from a csharp [UENUM] definition to create a unreal enum.
+/// <br/> See: SsSubclassingUtils.h FSsEnumDef
+/// </summary>
+[StructLayout(LayoutKind.Sequential)]
+public struct EnumDef
+{
+	/// <summary>
+	/// Name of the enum.
+	/// </summary>
+	public FName EnumName;
+
+	/// <summary>
+	/// Array of enum value defines.
+	/// </summary>
+	public IntPtr ValueDefines;
+
+	/// <summary>
+	/// Count of enum value array.
+	/// </summary>
+	public int ValueCount;
+
+	/// <summary>
+	/// Whether the C# enum was declared with [Flags]; sets EEnumFlags::Flags on the generated UEnum.
+	/// 1 = flags enum, 0 = plain enum.
+	/// </summary>
+	public byte IsFlags;
+
+	/// <summary>
+	/// The raw <c>EnumSpecs</c> bit set, passed through unchanged. The C++ layer
+	/// (<c>FSsEnumSpecifiers</c>) expands it into editor-only metadata.
+	/// </summary>
+	public ulong Specifiers;
+
+	/// <summary>
+	/// Array of <see cref="MetaDataEntry"/> (DisplayName / Category / user Meta).
+	/// May be IntPtr.Zero when MetaCount is 0.
+	/// </summary>
+	public IntPtr MetaEntries;
+
+	/// <summary>
+	/// Count of metadata entry array.
+	/// </summary>
+	public int MetaCount;
+}
+
+/// <summary>
 /// Engine-agnostic UFUNCTION parameter role flags. These are stable values defined by SharpScript,
 /// NOT UE EPropertyFlags (CPF_*) — the C++ layer (USsSubclassingUtils::TranslateParamFlags) translates
 /// them to the correct CPF_* for whatever engine version is in use, so the C# side stays version-proof.
@@ -338,10 +384,7 @@ public static unsafe class SubclassingUtils
 		IntPtr, /** StructDef* */
 		IntPtr> GenerateStruct;
 	internal static delegate* unmanaged[Cdecl]<
-		FName, /** EnumName */
-		IntPtr, /** ValueDefines */
-		int, /** ValueCount */
-		byte, /** bIsFlags */
+		IntPtr, /** EnumDef* */
 		IntPtr> GenerateEnum;
 #pragma warning restore CS0649
 

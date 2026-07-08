@@ -14,8 +14,6 @@ static unsafe class ClassInterop
 	internal static delegate* unmanaged<IntPtr, IntPtr, int> IsChildOf;
 	internal static delegate* unmanaged<IntPtr, IntPtr, int> ImplementsInterface;
 	internal static delegate* unmanaged<IntPtr, int, IntPtr> GetDefaultObject;
-	internal static delegate* unmanaged<IntPtr, IntPtr, int> HasMetaData;
-	internal static delegate* unmanaged<IntPtr, IntPtr, ref NativeString, void> GetMetaData;
 	internal static delegate* unmanaged<IntPtr, FName> GetClassConfigName;
 #pragma warning restore CS0649
 }

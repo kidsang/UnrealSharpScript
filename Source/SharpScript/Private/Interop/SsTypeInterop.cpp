@@ -160,7 +160,7 @@ void USsTypeInterop::GetPropertyMetaData(const FProperty* InProp, const TCHAR* K
 	OutValue.Reset();
 }
 
-int USsTypeInterop::HasTypeMetaData(const UStruct* InType, const TCHAR* Key)
+int USsTypeInterop::HasTypeMetaData(const UField* InType, const TCHAR* Key)
 {
 #if WITH_EDITORONLY_DATA
 	return InType->HasMetaData(Key) ? 1 : 0;
@@ -169,7 +169,7 @@ int USsTypeInterop::HasTypeMetaData(const UStruct* InType, const TCHAR* Key)
 #endif
 }
 
-void USsTypeInterop::GetTypeMetaData(const UStruct* InType, const TCHAR* Key, FString& OutValue)
+void USsTypeInterop::GetTypeMetaData(const UField* InType, const TCHAR* Key, FString& OutValue)
 {
 #if WITH_EDITORONLY_DATA
 	if (InType->HasMetaData(Key))
