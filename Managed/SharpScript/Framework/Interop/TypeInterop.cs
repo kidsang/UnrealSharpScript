@@ -244,6 +244,58 @@ public static unsafe class TypeInterop
 	}
 
 	/// <summary>
+	/// Return the property flags (EPropertyFlags / CPF_*) of the property.
+	/// </summary>
+	/// <param name="nativeProp">FProperty pointer</param>
+	/// <returns>The raw EPropertyFlags bit set.</returns>
+	public static UInt64 GetPropertyFlags(IntPtr nativeProp)
+	{
+		return NativeGetPropertyFlags(nativeProp);
+	}
+
+	/// <summary>
+	/// Determines if the property has any metadata associated with the key.
+	/// </summary>
+	/// <param name="nativeProp">FProperty pointer</param>
+	/// <param name="key">Metadata key</param>
+	/// <remarks>
+	/// Metadata only exists in editor builds, so this always returns false in non-editor builds.
+	/// </remarks>
+	public static bool HasPropertyMetaData(IntPtr nativeProp, string key)
+	{
+		fixed (char* keyPtr = key)
+		{
+			return NativeHasPropertyMetaData(nativeProp, (IntPtr)keyPtr) != 0;
+		}
+	}
+
+	/// <summary>
+	/// Find the metadata value associated with the key on the property.
+	/// </summary>
+	/// <param name="nativeProp">FProperty pointer</param>
+	/// <param name="key">Metadata key</param>
+	/// <remarks>
+	/// Metadata only exists in editor builds, so this always returns an empty string in non-editor builds.
+	/// </remarks>
+	public static string GetPropertyMetaData(IntPtr nativeProp, string key)
+	{
+		NativeString buffer = new NativeString();
+		try
+		{
+			fixed (char* keyPtr = key)
+			{
+				NativeGetPropertyMetaData(nativeProp, (IntPtr)keyPtr, ref buffer);
+			}
+
+			return buffer.ToString();
+		}
+		finally
+		{
+			ArrayInterop.Destroy(ref buffer.Array);
+		}
+	}
+
+	/// <summary>
 	/// Get the bitfield mask of a boolean property.
 	/// </summary>
 	/// <param name="nativeBoolProp">FBoolProperty pointer</param>
@@ -355,6 +407,9 @@ public static unsafe class TypeInterop
 	internal static delegate* unmanaged[Cdecl]<IntPtr, int> NativeGetPropertyOffset;
 	internal static delegate* unmanaged[Cdecl]<IntPtr, FName, int> NativeGetPropertyOffsetFromName;
 	internal static delegate* unmanaged[Cdecl]<IntPtr, int> NativeGetPropertySize;
+	internal static delegate* unmanaged[Cdecl]<IntPtr, UInt64> NativeGetPropertyFlags;
+	internal static delegate* unmanaged[Cdecl]<IntPtr, IntPtr, int> NativeHasPropertyMetaData;
+	internal static delegate* unmanaged[Cdecl]<IntPtr, IntPtr, ref NativeString, void> NativeGetPropertyMetaData;
 	internal static delegate* unmanaged[Cdecl]<IntPtr, byte> NativeGetBoolPropertyFieldMask;
 	internal static delegate* unmanaged[Cdecl]<IntPtr, IntPtr> NativeGetMapKeyProperty;
 	internal static delegate* unmanaged[Cdecl]<IntPtr, IntPtr> NativeGetMapValueProperty;

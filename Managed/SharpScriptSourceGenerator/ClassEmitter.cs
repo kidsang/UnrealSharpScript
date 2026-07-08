@@ -139,6 +139,29 @@ internal static class ClassEmitter
 	}
 
 	/// <summary>
+	/// Emits the <c>fixed (char* ...)</c> pin lines for every metadata value on every property
+	/// (WITH_EDITOR guarded), joining the surrounding fixed cascade. Returns a jagged array of pin
+	/// variable names indexed by [propertyIndex][metaIndex]; properties without metadata get an empty row.
+	/// </summary>
+	private static string[][] EmitPropMetaValueFixeds(StringBuilder sb, ClassModel model, string indent)
+	{
+		string[][] names = new string[model.Properties.Count][];
+		for (int p = 0; p < model.Properties.Count; p++)
+		{
+			PropertyModel prop = model.Properties[p];
+			names[p] = new string[prop.Metadata.Count];
+			for (int m = 0; m < prop.Metadata.Count; m++)
+			{
+				names[p][m] = $"_propMetaValue{p}_{m}";
+				sb.AppendLine($"{indent}#if WITH_EDITOR");
+				sb.AppendLine($"{indent}fixed (char* {names[p][m]} = {EmitUtils.ToLiteral(prop.Metadata[m].Value)})");
+				sb.AppendLine($"{indent}#endif");
+			}
+		}
+		return names;
+	}
+
+	/// <summary>
 	/// Emits, inside an already-open unsafe/fixed scope (with the property/function def pointers and the
 	/// metadata value char* pins already fixed), the inline <c>MetaDataEntry[]</c> (built from the
 	/// <paramref name="metaVarNames"/> pins with <c>#if WITH_EDITOR</c> guards), then pins it, constructs
@@ -148,8 +171,9 @@ internal static class ClassEmitter
 	/// <paramref name="configExpr"/> is <c>(IntPtr)_configName</c> or <c>IntPtr.Zero</c>.
 	/// </summary>
 	private static void EmitClassDefAndCall(StringBuilder sb, ClassModel model, string indent,
-		string funcPtrExpr, string funcCountExpr, string[] metaVarNames, string configExpr)
+		string funcPtrExpr, string funcCountExpr, string[] metaVarNames, string[][] propMetaVarNames, string configExpr)
 	{
+		// Build the class-level MetaDataEntry[] (from the pinned class metadata value char*s).
 		sb.AppendLine($"{indent}MetaDataEntry[] _metaEntries =");
 		sb.AppendLine($"{indent}[");
 		for (int i = 0; i < model.Metadata.Count; i++)
@@ -160,8 +184,51 @@ internal static class ClassEmitter
 		}
 		sb.AppendLine($"{indent}];");
 		sb.AppendLine();
+
+		// Build one MetaDataEntry[] per property that carries metadata (from the pinned per-property
+		// value char*s). Named _propMetaEntries{p}. Properties without metadata are skipped.
+		for (int p = 0; p < model.Properties.Count; p++)
+		{
+			PropertyModel prop = model.Properties[p];
+			if (prop.Metadata.Count == 0)
+			{
+				continue;
+			}
+			sb.AppendLine($"{indent}MetaDataEntry[] _propMetaEntries{p} =");
+			sb.AppendLine($"{indent}[");
+			for (int m = 0; m < prop.Metadata.Count; m++)
+			{
+				sb.AppendLine($"{indent}#if WITH_EDITOR");
+				sb.AppendLine($"{indent}\tnew() {{ Key = \"{prop.Metadata[m].Key}\", Value = {propMetaVarNames[p][m]} }},");
+				sb.AppendLine($"{indent}#endif");
+			}
+			sb.AppendLine($"{indent}];");
+		}
+		sb.AppendLine();
+
+		// Pin the class metadata array and every per-property metadata array in one fixed cascade so
+		// the MetaDataEntry* pointers stay valid across the GenerateClass call.
 		sb.AppendLine($"{indent}fixed (MetaDataEntry* _metaEntriesPtr = _metaEntries)");
+		for (int p = 0; p < model.Properties.Count; p++)
+		{
+			if (model.Properties[p].Metadata.Count > 0)
+			{
+				sb.AppendLine($"{indent}fixed (MetaDataEntry* _propMetaEntriesPtr{p} = _propMetaEntries{p})");
+			}
+		}
 		sb.AppendLine($"{indent}{{");
+
+		// Attach each property's metadata to its PropertyDef entry (the array is pinned, so writing
+		// into its elements before the native call is safe).
+		for (int p = 0; p < model.Properties.Count; p++)
+		{
+			if (model.Properties[p].Metadata.Count > 0)
+			{
+				sb.AppendLine($"{indent}\t_propertyDefs[{p}].MetaEntries = (IntPtr)_propMetaEntriesPtr{p};");
+				sb.AppendLine($"{indent}\t_propertyDefs[{p}].MetaCount = _propMetaEntries{p}.Length;");
+			}
+		}
+
 		sb.AppendLine($"{indent}\tClassDef _classDef = new()");
 		sb.AppendLine($"{indent}\t{{");
 		sb.AppendLine($"{indent}\t\tClassName = \"{model.UnrealName}\",");
@@ -192,9 +259,10 @@ internal static class ClassEmitter
 		sb.AppendLine("\t\t{");
 		string configExpr = EmitConfigFixed(sb, model, "\t\t\t");
 		string[] metaVars = EmitMetaValueFixeds(sb, model, "\t\t\t");
+		string[][] propMetaVars = EmitPropMetaValueFixeds(sb, model, "\t\t\t");
 		sb.AppendLine("\t\t\tfixed (PropertyDef* _propertyDefsPtr = _propertyDefs)");
 		sb.AppendLine("\t\t\t{");
-		EmitClassDefAndCall(sb, model, "\t\t\t\t", "IntPtr.Zero", "0", metaVars, configExpr);
+		EmitClassDefAndCall(sb, model, "\t\t\t\t", "IntPtr.Zero", "0", metaVars, propMetaVars, configExpr);
 		sb.AppendLine("\t\t\t}");
 		sb.AppendLine("\t\t}");
 	}
@@ -235,6 +303,7 @@ internal static class ClassEmitter
 		// so all pointers stay valid through the GenerateClass call.
 		string configExpr = EmitConfigFixed(sb, model, "\t\t");
 		string[] metaVars = EmitMetaValueFixeds(sb, model, "\t\t");
+		string[][] propMetaVars = EmitPropMetaValueFixeds(sb, model, "\t\t");
 		sb.AppendLine("\t\tfixed (PropertyDef* _propertyDefsPtr = _propertyDefs)");
 		string[] ptrNames = new string[model.Functions.Count];
 		for (int i = 0; i < model.Functions.Count; i++)
@@ -257,7 +326,7 @@ internal static class ClassEmitter
 
 		sb.AppendLine("\t\t\tfixed (FunctionDef* _functionDefsPtr = _functionDefs)");
 		sb.AppendLine("\t\t\t{");
-		EmitClassDefAndCall(sb, model, "\t\t\t\t", "(IntPtr)_functionDefsPtr", "_functionDefs.Length", metaVars, configExpr);
+		EmitClassDefAndCall(sb, model, "\t\t\t\t", "(IntPtr)_functionDefsPtr", "_functionDefs.Length", metaVars, propMetaVars, configExpr);
 		sb.AppendLine("\t\t\t}");
 		sb.AppendLine("\t\t}");
 	}

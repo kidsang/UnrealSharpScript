@@ -1,3 +1,4 @@
+using SharpScript.Interop;
 using SharpScriptUnitTest.Types;
 using UnrealEngine.CoreUObject;
 using UnrealEngine.Intrinsic;
@@ -23,9 +24,43 @@ public class SubclassingSpecifierTest : IUnitTestInterface
 	private const uint CLASS_HideDropDown = 0x04000000u;
 	private const uint CLASS_GlobalUserConfig = 0x08000000u;
 	private const uint CLASS_ConfigDoNotCheckDefaults = 0x40000000u;
+
+	// EPropertyFlags (CPF_*) bit values (Engine/Source/Runtime/CoreUObject/Public/UObject/ObjectMacros.h).
+	private const ulong CPF_Edit = 0x0000000000000001u;
+	private const ulong CPF_BlueprintVisible = 0x0000000000000004u;
+	private const ulong CPF_ExportObject = 0x0000000000000008u;
+	private const ulong CPF_BlueprintReadOnly = 0x0000000000000010u;
+	private const ulong CPF_EditFixedSize = 0x0000000000000040u;
+	private const ulong CPF_DisableEditOnTemplate = 0x0000000000000800u;
+	private const ulong CPF_Transient = 0x0000000000002000u;
+	private const ulong CPF_Config = 0x0000000000004000u;
+	private const ulong CPF_DisableEditOnInstance = 0x0000000000010000u;
+	private const ulong CPF_EditConst = 0x0000000000020000u;
+	private const ulong CPF_GlobalConfig = 0x0000000000040000u;
+	private const ulong CPF_InstancedReference = 0x0000000000080000u;
+	private const ulong CPF_DuplicateTransient = 0x0000000000200000u;
+	private const ulong CPF_SaveGame = 0x0000000001000000u;
+	private const ulong CPF_NoClear = 0x0000000002000000u;
+	private const ulong CPF_Interp = 0x0000000200000000u;
+	private const ulong CPF_NonTransactional = 0x0000000400000000u;
+	private const ulong CPF_AssetRegistrySearchable = 0x0000010000000000u;
+	private const ulong CPF_SimpleDisplay = 0x0000020000000000u;
+	private const ulong CPF_AdvancedDisplay = 0x0000040000000000u;
+	private const ulong CPF_TextExportTransient = 0x0000400000000000u;
+	private const ulong CPF_NonPIEDuplicateTransient = 0x0000800000000000u;
+	private const ulong CPF_PersistentInstance = 0x0002000000000000u;
+	private const ulong CPF_SkipSerialization = 0x0080000000000000u;
 	// ReSharper restore InconsistentNaming
 
 	public bool RunTest()
+	{
+		TestClassSpecifiers();
+		TestPropertySpecifiers();
+
+		return true;
+	}
+
+	private static void TestClassSpecifiers()
 	{
 		// BlueprintType -> BlueprintType=true.
 		UClass bpType = GetClass<USsTestGenSpecBlueprintType>();
@@ -109,8 +144,115 @@ public class SubclassingSpecifierTest : IUnitTestInterface
 
 		// Metadata handling must not leak flag bits into the class.
 		Utils.Assert((metadataClass.GetClassFlags() & (CLASS_Config | CLASS_Abstract | CLASS_Deprecated)) == 0);
+	}
 
-		return true;
+	private static void TestPropertySpecifiers()
+	{
+		UClass cls = USsTestGenPropSpec.StaticClass.Class!;
+
+		// --- Config family. ---
+		AssertPropFlagSet(cls, nameof(USsTestGenPropSpec.Config), CPF_Config);
+		// GlobalConfig implies Config as well.
+		AssertPropFlagSet(cls, nameof(USsTestGenPropSpec.GlobalConfig), CPF_GlobalConfig | CPF_Config);
+
+		// --- Transient family. ---
+		AssertPropFlagSet(cls, nameof(USsTestGenPropSpec.Transient), CPF_Transient);
+		AssertPropFlagSet(cls, nameof(USsTestGenPropSpec.DuplicateTransient), CPF_DuplicateTransient);
+		AssertPropFlagSet(cls, nameof(USsTestGenPropSpec.NonPieDuplicateTransient), CPF_NonPIEDuplicateTransient);
+		AssertPropFlagSet(cls, nameof(USsTestGenPropSpec.TextExportTransient), CPF_TextExportTransient);
+		AssertPropFlagSet(cls, nameof(USsTestGenPropSpec.NonTransactional), CPF_NonTransactional);
+
+		// --- Edit / visibility group. ---
+		AssertPropFlagSet(cls, nameof(USsTestGenPropSpec.EditAnywhere), CPF_Edit);
+		AssertPropFlagSet(cls, nameof(USsTestGenPropSpec.EditInstanceOnly), CPF_Edit | CPF_DisableEditOnTemplate);
+		AssertPropFlagSet(cls, nameof(USsTestGenPropSpec.EditDefaultsOnly), CPF_Edit | CPF_DisableEditOnInstance);
+		AssertPropFlagSet(cls, nameof(USsTestGenPropSpec.VisibleAnywhere), CPF_Edit | CPF_EditConst);
+		AssertPropFlagSet(cls, nameof(USsTestGenPropSpec.VisibleInstanceOnly),
+			CPF_Edit | CPF_EditConst | CPF_DisableEditOnTemplate);
+		AssertPropFlagSet(cls, nameof(USsTestGenPropSpec.VisibleDefaultsOnly),
+			CPF_Edit | CPF_EditConst | CPF_DisableEditOnInstance);
+
+		// EditInstanceOnly / EditDefaultsOnly must differ only in the disable-edit bit they add.
+		AssertPropFlagClear(cls, nameof(USsTestGenPropSpec.EditInstanceOnly), CPF_DisableEditOnInstance | CPF_EditConst);
+		AssertPropFlagClear(cls, nameof(USsTestGenPropSpec.EditDefaultsOnly), CPF_DisableEditOnTemplate | CPF_EditConst);
+		// EditAnywhere alone must not carry any disable/const bit.
+		AssertPropFlagClear(cls, nameof(USsTestGenPropSpec.EditAnywhere),
+			CPF_EditConst | CPF_DisableEditOnTemplate | CPF_DisableEditOnInstance);
+
+		// --- Blueprint visibility. ---
+		AssertPropFlagSet(cls, nameof(USsTestGenPropSpec.BlueprintReadWrite), CPF_BlueprintVisible);
+		AssertPropFlagClear(cls, nameof(USsTestGenPropSpec.BlueprintReadWrite), CPF_BlueprintReadOnly);
+		AssertPropFlagSet(cls, nameof(USsTestGenPropSpec.BlueprintReadOnly),
+			CPF_BlueprintVisible | CPF_BlueprintReadOnly);
+
+		// --- Export / editing helpers. ---
+		AssertPropFlagSet(cls, nameof(USsTestGenPropSpec.Export), CPF_ExportObject);
+		AssertPropFlagSet(cls, nameof(USsTestGenPropSpec.NoClear), CPF_NoClear);
+		AssertPropFlagSet(cls, nameof(USsTestGenPropSpec.EditFixedSize), CPF_EditFixedSize);
+
+		// --- Interp implies Edit + BlueprintVisible + Interp. ---
+		AssertPropFlagSet(cls, nameof(USsTestGenPropSpec.Interp),
+			CPF_Edit | CPF_BlueprintVisible | CPF_Interp);
+
+		// --- Instanced implies PersistentInstance + ExportObject + InstancedReference + "EditInline" meta. ---
+		AssertPropFlagSet(cls, nameof(USsTestGenPropSpec.Instanced),
+			CPF_PersistentInstance | CPF_ExportObject | CPF_InstancedReference);
+		IntPtr instancedProp = FindProp(cls, nameof(USsTestGenPropSpec.Instanced));
+		Utils.Assert(TypeInterop.HasPropertyMetaData(instancedProp, "EditInline"));
+		Utils.Assert(TypeInterop.GetPropertyMetaData(instancedProp, "EditInline") == "true");
+
+		// --- Detail-panel display. ---
+		AssertPropFlagSet(cls, nameof(USsTestGenPropSpec.SimpleDisplay), CPF_SimpleDisplay);
+		AssertPropFlagSet(cls, nameof(USsTestGenPropSpec.AdvancedDisplay), CPF_AdvancedDisplay);
+
+		// --- Misc serialization. ---
+		AssertPropFlagSet(cls, nameof(USsTestGenPropSpec.AssetRegistrySearchable), CPF_AssetRegistrySearchable);
+		AssertPropFlagSet(cls, nameof(USsTestGenPropSpec.SaveGame), CPF_SaveGame);
+		AssertPropFlagSet(cls, nameof(USsTestGenPropSpec.SkipSerialization), CPF_SkipSerialization);
+
+		// --- Baseline: a specifier-less property must carry none of the specifier-driven bits. ---
+		const ulong AllSpecifierBits =
+			CPF_Edit | CPF_BlueprintVisible | CPF_ExportObject | CPF_BlueprintReadOnly | CPF_EditFixedSize |
+			CPF_DisableEditOnTemplate | CPF_Transient | CPF_Config | CPF_DisableEditOnInstance | CPF_EditConst |
+			CPF_GlobalConfig | CPF_InstancedReference | CPF_DuplicateTransient | CPF_SaveGame | CPF_NoClear |
+			CPF_Interp | CPF_NonTransactional | CPF_AssetRegistrySearchable | CPF_SimpleDisplay |
+			CPF_AdvancedDisplay | CPF_TextExportTransient | CPF_NonPIEDuplicateTransient | CPF_PersistentInstance |
+			CPF_SkipSerialization;
+		AssertPropFlagClear(cls, nameof(USsTestGenPropSpec.Plain), AllSpecifierBits);
+
+		// --- Combined specifiers: every requested bit must OR-fold in together. ---
+		AssertPropFlagSet(cls, nameof(USsTestGenPropSpec.Combined),
+			CPF_Edit | CPF_BlueprintVisible | CPF_Transient | CPF_SaveGame);
+
+		// --- Metadata: DisplayName / Category / free-form Meta on a property. ---
+		IntPtr metaProp = FindProp(cls, nameof(USsTestGenPropSpec.Metadata));
+		AssertPropFlagSet(cls, nameof(USsTestGenPropSpec.Metadata), CPF_Edit);
+		Utils.Assert(TypeInterop.GetPropertyMetaData(metaProp, "DisplayName") == "Property Metadata Test");
+		Utils.Assert(TypeInterop.GetPropertyMetaData(metaProp, "Category") == "CSharp|Internal");
+		Utils.Assert(TypeInterop.GetPropertyMetaData(metaProp, "ToolTip") == "Generated for SubclassingSpecifierTest");
+		Utils.Assert(TypeInterop.GetPropertyMetaData(metaProp, "CustomFlag") == "true");
+		// Absent keys report false / empty string.
+		Utils.Assert(!TypeInterop.HasPropertyMetaData(metaProp, "NoSuchMetaKey"));
+		Utils.Assert(TypeInterop.GetPropertyMetaData(metaProp, "NoSuchMetaKey") == string.Empty);
+	}
+
+	private static IntPtr FindProp(UClass cls, string propName)
+	{
+		IntPtr prop = TypeInterop.FindProperty(cls.NativeObject, propName);
+		Utils.Assert(prop != IntPtr.Zero);
+		return prop;
+	}
+
+	private static void AssertPropFlagSet(UClass cls, string propName, ulong expectedFlags)
+	{
+		ulong flags = TypeInterop.GetPropertyFlags(FindProp(cls, propName));
+		Utils.Assert((flags & expectedFlags) == expectedFlags);
+	}
+
+	private static void AssertPropFlagClear(UClass cls, string propName, ulong clearedFlags)
+	{
+		ulong flags = TypeInterop.GetPropertyFlags(FindProp(cls, propName));
+		Utils.Assert((flags & clearedFlags) == 0);
 	}
 
 	private static UClass GetClass<T>() where T : UObject, IStaticClass<T>

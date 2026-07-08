@@ -28,8 +28,23 @@ internal static class PropertyClassifier
 	};
 
 	/// <summary>
+	/// Groups of <c>PropSpecs</c> members that are mutually exclusive: at most one member of each group
+	/// may appear on a property (mirrors UHT UhtPropertyMemberSpecifiers, which rejects more than one
+	/// edit/visibility specifier and BlueprintReadOnly together with BlueprintReadWrite).
+	/// </summary>
+	private static readonly string[][] MutuallyExclusiveSpecifierGroups =
+	[
+		[
+			"EditAnywhere", "EditInstanceOnly", "EditDefaultsOnly",
+			"VisibleAnywhere", "VisibleInstanceOnly", "VisibleDefaultsOnly",
+		],
+		["BlueprintReadOnly", "BlueprintReadWrite"],
+	];
+
+	/// <summary>
 	/// Attempts to classify the given property symbol. Returns null (with a diagnostic
-	/// reported via <paramref name="report"/>) when the type is not supported in this phase.
+	/// reported via <paramref name="report"/>) when the type is not supported in this phase,
+	/// or when the [UPROPERTY] specifiers are mutually exclusive.
 	/// </summary>
 	public static PropertyModel? Classify(IPropertySymbol propertySymbol, Action<Diagnostic> report)
 	{
@@ -48,7 +63,43 @@ internal static class PropertyClassifier
 		}
 
 		model.Name = propertySymbol.Name;
+
+		// Carry the [UPROPERTY] specifiers + metadata through to the model (transport only; the C++
+		// layer expands them). Then reject mutually-exclusive specifier combinations at compile time.
+		if (!ParseUPropertyAttribute(propertySymbol, model, report))
+		{
+			return null;
+		}
+
 		return model;
+	}
+
+	/// <summary>
+	/// Reads the <c>[UPROPERTY]</c> attribute off the property symbol, records its specifier member
+	/// names and metadata (DisplayName / Category / Meta) on the model, and validates that no two
+	/// mutually exclusive specifiers were used. Reports SS1007 and returns false on conflict.
+	/// </summary>
+	private static bool ParseUPropertyAttribute(IPropertySymbol propertySymbol, PropertyModel model, Action<Diagnostic> report)
+	{
+		AttributeData? attr = propertySymbol.GetAttributes().FirstOrDefault(
+			a => a.AttributeClass?.Name == "UPROPERTYAttribute");
+		if (attr == null)
+		{
+			return true;
+		}
+
+		AttributeParsing.CollectSpecifierNames(attr, model.SpecifierNames);
+		AttributeParsing.CollectMetadata(attr, model.Metadata);
+
+		return AttributeParsing.ValidateMutuallyExclusive(
+			model.SpecifierNames,
+			"PropSpecs",
+			MutuallyExclusiveSpecifierGroups,
+			joined => report(Diagnostic.Create(
+				Diagnostics.MutuallyExclusivePropertySpecifiers,
+				propertySymbol.Locations.FirstOrDefault(),
+				propertySymbol.Name,
+				joined)));
 	}
 
 	/// <summary>

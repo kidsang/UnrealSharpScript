@@ -1,5 +1,9 @@
 ﻿namespace SharpScript.Subclassing;
 
+/// <summary>
+/// Engine-agnostic UCLASS specifier bits supplied by the C# layer.
+/// <br/> See: SharpScript/Private/Subclassing/SsClassSpecifiers.h ESsClassSpecifier 
+/// </summary>
 [Flags]
 public enum ClassSpecs : UInt64
 {

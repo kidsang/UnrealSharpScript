@@ -3,6 +3,7 @@
 #include "SsGeneratedClass.h"
 #include "SsGeneratedStruct.h"
 #include "SsGeneratedEnum.h"
+#include "SsPropertySpecifiers.h"
 #include "SsTypeRegistry.h"
 #include "UObject/Package.h"
 #include "UObject/Class.h"
@@ -519,6 +520,14 @@ FProperty* USsSubclassingUtils::CreateProperty(FFieldVariant Owner, const FSsPro
 
 	auto Converter = *ConverterPtr;
 	FProperty* NewProp = Converter(Owner, PropDef, RF_Public | RF_MarkAsNative);
+	if (!NewProp)
+	{
+		return nullptr;
+	}
+
+	// Expand the C# UPROPERTY specifiers (EPropertyFlags + editor-only metadata) onto the property.
+	FSsPropertySpecifiers::Apply(NewProp, PropDef.Specifiers, PropDef.MetaEntries, PropDef.MetaCount);
+
 	return NewProp;
 }
 

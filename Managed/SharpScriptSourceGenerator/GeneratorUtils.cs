@@ -261,7 +261,11 @@ internal static class EmitUtils
 	}
 
 	/// <summary>
-	/// Emits a single <c>PropertyDef</c> initializer into the static-constructor array.
+	/// Emits a single <c>PropertyDef</c> initializer into the static-constructor array. The
+	/// <c>Specifiers</c> bit set is emitted inline; per-property metadata (<c>MetaEntries</c> /
+	/// <c>MetaCount</c>) is NOT set here — the emitter assigns it inside the pinned fixed cascade
+	/// (see <c>ClassEmitter</c>) because the metadata value strings must stay pinned across the
+	/// GenerateClass call.
 	/// </summary>
 	public static void EmitPropertyDef(StringBuilder sb, PropertyModel prop)
 	{
@@ -269,7 +273,177 @@ internal static class EmitUtils
 		sb.AppendLine("\t\t\t{");
 		sb.AppendLine($"\t\t\t\tPropName = \"{prop.Name}\",");
 		EmitTypeDefBlock(sb, prop);
+		if (prop.SpecifierNames.Count > 0)
+		{
+			sb.AppendLine($"\t\t\t\tSpecifiers = {prop.SpecifiersExpr},");
+		}
 		sb.AppendLine("\t\t\t},");
+	}
+}
+
+/// <summary>
+/// Shared parsing of the flag-enum + metadata attribute shape used by both <c>[UCLASS]</c> and
+/// <c>[UPROPERTY]</c> (constructor <c>params TSpec[] specifiers</c> plus named
+/// <c>DisplayName</c> / <c>Category</c> / <c>Meta</c>). Purely a transport step: specifier bits are
+/// decomposed into their single-bit member names and metadata is collected verbatim; no bit is
+/// interpreted here (the C++ layer expands them).
+/// </summary>
+internal static class AttributeParsing
+{
+	/// <summary>
+	/// Collects the single-bit specifier member names from the attribute's <c>params TSpec[]</c>
+	/// constructor argument(s) into <paramref name="specifierNames"/> (deduplicated, order preserved).
+	/// </summary>
+	public static void CollectSpecifierNames(AttributeData attr, List<string> specifierNames)
+	{
+		foreach (TypedConstant ctorArg in attr.ConstructorArguments)
+		{
+			if (ctorArg.Kind == TypedConstantKind.Array)
+			{
+				foreach (TypedConstant element in ctorArg.Values)
+				{
+					AddSpecifierName(specifierNames, element);
+				}
+			}
+			else if (ctorArg.Kind == TypedConstantKind.Enum)
+			{
+				AddSpecifierName(specifierNames, ctorArg);
+			}
+		}
+	}
+
+	/// <summary>
+	/// Reads the named <c>DisplayName</c> / <c>Category</c> / <c>Meta</c> arguments into
+	/// <paramref name="metadata"/>. DisplayName / Category map to their well-known metadata keys;
+	/// each <c>Meta</c> entry is "Key=Value" (a bare "Key" becomes "Key=true").
+	/// </summary>
+	public static void CollectMetadata(AttributeData attr, List<(string Key, string Value)> metadata)
+	{
+		foreach (KeyValuePair<string, TypedConstant> named in attr.NamedArguments)
+		{
+			switch (named.Key)
+			{
+				case "DisplayName":
+					AddMetadataIfNonEmpty(metadata, "DisplayName", named.Value.Value as string);
+					break;
+				case "Category":
+					AddMetadataIfNonEmpty(metadata, "Category", named.Value.Value as string);
+					break;
+				case "Meta" when named.Value.Kind == TypedConstantKind.Array:
+					foreach (TypedConstant entry in named.Value.Values)
+					{
+						AddMetaEntry(metadata, entry.Value as string);
+					}
+					break;
+			}
+		}
+	}
+
+	/// <summary>
+	/// Resolves the enum member name(s) for a single specifier constant and records them. A single
+	/// named flag is the common case; a combined constant is decomposed into its single-bit members.
+	/// </summary>
+	public static void AddSpecifierName(List<string> specifierNames, TypedConstant specifier)
+	{
+		if (specifier.Type is not INamedTypeSymbol enumType || specifier.Value == null)
+		{
+			return;
+		}
+
+		ulong bits = Convert.ToUInt64(specifier.Value);
+		if (bits == 0)
+		{
+			return;
+		}
+
+		foreach (ISymbol member in enumType.GetMembers())
+		{
+			if (member is not IFieldSymbol { HasConstantValue: true, ConstantValue: { } cv })
+			{
+				continue;
+			}
+
+			ulong memberBits = Convert.ToUInt64(cv);
+			if (memberBits != 0 && (bits & memberBits) == memberBits)
+			{
+				if (!specifierNames.Contains(member.Name))
+				{
+					specifierNames.Add(member.Name);
+				}
+			}
+		}
+	}
+
+	/// <summary>Adds a "Key=Value" (or bare "Key" =&gt; "true") metadata entry, skipping blanks.</summary>
+	public static void AddMetaEntry(List<(string Key, string Value)> metadata, string? raw)
+	{
+		if (string.IsNullOrWhiteSpace(raw))
+		{
+			return;
+		}
+
+		int eq = raw!.IndexOf('=');
+		if (eq < 0)
+		{
+			AddMetadataIfNonEmpty(metadata, raw.Trim(), "true");
+		}
+		else
+		{
+			string key = raw.Substring(0, eq).Trim();
+			string value = raw.Substring(eq + 1);
+			AddMetadataIfNonEmpty(metadata, key, value);
+		}
+	}
+
+	/// <summary>Appends a metadata pair when the key is non-empty; a null value is normalized to "".</summary>
+	public static void AddMetadataIfNonEmpty(List<(string Key, string Value)> metadata, string key, string? value)
+	{
+		if (!string.IsNullOrEmpty(key))
+		{
+			metadata.Add((key, value ?? ""));
+		}
+	}
+
+	/// <summary>
+	/// Validates that <paramref name="specifierNames"/> contains no two members of any mutually
+	/// exclusive group in <paramref name="groups"/>. For each violated group, invokes
+	/// <paramref name="reportConflict"/> with the comma-joined conflicting members (already prefixed).
+	/// Returns false if any conflict was found.
+	/// </summary>
+	public static bool ValidateMutuallyExclusive(
+		IReadOnlyList<string> specifierNames,
+		string enumPrefix,
+		string[][] groups,
+		Action<string> reportConflict)
+	{
+		if (specifierNames.Count < 2)
+		{
+			return true;
+		}
+
+		HashSet<string> present = new(specifierNames);
+		bool valid = true;
+
+		foreach (string[] group in groups)
+		{
+			List<string> conflicting = new();
+			foreach (string member in group)
+			{
+				if (present.Contains(member))
+				{
+					conflicting.Add(member);
+				}
+			}
+
+			if (conflicting.Count >= 2)
+			{
+				string joined = string.Join(", ", conflicting.Select(name => $"{enumPrefix}.{name}"));
+				reportConflict(joined);
+				valid = false;
+			}
+		}
+
+		return valid;
 	}
 }
 

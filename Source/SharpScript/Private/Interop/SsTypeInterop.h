@@ -52,6 +52,12 @@ class USsTypeInterop : public USsNativeFuncExporter
 
 	static int32 GetPropertySize(const FProperty* InProp);
 
+	static uint64 GetPropertyFlags(const FProperty* InProp);
+
+	static int HasPropertyMetaData(const FProperty* InProp, const TCHAR* Key);
+
+	static void GetPropertyMetaData(const FProperty* InProp, const TCHAR* Key, FString& OutValue);
+
 	static uint8_t GetBoolPropertyFieldMask(const FBoolProperty* InProp);
 
 	static const FProperty* GetMapKeyProperty(const FMapProperty* InProp);

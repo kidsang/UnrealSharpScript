@@ -77,4 +77,17 @@ internal static class Diagnostics
 		category: Category,
 		defaultSeverity: DiagnosticSeverity.Error,
 		isEnabledByDefault: true);
+
+	/// <summary>
+	/// A [UPROPERTY] declares mutually exclusive property specifiers, e.g. more than one
+	/// edit/visibility specifier (EditAnywhere / VisibleAnywhere / ...) or both BlueprintReadOnly
+	/// and BlueprintReadWrite. These cannot be applied together on the same property (mirrors UHT).
+	/// </summary>
+	public static readonly DiagnosticDescriptor MutuallyExclusivePropertySpecifiers = new(
+		id: "SS1007",
+		title: "Mutually exclusive property specifiers",
+		messageFormat: "UPROPERTY '{0}' has mutually exclusive specifiers: {1}. Only one may be used at a time.",
+		category: Category,
+		defaultSeverity: DiagnosticSeverity.Error,
+		isEnabledByDefault: true);
 }

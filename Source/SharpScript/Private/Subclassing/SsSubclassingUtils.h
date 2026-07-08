@@ -48,6 +48,15 @@ struct FSsPropertyDef
 	/** For UMapProperty, this represents the underlying type of map key property. */
 	UField* KeyUnderlyingType = nullptr;
 
+	/** The raw C# PropSpecs bit set, passed through unchanged. Expanded by FSsPropertySpecifiers. */
+	uint64 Specifiers = 0;
+
+	/** Array of metadata entries (may be null when MetaCount is 0). */
+	const FSsMetaDataEntry* MetaEntries = nullptr;
+
+	/** Count of metadata entry array. */
+	int MetaCount = 0;
+
 	/** Return display string in the form of "'PropName'(PropType)" */
 	FString GetFriendlyName() const;
 

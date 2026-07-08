@@ -29,6 +29,11 @@ private:
 	static USsGeneratedClass* FindOldClass(const FName ClassName);
 
 	/**
+	 * Resolve class config name (mirrors UhtClass::SetAndValidateConfigName)
+	 */
+	void SetAndValidateConfigName() const;
+
+	/**
 	 * If reloading, transfer newly generated class members to old class.
 	 */
 	void TransferClassMembers();
@@ -104,18 +109,19 @@ USsGeneratedClass* FSsGeneratedClassBuilder::Finalize()
 	// across, so we (re)apply directly to FinalClass here to cover both fresh and reused-class cases.
 	FSsClassSpecifiers::Apply(FinalClass, ClassDef.Specifiers, ClassDef.MetaEntries, ClassDef.MetaCount);
 
+	// A Const class forces all of its own members to be blueprint read-only (mirrors UHT UhtClass)
+	if (FinalClass->HasAnyClassFlags(CLASS_Const))
+	{
+		for (TFieldIterator<FProperty> It(FinalClass, EFieldIteratorFlags::ExcludeSuper); It; ++It)
+		{
+			It->SetPropertyFlags(CPF_BlueprintReadOnly);
+		}
+	}
+
 	FinalClass->ClassConstructor = USsGeneratedClass::StaticObjectConstructor;
 
 	// Finalize the class
-	if (ClassDef.ConfigName && ClassDef.ConfigName[0] != TEXT('\0'))
-	{
-		FinalClass->ClassConfigName = ClassDef.ConfigName;
-		FinalClass->ClassFlags |= CLASS_Config;
-	}
-	else
-	{
-		FinalClass->ClassConfigName = ClassDef.SuperClass->ClassConfigName;
-	}
+	SetAndValidateConfigName();
 	FinalClass->Bind();
 	FinalClass->StaticLink(true);
 	FinalClass->AssembleReferenceTokenStream(true);
@@ -158,9 +164,15 @@ bool FSsGeneratedClassBuilder::CreatePropertyFromDefinition(const FSsPropertyDef
 	}
 
 	NewClass->AddCppProperty(Prop);
+
 	if (Prop->HasAnyPropertyFlags(CPF_ContainsInstancedReference | CPF_InstancedReference))
 	{
 		NewClass->ClassFlags |= CLASS_HasInstancedReference;
+	}
+
+	if (Prop->HasAnyPropertyFlags(CPF_Config))
+	{
+		NewClass->ClassFlags |= CLASS_Config;
 	}
 
 	return true;
@@ -261,6 +273,33 @@ USsGeneratedClass* FSsGeneratedClassBuilder::FindOldClass(const FName ClassName)
 	}
 #endif
 	return OldClass;
+}
+
+void FSsGeneratedClassBuilder::SetAndValidateConfigName() const
+{
+	if (ClassDef.ConfigName && ClassDef.ConfigName[0] != TEXT('\0'))
+	{
+		FinalClass->ClassFlags |= CLASS_Config;
+		if (FCString::Stricmp(ClassDef.ConfigName, TEXT("inherit")) == 0)
+		{
+			FinalClass->ClassConfigName = ClassDef.SuperClass->ClassConfigName;	
+		}
+		else
+		{
+			FinalClass->ClassConfigName = ClassDef.ConfigName;
+		}
+	}
+	else
+	{
+		FinalClass->ClassConfigName = ClassDef.SuperClass->ClassConfigName;
+	}
+
+	if (EnumHasAnyFlags(FinalClass->ClassFlags, CLASS_Config) && FinalClass->ClassConfigName == NAME_None)
+	{
+		UE_LOG(LogSharpScript, Error, TEXT("Classes '%s' with config / globalconfig member variables need to specify config file."),
+			   *ClassDef.ClassName.ToString());
+		FinalClass->ClassConfigName = "Engine";
+	}
 }
 
 void FSsGeneratedClassBuilder::TransferClassMembers()

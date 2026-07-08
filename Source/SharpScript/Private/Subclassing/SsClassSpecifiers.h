@@ -5,16 +5,10 @@ struct FSsMetaDataEntry;
 
 /**
  * Engine-agnostic UCLASS specifier bits supplied by the C# layer.
- * <br/> These values are a 1:1 mirror of C# <c>SharpScript.Subclassing.ClassSpecs</c>. The C# side
- * passes the raw bit set unchanged; this is the sole place that interprets those bits and expands
- * them into UE <c>EClassFlags</c> + metadata, so the C# layer never hardcodes engine values and stays
- * version-proof (same convention as ESsFunctionParamFlags / ESsFunctionFlags).
  * <br/> See: SharpScript/Framework/Subclassing/UClassAttribute.cs ClassSpecs
  */
 enum class ESsClassSpecifier : uint64
 {
-	None = 0,
-
 	/** Exposes this class as a type that can be used for variables in blueprints. */
 	BlueprintType = 1llu << 0,
 
@@ -77,9 +71,6 @@ ENUM_CLASS_FLAGS(ESsClassSpecifier);
 
 /**
  * Expands the engine-agnostic UCLASS specifier bits + metadata onto a freshly built generated class.
- * <br/> This is the single translation point from C# specifiers to UE reflection state: it OR-folds
- * the appropriate EClassFlags into the class and (editor-only) writes the derived and free-form
- * metadata via SetMetaData.
  */
 class FSsClassSpecifiers
 {

@@ -63,6 +63,24 @@ public struct PropertyDef
 	/// For UMapProperty, this represents the underlying type of map key property.
 	/// </summary>
 	public IntPtr KeyUnderlyingType;
+
+	/// <summary>
+	/// The raw <c>PropSpecs</c> bit set, passed through unchanged. The C++ layer
+	/// (<c>FSsPropertySpecifiers</c>) expands it into EPropertyFlags + editor-only metadata.
+	/// Only meaningful for top-level properties; container inner/key/value defs leave this 0.
+	/// </summary>
+	public ulong Specifiers;
+
+	/// <summary>
+	/// Array of <see cref="MetaDataEntry"/> (DisplayName / Category / user Meta).
+	/// May be IntPtr.Zero when MetaCount is 0.
+	/// </summary>
+	public IntPtr MetaEntries;
+
+	/// <summary>
+	/// Count of metadata entry array.
+	/// </summary>
+	public int MetaCount;
 }
 
 /// <summary>

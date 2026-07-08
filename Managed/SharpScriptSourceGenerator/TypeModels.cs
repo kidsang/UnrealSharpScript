@@ -107,6 +107,41 @@ internal sealed class PropertyModel
 {
 	public string Name = "";
 
+	/// <summary>
+	/// The <c>PropSpecs</c> enum member names from the [UPROPERTY] attribute (e.g. "EditAnywhere"),
+	/// carried through and emitted as <c>(ulong)(PropSpecs.A | PropSpecs.B)</c>. The generator never
+	/// interprets these — the C++ layer expands the bit set into EPropertyFlags + metadata. Empty = 0.
+	/// </summary>
+	public readonly List<string> SpecifierNames = new();
+
+	/// <summary>
+	/// The C# expression emitted for <c>PropertyDef.Specifiers</c>: <c>(ulong)(PropSpecs.A | ...)</c>,
+	/// or <c>0UL</c> when no specifiers were given.
+	/// </summary>
+	public string SpecifiersExpr
+	{
+		get
+		{
+			if (SpecifierNames.Count == 0)
+			{
+				return "0UL";
+			}
+			string[] qualified = new string[SpecifierNames.Count];
+			for (int i = 0; i < SpecifierNames.Count; i++)
+			{
+				qualified[i] = $"PropSpecs.{SpecifierNames[i]}";
+			}
+			return $"(ulong)({string.Join(" | ", qualified)})";
+		}
+	}
+
+	/// <summary>
+	/// Free-form metadata key/value pairs applied to the generated property (from DisplayName /
+	/// Category / the Meta array on the attribute). Emitted verbatim into a per-property native
+	/// <c>MetaDataEntry[]</c> (WITH_EDITOR guarded).
+	/// </summary>
+	public readonly List<(string Key, string Value)> Metadata = new();
+
 	public PropertyKind Kind;
 
 	/// <summary>The declared C# type as written by the user (without trailing '?').</summary>
