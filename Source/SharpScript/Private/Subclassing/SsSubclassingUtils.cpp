@@ -194,10 +194,11 @@ uint32 USsSubclassingUtils::TranslateFunctionFlags(ESsFunctionFlags FunctionFlag
 	return Result;
 }
 
-USsGeneratedStruct* USsSubclassingUtils::GenerateStruct(const FName& StructName, const FSsPropertyDef* PropertyDefines, int PropertyCount)
+USsGeneratedStruct* USsSubclassingUtils::GenerateStruct(const FSsStructDef* StructDef)
 {
 	check(IsInGameThread());
-	return USsGeneratedStruct::GenerateStruct(StructName, PropertyDefines, PropertyCount);
+	check(StructDef);
+	return USsGeneratedStruct::GenerateStruct(*StructDef);
 }
 
 USsGeneratedEnum* USsSubclassingUtils::GenerateEnum(const FName& EnumName, const FSsEnumValueDef* ValueDefines, int ValueCount, bool bIsFlags)

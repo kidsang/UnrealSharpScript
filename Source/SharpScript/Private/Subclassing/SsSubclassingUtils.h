@@ -174,6 +174,31 @@ struct FSsFunctionDef
 };
 
 /**
+ * Meta info collected from a csharp [USTRUCT] definition to create a unreal struct.
+ * <br/> See: SubclassingUtils.cs StructDef
+ */
+struct FSsStructDef
+{
+	/** Name of the struct. */
+	FName StructName;
+
+	/** Array of property defines. */
+	const FSsPropertyDef* PropertyDefines = nullptr;
+
+	/** Count of property array. */
+	int PropertyCount = 0;
+
+	/** The raw C# StructSpecs bit set, passed through unchanged. Expanded by SsStructSpecifiers. */
+	uint64 Specifiers = 0;
+
+	/** Array of metadata entries (may be null when MetaCount is 0). */
+	const FSsMetaDataEntry* MetaEntries = nullptr;
+
+	/** Count of metadata entry array. */
+	int MetaCount = 0;
+};
+
+/**
  * Meta info collected from a csharp [UCLASS] definition to create a unreal class.
  * <br/> See: SubclassingUtils.cs ClassDef
  */
@@ -250,12 +275,10 @@ public:
 
 	/**
 	 * Called by C#, generate a new unreal struct from given infos.
-	 * @param StructName Name of the new struct.
-	 * @param PropertyDefines Array of property defines.
-	 * @param PropertyCount Count of property array.
+	 * @param StructDef The struct definition bundle (name, properties, specifiers, metadata).
 	 * @return Newly generated struct if success, otherwise nullptr.
 	 */
-	static USsGeneratedStruct* GenerateStruct(const FName& StructName, const FSsPropertyDef* PropertyDefines, int PropertyCount);
+	static USsGeneratedStruct* GenerateStruct(const FSsStructDef* StructDef);
 
 	/**
 	 * Called by C#, generate a new unreal enum from given infos.

@@ -286,6 +286,46 @@ public struct ClassDef
 	public IntPtr ConfigName;
 }
 
+/// <summary>
+/// Meta info collected from a csharp [USTRUCT] definition to create a unreal struct.
+/// <br/> See: SsSubclassingUtils.h FSsStructDef
+/// </summary>
+[StructLayout(LayoutKind.Sequential)]
+public struct StructDef
+{
+	/// <summary>
+	/// Name of the struct.
+	/// </summary>
+	public FName StructName;
+
+	/// <summary>
+	/// Array of property defines.
+	/// </summary>
+	public IntPtr PropertyDefines;
+
+	/// <summary>
+	/// Count of property array.
+	/// </summary>
+	public int PropertyCount;
+
+	/// <summary>
+	/// The raw <c>StructSpecs</c> bit set, passed through unchanged. The C++ layer
+	/// (<c>FSsStructSpecifiers</c>) expands it into editor-only metadata.
+	/// </summary>
+	public ulong Specifiers;
+
+	/// <summary>
+	/// Array of <see cref="MetaDataEntry"/> (DisplayName / Category / user Meta).
+	/// May be IntPtr.Zero when MetaCount is 0.
+	/// </summary>
+	public IntPtr MetaEntries;
+
+	/// <summary>
+	/// Count of metadata entry array.
+	/// </summary>
+	public int MetaCount;
+}
+
 [NativeCallbacks]
 public static unsafe class SubclassingUtils
 {
@@ -295,9 +335,7 @@ public static unsafe class SubclassingUtils
 		IntPtr, /** ClassDef* */
 		IntPtr> GenerateClass;
 	internal static delegate* unmanaged[Cdecl]<
-		FName, /** StructName */
-		IntPtr, /** PropertyDefines */
-		int, /** PropertyCount */
+		IntPtr, /** StructDef* */
 		IntPtr> GenerateStruct;
 	internal static delegate* unmanaged[Cdecl]<
 		FName, /** EnumName */

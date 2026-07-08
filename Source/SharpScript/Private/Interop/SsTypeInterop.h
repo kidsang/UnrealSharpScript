@@ -58,6 +58,10 @@ class USsTypeInterop : public USsNativeFuncExporter
 
 	static void GetPropertyMetaData(const FProperty* InProp, const TCHAR* Key, FString& OutValue);
 
+	static int HasTypeMetaData(const UStruct* InType, const TCHAR* Key);
+
+	static void GetTypeMetaData(const UStruct* InType, const TCHAR* Key, FString& OutValue);
+
 	static uint8_t GetBoolPropertyFieldMask(const FBoolProperty* InProp);
 
 	static const FProperty* GetMapKeyProperty(const FMapProperty* InProp);

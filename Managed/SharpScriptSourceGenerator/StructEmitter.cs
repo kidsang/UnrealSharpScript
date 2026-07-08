@@ -88,12 +88,7 @@ internal static class StructEmitter
 		sb.AppendLine();
 		sb.AppendLine("\t\tunsafe");
 		sb.AppendLine("\t\t{");
-		sb.AppendLine("\t\t\tfixed (PropertyDef* _propertyDefsPtr = _propertyDefs)");
-		sb.AppendLine("\t\t\t{");
-		sb.AppendLine("\t\t\t\tNativeType = SubclassingUtils.GenerateStruct(");
-		sb.AppendLine($"\t\t\t\t\t\"{model.UnrealName}\",");
-		sb.AppendLine("\t\t\t\t\t(IntPtr)_propertyDefsPtr, _propertyDefs.Length);");
-		sb.AppendLine("\t\t\t}");
+		EmitStructDefAndCall(sb, model, "\t\t\t");
 		sb.AppendLine("\t\t}");
 		sb.AppendLine();
 		sb.AppendLine("\t\tNativeDataSize = TypeInterop.GetStructureSize(NativeType);");
@@ -249,12 +244,7 @@ internal static class StructEmitter
 		sb.AppendLine();
 		sb.AppendLine("\t\tunsafe");
 		sb.AppendLine("\t\t{");
-		sb.AppendLine("\t\t\tfixed (PropertyDef* _propertyDefsPtr = _propertyDefs)");
-		sb.AppendLine("\t\t\t{");
-		sb.AppendLine("\t\t\t\tNativeType = SubclassingUtils.GenerateStruct(");
-		sb.AppendLine($"\t\t\t\t\t\"{model.UnrealName}\",");
-		sb.AppendLine("\t\t\t\t\t(IntPtr)_propertyDefsPtr, _propertyDefs.Length);");
-		sb.AppendLine("\t\t\t}");
+		EmitStructDefAndCall(sb, model, "\t\t\t");
 		sb.AppendLine("\t\t}");
 		sb.AppendLine("\t}");
 
@@ -291,6 +281,60 @@ internal static class StructEmitter
 	// ---------------------------------------------------------------------------------------
 	// Shared
 	// ---------------------------------------------------------------------------------------
+
+	/// <summary>
+	/// Emits, inside an already-open <c>unsafe { }</c> block at <paramref name="indent"/>, the fixed
+	/// cascade that pins the struct metadata value strings (WITH_EDITOR guarded) and the property defs,
+	/// builds the struct-level <c>MetaDataEntry[]</c>, constructs the <c>StructDef</c> and calls
+	/// <c>SubclassingUtils.GenerateStruct</c>. Mirrors <c>ClassEmitter.EmitClassDefAndCall</c> but is
+	/// simpler: structs carry no functions, config or per-property metadata. No heap marshalling — every
+	/// string is pinned by the fixed cascade for the duration of the native call.
+	/// </summary>
+	private static void EmitStructDefAndCall(StringBuilder sb, StructModel model, string indent)
+	{
+		// Pin each metadata value char* (WITH_EDITOR guarded) so the MetaDataEntry* stays valid across
+		// the GenerateStruct call.
+		string[] metaVarNames = new string[model.Metadata.Count];
+		for (int i = 0; i < model.Metadata.Count; i++)
+		{
+			metaVarNames[i] = $"_metaValue{i}";
+			sb.AppendLine($"{indent}#if WITH_EDITOR");
+			sb.AppendLine($"{indent}fixed (char* {metaVarNames[i]} = {EmitUtils.ToLiteral(model.Metadata[i].Value)})");
+			sb.AppendLine($"{indent}#endif");
+		}
+
+		sb.AppendLine($"{indent}fixed (PropertyDef* _propertyDefsPtr = _propertyDefs)");
+		sb.AppendLine($"{indent}{{");
+
+		string body = indent + "\t";
+
+		// Build the struct-level MetaDataEntry[] (from the pinned metadata value char*s).
+		sb.AppendLine($"{body}MetaDataEntry[] _metaEntries =");
+		sb.AppendLine($"{body}[");
+		for (int i = 0; i < model.Metadata.Count; i++)
+		{
+			sb.AppendLine($"{body}#if WITH_EDITOR");
+			sb.AppendLine($"{body}\tnew() {{ Key = \"{model.Metadata[i].Key}\", Value = {metaVarNames[i]} }},");
+			sb.AppendLine($"{body}#endif");
+		}
+		sb.AppendLine($"{body}];");
+		sb.AppendLine();
+
+		sb.AppendLine($"{body}fixed (MetaDataEntry* _metaEntriesPtr = _metaEntries)");
+		sb.AppendLine($"{body}{{");
+		sb.AppendLine($"{body}\tStructDef _structDef = new()");
+		sb.AppendLine($"{body}\t{{");
+		sb.AppendLine($"{body}\t\tStructName = \"{model.UnrealName}\",");
+		sb.AppendLine($"{body}\t\tPropertyDefines = (IntPtr)_propertyDefsPtr,");
+		sb.AppendLine($"{body}\t\tPropertyCount = _propertyDefs.Length,");
+		sb.AppendLine($"{body}\t\tSpecifiers = {model.SpecifiersExpr},");
+		sb.AppendLine($"{body}\t\tMetaEntries = (IntPtr)_metaEntriesPtr,");
+		sb.AppendLine($"{body}\t\tMetaCount = _metaEntries.Length,");
+		sb.AppendLine($"{body}\t}};");
+		sb.AppendLine($"{body}\tNativeType = SubclassingUtils.GenerateStruct((IntPtr)(&_structDef));");
+		sb.AppendLine($"{body}}}");
+		sb.AppendLine($"{indent}}}");
+	}
 
 	/// <summary>Emits CreateInstance / GetNativeDataSize / implicit operator on the NativeRef.</summary>
 	private static void EmitNativeRefTail(StringBuilder sb, StructModel model, bool blittable)

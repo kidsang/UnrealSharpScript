@@ -184,9 +184,13 @@ public class FSsTestGenStructManualNativeRef(IntPtr nativePtr)
 		{
 			fixed (PropertyDef* _propertyDefsPtr = _propertyDefs)
 			{
-				NativeType = SubclassingUtils.GenerateStruct(
-					"SsTestGenStructManual",
-					(IntPtr)_propertyDefsPtr, _propertyDefs.Length);
+				StructDef _structDef = new()
+				{
+					StructName = "SsTestGenStructManual",
+					PropertyDefines = (IntPtr)_propertyDefsPtr,
+					PropertyCount = _propertyDefs.Length,
+				};
+				NativeType = SubclassingUtils.GenerateStruct((IntPtr)(&_structDef));
 			}
 		}
 

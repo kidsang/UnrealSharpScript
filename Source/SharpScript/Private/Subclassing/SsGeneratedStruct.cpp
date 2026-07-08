@@ -1,13 +1,14 @@
 #include "SsGeneratedStruct.h"
 #include "SsCommon.h"
 #include "SsSubclassingUtils.h"
+#include "SsStructSpecifiers.h"
 #include "UObject/Package.h"
 #include "UserDefinedStructure/UserDefinedStructEditorData.h"
 
 class FSsGeneratedStructBuilder
 {
 public:
-	FSsGeneratedStructBuilder(const FName& StructName);
+	explicit FSsGeneratedStructBuilder(const FSsStructDef& StructDef);
 
 	~FSsGeneratedStructBuilder();
 
@@ -27,22 +28,22 @@ private:
 	void TransferClassMembers();
 
 private:
-	FName StructName;
+	const FSsStructDef& StructDef;
 	USsGeneratedStruct* OldStruct;
 	USsGeneratedStruct* NewStruct;
 	USsGeneratedStruct* FinalStruct;
 };
 
-FSsGeneratedStructBuilder::FSsGeneratedStructBuilder(const FName& StructName)
-	: StructName(StructName)
+FSsGeneratedStructBuilder::FSsGeneratedStructBuilder(const FSsStructDef& InStructDef)
+	: StructDef(InStructDef)
 {
 	UPackage* StructOuter = USsSubclassingUtils::GetGeneratedPackage();
 
 	// Find any existing struct with the name we want to use
-	OldStruct = FindObject<USsGeneratedStruct>(StructOuter, *StructName.ToString());
+	OldStruct = FindObject<USsGeneratedStruct>(StructOuter, *StructDef.StructName.ToString());
 
 	// Create a new struct with a temporary name; we will rename it as part of Finalize
-	const FName NewStructName = MakeUniqueObjectName(StructOuter, USsGeneratedStruct::StaticClass(), *FString::Printf(TEXT("%s_NEWINST"), *StructName.ToString()));
+	const FName NewStructName = MakeUniqueObjectName(StructOuter, USsGeneratedStruct::StaticClass(), *FString::Printf(TEXT("%s_NEWINST"), *StructDef.StructName.ToString()));
 	NewStruct = NewObject<USsGeneratedStruct>(StructOuter, *NewStructName.ToString(), RF_Public | RF_Standalone | RF_Transient);
 	NewStruct->AddToRoot();
 
@@ -74,8 +75,13 @@ USsGeneratedStruct* FSsGeneratedStructBuilder::Finalize()
 	else
 	{
 		check(FinalStruct == NewStruct);
-		NewStruct->Rename(*StructName.ToString(), nullptr, REN_DontCreateRedirectors);
+		NewStruct->Rename(*StructDef.StructName.ToString(), nullptr, REN_DontCreateRedirectors);
 	}
+
+	// Expand the C# struct specifiers (editor-only metadata) onto the final struct. On the reload
+	// path TransferClassMembers only carries over property members; metadata is not copied across,
+	// so we (re)apply directly to FinalStruct here to cover both fresh and reused-struct cases.
+	FSsStructSpecifiers::Apply(FinalStruct, StructDef.Specifiers, StructDef.MetaEntries, StructDef.MetaCount);
 
 	// Finalize the struct
 	FinalStruct->Bind();
@@ -104,7 +110,7 @@ bool FSsGeneratedStructBuilder::CreatePropertyFromDefinition(const FSsPropertyDe
 	if (!Prop)
 	{
 		UE_LOG(LogSharpScript, Error, TEXT("%s: Failed to create property for %s"),
-			   *StructName.ToString(), *PropDef.GetFriendlyName());
+			   *StructDef.StructName.ToString(), *PropDef.GetFriendlyName());
 		return false;
 	}
 
@@ -157,25 +163,24 @@ void FSsGeneratedStructBuilder::TransferClassMembers()
 	}
 }
 
-USsGeneratedStruct* USsGeneratedStruct::GenerateStruct(const FName& StructName, const FSsPropertyDef* PropertyDefines,
-                                                       int PropertyCount)
+USsGeneratedStruct* USsGeneratedStruct::GenerateStruct(const FSsStructDef& StructDef)
 {
 	// Builder used to generate the struct
-	FSsGeneratedStructBuilder StructBuilder(StructName);
+	FSsGeneratedStructBuilder StructBuilder(StructDef);
 
 #if !WITH_EDITOR
 	if (StructBuilder.HasOldStruct())
 	{
 		// The Subclassing struct only supports reload in editor mode.
 		UE_LOG(LogSharpScript, Error, TEXT("Regenerate subclassing struct '%s' is not allowed in standalone build"),
-			   *StructName.ToString());
+			   *StructDef.StructName.ToString());
 		return nullptr;
 	}
 #endif
 
-	for (int i = 0; i < PropertyCount; ++i)
+	for (int i = 0; i < StructDef.PropertyCount; ++i)
 	{
-		const FSsPropertyDef& PropDef = PropertyDefines[i];
+		const FSsPropertyDef& PropDef = StructDef.PropertyDefines[i];
 		if (!StructBuilder.CreatePropertyFromDefinition(PropDef))
 		{
 			return nullptr;

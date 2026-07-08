@@ -56,6 +56,10 @@ public sealed class UStructGenerator : IIncrementalGenerator
 			UnrealName = NamingUtils.StripTypePrefix(structSymbol.Name, 'F'),
 		};
 
+		// Carry the [USTRUCT] specifiers + metadata through to the model. The generator only transports
+		// these values; the C++ layer is solely responsible for interpreting/expanding them.
+		ParseStructAttribute(structSymbol, model);
+
 		bool hasUnboundInstanceField = false;
 		foreach (ISymbol member in structSymbol.GetMembers())
 		{
@@ -84,6 +88,25 @@ public sealed class UStructGenerator : IIncrementalGenerator
 
 		string source = StructEmitter.Emit(model);
 		context.AddSource(model.HintName, SourceText.From(source, Encoding.UTF8));
+	}
+
+	/// <summary>
+	/// Reads the <c>[USTRUCT]</c> attribute off the struct symbol and copies its specifier bits and
+	/// metadata (DisplayName / Category / Meta) into the model. Purely a transport step: the raw
+	/// <c>StructSpecs</c> bit set is OR-folded into <see cref="StructModel.SpecifierNames"/> and the
+	/// name/value metadata is collected verbatim; no bit is interpreted here.
+	/// </summary>
+	private static void ParseStructAttribute(INamedTypeSymbol structSymbol, StructModel model)
+	{
+		AttributeData? attr = structSymbol.GetAttributes().FirstOrDefault(
+			a => a.AttributeClass?.ToDisplayString() == UStructAttributeFullName);
+		if (attr == null)
+		{
+			return;
+		}
+
+		AttributeParsing.CollectSpecifierNames(attr, model.SpecifierNames);
+		AttributeParsing.CollectMetadata(attr, model.Metadata);
 	}
 
 	/// <summary>

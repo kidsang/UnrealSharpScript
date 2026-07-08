@@ -4,6 +4,7 @@
 #include "SsGeneratedStruct.generated.h"
 
 struct FSsPropertyDef;
+struct FSsStructDef;
 
 /**
  * An Unreal struct that was generated from a C# type.
@@ -16,12 +17,10 @@ class USsGeneratedStruct : public UUserDefinedStruct
 public:
 	/**
 	 * Generate a new unreal struct from given infos.
-	 * @param StructName Name of the new struct.
-	 * @param PropertyDefines Array of property defines.
-	 * @param PropertyCount Count of property array.
+	 * @param StructDef The struct definition bundle (name, properties, specifiers, metadata).
 	 * @return Newly generated struct if success, otherwise nullptr.
 	 */
-	static USsGeneratedStruct* GenerateStruct(const FName& StructName, const FSsPropertyDef* PropertyDefines, int PropertyCount);
+	static USsGeneratedStruct* GenerateStruct(const FSsStructDef& StructDef);
 
 	/** Called by struct builder, generate default instance of this struct. */
 	void GenerateDefaultInstance();

@@ -30,9 +30,13 @@ public class FSsTestBlittableGenStructManualNativeRef(IntPtr nativePtr) : IStruc
 		{
 			fixed (PropertyDef* _propertyDefsPtr = _propertyDefs)
 			{
-				NativeType = SubclassingUtils.GenerateStruct(
-					"SsTestBlittableGenStructManual",
-					(IntPtr)_propertyDefsPtr, _propertyDefs.Length);
+				StructDef _structDef = new()
+				{
+					StructName = "SsTestBlittableGenStructManual",
+					PropertyDefines = (IntPtr)_propertyDefsPtr,
+					PropertyCount = _propertyDefs.Length,
+				};
+				NativeType = SubclassingUtils.GenerateStruct((IntPtr)(&_structDef));
 			}
 		}
 	}

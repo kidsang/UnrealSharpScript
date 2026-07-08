@@ -160,6 +160,27 @@ void USsTypeInterop::GetPropertyMetaData(const FProperty* InProp, const TCHAR* K
 	OutValue.Reset();
 }
 
+int USsTypeInterop::HasTypeMetaData(const UStruct* InType, const TCHAR* Key)
+{
+#if WITH_EDITORONLY_DATA
+	return InType->HasMetaData(Key) ? 1 : 0;
+#else
+	return 0;
+#endif
+}
+
+void USsTypeInterop::GetTypeMetaData(const UStruct* InType, const TCHAR* Key, FString& OutValue)
+{
+#if WITH_EDITORONLY_DATA
+	if (InType->HasMetaData(Key))
+	{
+		OutValue = InType->GetMetaData(Key);
+		return;
+	}
+#endif
+	OutValue.Reset();
+}
+
 uint8_t USsTypeInterop::GetBoolPropertyFieldMask(const FBoolProperty* InProp)
 {
 	return InProp->GetFieldMask();
@@ -232,6 +253,8 @@ void USsTypeInterop::DoExportFunctions(FSsBindNativeCallbackFunc BindNativeCallb
 	BindNativeCallbackFunc(&GetPropertyFlags, TEXT("TypeInterop.NativeGetPropertyFlags"));
 	BindNativeCallbackFunc(&HasPropertyMetaData, TEXT("TypeInterop.NativeHasPropertyMetaData"));
 	BindNativeCallbackFunc(&GetPropertyMetaData, TEXT("TypeInterop.NativeGetPropertyMetaData"));
+	BindNativeCallbackFunc(&HasTypeMetaData, TEXT("TypeInterop.NativeHasTypeMetaData"));
+	BindNativeCallbackFunc(&GetTypeMetaData, TEXT("TypeInterop.NativeGetTypeMetaData"));
 	BindNativeCallbackFunc(&GetBoolPropertyFieldMask, TEXT("TypeInterop.NativeGetBoolPropertyFieldMask"));
 	BindNativeCallbackFunc(&GetMapKeyProperty, TEXT("TypeInterop.NativeGetMapKeyProperty"));
 	BindNativeCallbackFunc(&GetMapValueProperty, TEXT("TypeInterop.NativeGetMapValueProperty"));

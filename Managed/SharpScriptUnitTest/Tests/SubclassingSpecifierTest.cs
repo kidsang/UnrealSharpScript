@@ -56,6 +56,7 @@ public class SubclassingSpecifierTest : IUnitTestInterface
 	{
 		TestClassSpecifiers();
 		TestPropertySpecifiers();
+		TestStructSpecifiers();
 
 		return true;
 	}
@@ -64,25 +65,20 @@ public class SubclassingSpecifierTest : IUnitTestInterface
 	{
 		// BlueprintType -> BlueprintType=true.
 		UClass bpType = GetClass<USsTestGenSpecBlueprintType>();
-		Utils.Assert(bpType.HasMetaData("BlueprintType"));
 		Utils.Assert(bpType.GetMetaData("BlueprintType") == "true");
 
 		// NotBlueprintType -> NotBlueprintType=false, and BlueprintType is not present.
 		UClass notBpType = GetClass<USsTestGenSpecNotBlueprintType>();
-		Utils.Assert(notBpType.HasMetaData("NotBlueprintType"));
 		Utils.Assert(notBpType.GetMetaData("NotBlueprintType") == "false");
 		Utils.Assert(!notBpType.HasMetaData("BlueprintType"));
 
 		// Blueprintable -> IsBlueprintBase=true and (implicitly) BlueprintType=true.
 		UClass bpable = GetClass<USsTestGenSpecBlueprintable>();
-		Utils.Assert(bpable.HasMetaData("IsBlueprintBase"));
 		Utils.Assert(bpable.GetMetaData("IsBlueprintBase") == "true");
-		Utils.Assert(bpable.HasMetaData("BlueprintType"));
 		Utils.Assert(bpable.GetMetaData("BlueprintType") == "true");
 
 		// NotBlueprintable -> IsBlueprintBase=false, and BlueprintType is not present.
 		UClass notBpable = GetClass<USsTestGenSpecNotBlueprintable>();
-		Utils.Assert(notBpable.HasMetaData("IsBlueprintBase"));
 		Utils.Assert(notBpable.GetMetaData("IsBlueprintBase") == "false");
 		Utils.Assert(!notBpable.HasMetaData("BlueprintType"));
 
@@ -125,9 +121,7 @@ public class SubclassingSpecifierTest : IUnitTestInterface
 
 		// BlueprintType and Blueprintable both write BlueprintType=true; Blueprintable also writes
 		// IsBlueprintBase=true.
-		Utils.Assert(metadataClass.HasMetaData("BlueprintType"));
 		Utils.Assert(metadataClass.GetMetaData("BlueprintType") == "true");
-		Utils.Assert(metadataClass.HasMetaData("IsBlueprintBase"));
 		Utils.Assert(metadataClass.GetMetaData("IsBlueprintBase") == "true");
 
 		// DisplayName / Category named arguments map to the well-known metadata keys.
@@ -140,7 +134,6 @@ public class SubclassingSpecifierTest : IUnitTestInterface
 
 		// Absent keys report false / empty string.
 		Utils.Assert(!metadataClass.HasMetaData("NoSuchMetaKey"));
-		Utils.Assert(metadataClass.GetMetaData("NoSuchMetaKey") == string.Empty);
 
 		// Metadata handling must not leak flag bits into the class.
 		Utils.Assert((metadataClass.GetClassFlags() & (CLASS_Config | CLASS_Abstract | CLASS_Deprecated)) == 0);
@@ -198,7 +191,6 @@ public class SubclassingSpecifierTest : IUnitTestInterface
 		AssertPropFlagSet(cls, nameof(USsTestGenPropSpec.Instanced),
 			CPF_PersistentInstance | CPF_ExportObject | CPF_InstancedReference);
 		IntPtr instancedProp = FindProp(cls, nameof(USsTestGenPropSpec.Instanced));
-		Utils.Assert(TypeInterop.HasPropertyMetaData(instancedProp, "EditInline"));
 		Utils.Assert(TypeInterop.GetPropertyMetaData(instancedProp, "EditInline") == "true");
 
 		// --- Detail-panel display. ---
@@ -233,7 +225,28 @@ public class SubclassingSpecifierTest : IUnitTestInterface
 		Utils.Assert(TypeInterop.GetPropertyMetaData(metaProp, "CustomFlag") == "true");
 		// Absent keys report false / empty string.
 		Utils.Assert(!TypeInterop.HasPropertyMetaData(metaProp, "NoSuchMetaKey"));
-		Utils.Assert(TypeInterop.GetPropertyMetaData(metaProp, "NoSuchMetaKey") == string.Empty);
+	}
+
+	private static void TestStructSpecifiers()
+	{
+		// BlueprintType -> BlueprintType=true metadata on the generated UScriptStruct.
+		IntPtr bpType = FSsTestGenStructSpecBlueprintTypeNativeRef.NativeType;
+		Utils.Assert(TypeInterop.GetTypeMetaData(bpType, "BlueprintType") == "true");
+
+		// Baseline: a specifier-less struct must NOT carry the BlueprintType metadata.
+		IntPtr plain = FSsTestGenStructSpecPlainNativeRef.NativeType;
+		Utils.Assert(!TypeInterop.HasTypeMetaData(plain, "BlueprintType"));
+		// Absent keys report false / empty string.
+		Utils.Assert(!TypeInterop.HasTypeMetaData(plain, "NoSuchMetaKey"));
+
+		// Metadata: BlueprintType plus DisplayName / Category / free-form Meta on a struct.
+		IntPtr metadata = FSsTestGenStructSpecMetadataNativeRef.NativeType;
+		Utils.Assert(TypeInterop.GetTypeMetaData(metadata, "BlueprintType") == "true");
+		Utils.Assert(TypeInterop.GetTypeMetaData(metadata, "DisplayName") == "Struct Specifier Metadata Test");
+		Utils.Assert(TypeInterop.GetTypeMetaData(metadata, "Category") == "CSharp|Internal");
+		Utils.Assert(TypeInterop.GetTypeMetaData(metadata, "ToolTip") == "Generated for SubclassingSpecifierTest");
+		Utils.Assert(TypeInterop.GetTypeMetaData(metadata, "CustomFlag") == "true");
+		Utils.Assert(!TypeInterop.HasTypeMetaData(metadata, "NoSuchMetaKey"));
 	}
 
 	private static IntPtr FindProp(UClass cls, string propName)

@@ -423,6 +423,41 @@ internal sealed class StructModel
 	/// </summary>
 	public bool IsBlittable;
 
+	/// <summary>
+	/// The <c>StructSpecs</c> enum member names from the [USTRUCT] attribute (e.g. "BlueprintType"),
+	/// carried through and emitted as <c>(ulong)(StructSpecs.A | StructSpecs.B)</c>. The generator never
+	/// interprets these — the C++ layer expands the bit set into editor-only metadata. Empty = 0.
+	/// </summary>
+	public readonly List<string> SpecifierNames = new();
+
+	/// <summary>
+	/// The C# expression emitted for <c>StructDef.Specifiers</c>: <c>(ulong)(StructSpecs.A | ...)</c>,
+	/// or <c>0UL</c> when no specifiers were given.
+	/// </summary>
+	public string SpecifiersExpr
+	{
+		get
+		{
+			if (SpecifierNames.Count == 0)
+			{
+				return "0UL";
+			}
+			string[] qualified = new string[SpecifierNames.Count];
+			for (int i = 0; i < SpecifierNames.Count; i++)
+			{
+				qualified[i] = $"StructSpecs.{SpecifierNames[i]}";
+			}
+			return $"(ulong)({string.Join(" | ", qualified)})";
+		}
+	}
+
+	/// <summary>
+	/// Free-form metadata key/value pairs applied to the generated struct (from DisplayName / Category /
+	/// the Meta array on the attribute). Emitted verbatim into the native <c>MetaDataEntry[]</c>
+	/// (WITH_EDITOR guarded).
+	/// </summary>
+	public readonly List<(string Key, string Value)> Metadata = new();
+
 	public readonly List<PropertyModel> Properties = new();
 
 	/// <summary>Hint name used for the generated source file.</summary>

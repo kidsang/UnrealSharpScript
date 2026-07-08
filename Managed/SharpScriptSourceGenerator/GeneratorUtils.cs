@@ -343,7 +343,7 @@ internal static class AttributeParsing
 	/// Resolves the enum member name(s) for a single specifier constant and records them. A single
 	/// named flag is the common case; a combined constant is decomposed into its single-bit members.
 	/// </summary>
-	public static void AddSpecifierName(List<string> specifierNames, TypedConstant specifier)
+	private static void AddSpecifierName(List<string> specifierNames, TypedConstant specifier)
 	{
 		if (specifier.Type is not INamedTypeSymbol enumType || specifier.Value == null)
 		{
@@ -375,7 +375,7 @@ internal static class AttributeParsing
 	}
 
 	/// <summary>Adds a "Key=Value" (or bare "Key" =&gt; "true") metadata entry, skipping blanks.</summary>
-	public static void AddMetaEntry(List<(string Key, string Value)> metadata, string? raw)
+	private static void AddMetaEntry(List<(string Key, string Value)> metadata, string? raw)
 	{
 		if (string.IsNullOrWhiteSpace(raw))
 		{
@@ -396,7 +396,7 @@ internal static class AttributeParsing
 	}
 
 	/// <summary>Appends a metadata pair when the key is non-empty; a null value is normalized to "".</summary>
-	public static void AddMetadataIfNonEmpty(List<(string Key, string Value)> metadata, string key, string? value)
+	private static void AddMetadataIfNonEmpty(List<(string Key, string Value)> metadata, string key, string? value)
 	{
 		if (!string.IsNullOrEmpty(key))
 		{
