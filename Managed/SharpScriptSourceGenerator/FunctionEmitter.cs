@@ -101,6 +101,71 @@ internal static class FunctionEmitter
 		}
 	}
 
+	/// <summary>
+	/// Emits the virtual-dispatch entry method <c>Invoke_&lt;Name&gt;</c> for a BlueprintEvent. This is
+	/// the "call entry" half of the single-method design: source-level calls to the user's event method are
+	/// redirected here by the interceptor generator. It drives UE's ProcessEvent through
+	/// <c>InvokeVirtualFunctionCall</c>, which resolves the function on the object's ACTUAL class
+	/// (FindFunctionChecked) — so a blueprint subclass override is reached, while a plain C# object falls
+	/// back to the C# default implementation (the user method body, entered only via the native thunk).
+	/// The method mirrors the hand-written <c>Call*</c> glue but calls <c>InvokeVirtualFunctionCall</c>
+	/// instead of <c>InvokeFunctionCall</c>. Events are always instance methods, so no static variant exists.
+	/// It is emitted <c>internal</c> so the file-local interceptor (in a different namespace) can forward to it.
+	/// </summary>
+	public static void EmitVirtualDispatchEntry(StringBuilder sb, FunctionModel func)
+	{
+		string returnType = func.ReturnParam != null ? ParamDeclType(func.ReturnParam) : "void";
+
+		// Signature: internal unsafe <ret> Invoke_<Name>(<in/out params in source order>)
+		List<string> sigParams = new();
+		foreach (FunctionParamModel p in func.Parameters)
+		{
+			string prefix = p.Role == ParamRole.Out ? "out " : "";
+			sigParams.Add($"{prefix}{ParamDeclType(p)} {p.Name}");
+		}
+		sb.AppendLine("\t[global::System.ComponentModel.EditorBrowsable(global::System.ComponentModel.EditorBrowsableState.Never)]");
+		sb.AppendLine($"\tinternal unsafe {returnType} {InvokeEntryName(func)}({string.Join(", ", sigParams)})");
+		sb.AppendLine("\t{");
+		sb.AppendLine($"\t\tbyte* _paramsBuffer = stackalloc byte[{func.Name}_ParamsSize];");
+		sb.AppendLine($"\t\tusing ScopedFuncParams _params = new({func.Name}_NativeFunc, _paramsBuffer);");
+
+		// Write in-params into the buffer.
+		foreach (FunctionParamModel p in func.Parameters)
+		{
+			if (p.Role == ParamRole.In)
+			{
+				string offset = $"_params.Buffer + {func.Name}_{p.Name}_Offset";
+				sb.AppendLine($"\t\t{WriteStmt(func, p, offset, p.Name)}");
+			}
+		}
+
+		// Virtual dispatch: look up the function on the object's actual class (respecting blueprint
+		// overrides) and ProcessEvent it. nameof keeps the UE function name in sync with the method.
+		sb.AppendLine($"\t\tInvokeVirtualFunctionCall(nameof({func.Name}), _params.Buffer);");
+
+		// Read out-params back.
+		foreach (FunctionParamModel p in func.Parameters)
+		{
+			if (p.Role == ParamRole.Out)
+			{
+				string offset = $"_params.Buffer + {func.Name}_{p.Name}_Offset";
+				sb.AppendLine($"\t\t{p.Name} = {ReadExpr(func, p, offset)};");
+			}
+		}
+
+		// Read and return the return value.
+		if (func.ReturnParam != null)
+		{
+			string offset = $"_params.Buffer + {func.Name}_{func.ReturnParam.Name}_Offset";
+			sb.AppendLine($"\t\treturn {ReadExpr(func, func.ReturnParam, offset)};");
+		}
+
+		sb.AppendLine("\t}");
+	}
+
+	/// <summary>The virtual-dispatch entry method name for an event, e.g. "Invoke_OnScore".</summary>
+	private static string InvokeEntryName(FunctionModel func) => $"Invoke_{func.Name}";
+
 	/// <summary>Emits the [UnmanagedCallersOnly] dispatch stub (UE → C#) for a function.</summary>
 	public static void EmitDispatchStub(StringBuilder sb, string className, FunctionModel func)
 	{

@@ -13,6 +13,9 @@ internal static class ClassEmitter
 		StringBuilder sb = new();
 
 		sb.AppendLine("#nullable enable");
+		// CS0108: a subclass overriding a base (C++) BlueprintEvent redeclares that event's per-function
+		// metadata fields (its duplicated UFunction has its own layout), which harmlessly hides the base's.
+		sb.AppendLine("#pragma warning disable CS0108");
 		sb.AppendLine("using System.Runtime.InteropServices;");
 		sb.AppendLine("using SharpScript;");
 		sb.AppendLine("using SharpScript.Interop;");
@@ -34,6 +37,24 @@ internal static class ClassEmitter
 		{
 			sb.AppendLine();
 			EmitAccessor(sb, prop);
+		}
+
+		// Virtual-dispatch entries for BlueprintEvents (the "call entry" half of the single-method
+		// design). Source-level calls to the event method are redirected here by the interceptor generator.
+		// Override events (overriding a C++ base BlueprintEvent) are skipped here: their Invoke_<Name> entry
+		// is inherited from the base binding glue, so re-emitting it would be a CS0111 duplicate.
+		List<FunctionModel> events = model.Functions.Where(f => f.IsBlueprintEvent && !f.IsOverride).ToList();
+		if (events.Count > 0)
+		{
+			sb.AppendLine();
+			sb.AppendLine("\t// ------------------------------------------------------------------");
+			sb.AppendLine("\t// Virtual-dispatch entries for BlueprintEvents (intercepted call sites).");
+			sb.AppendLine("\t// ------------------------------------------------------------------");
+			foreach (FunctionModel func in events)
+			{
+				sb.AppendLine();
+				FunctionEmitter.EmitVirtualDispatchEntry(sb, func);
+			}
 		}
 
 		if (model.Functions.Count > 0)

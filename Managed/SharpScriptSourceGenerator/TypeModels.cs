@@ -252,6 +252,25 @@ internal sealed class FunctionModel
 	public bool IsStatic;
 
 	/// <summary>
+	/// True when the [UFUNCTION] carries the <c>BlueprintEvent</c> specifier. Such a function is a
+	/// blueprint-overridable event: the class partial emits a virtual-dispatch entry (<c>Invoke_&lt;Name&gt;</c>)
+	/// that calls the base helper <c>InvokeVirtualFunctionCall</c> (FindFunctionChecked + ProcessEvent), and
+	/// the separate interceptor generator redirects source-level calls of this method to that entry. The
+	/// user-written method body remains the C# default implementation, reached only by the native dispatch
+	/// thunk — a physically distinct path, so no recursion occurs.
+	/// </summary>
+	public bool IsBlueprintEvent;
+
+	/// <summary>
+	/// True when the C# method carries the <c>override</c> keyword, i.e. it overrides a base-class event
+	/// (typically a C++ <c>BlueprintEvent</c> exposed via binding glue). The runtime duplicates the base
+	/// UFunction for this name and wires it to this class's <c>Dispatch_&lt;Name&gt;</c>; the virtual-dispatch
+	/// entry <c>Invoke_&lt;Name&gt;</c> is inherited from the base binding glue, so this class must NOT re-emit
+	/// it (that would be a CS0111 duplicate).
+	/// </summary>
+	public bool IsOverride;
+
+	/// <summary>
 	/// The <c>FuncSpecs</c> enum member names from the [UFUNCTION] attribute (e.g. "BlueprintCallable"),
 	/// carried through and emitted as <c>(ulong)(FuncSpecs.A | FuncSpecs.B)</c>. The generator never
 	/// interprets these — the C++ layer expands the bit set into EFunctionFlags + metadata. Empty = 0.

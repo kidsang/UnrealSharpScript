@@ -90,4 +90,44 @@ internal static class Diagnostics
 		category: Category,
 		defaultSeverity: DiagnosticSeverity.Error,
 		isEnabledByDefault: true);
+
+	/// <summary>
+	/// A <c>[UFUNCTION(FuncSpecs.BlueprintEvent)]</c> method was declared <c>static</c>. A BlueprintEvent is
+	/// dispatched virtually on an object instance (its source calls are intercepted and forwarded to an
+	/// instance <c>Invoke_&lt;Name&gt;</c> entry that runs ProcessEvent), so it cannot be static.
+	/// </summary>
+	public static readonly DiagnosticDescriptor BlueprintEventCannotBeStatic = new(
+		id: "SS1008",
+		title: "BlueprintEvent cannot be static",
+		messageFormat: "UFUNCTION '{0}' is a BlueprintEvent and cannot be static; declare it as an instance method",
+		category: Category,
+		defaultSeverity: DiagnosticSeverity.Error,
+		isEnabledByDefault: true);
+
+	/// <summary>
+	/// A <c>[UFUNCTION]</c> combined <c>BlueprintEvent</c> with <c>Exec</c>. Mirrors UHT, where an
+	/// executable-console function and a blueprint-overridable event are mutually exclusive roles.
+	/// </summary>
+	public static readonly DiagnosticDescriptor BlueprintEventConflictsWithExec = new(
+		id: "SS1009",
+		title: "BlueprintEvent conflicts with Exec",
+		messageFormat: "UFUNCTION '{0}' cannot be both BlueprintEvent and Exec",
+		category: Category,
+		defaultSeverity: DiagnosticSeverity.Error,
+		isEnabledByDefault: true);
+
+	/// <summary>
+	/// A <c>[UFUNCTION(FuncSpecs.BlueprintEvent)]</c> method has the same name as an accessible base-class
+	/// event (e.g. a C++ <c>BlueprintEvent</c> exposed via binding glue) but was not declared <c>override</c>.
+	/// Without <c>override</c> the method silently hides the base virtual glue (CS0108): the CLR keeps the base
+	/// body, and the generated <c>Invoke_&lt;Name&gt;</c> would collide. Declaring it <c>override</c> is required
+	/// so the runtime duplicate-super path and virtual dispatch work.
+	/// </summary>
+	public static readonly DiagnosticDescriptor BlueprintEventMustOverrideBase = new(
+		id: "SS1010",
+		title: "BlueprintEvent overriding a base event must use 'override'",
+		messageFormat: "UFUNCTION '{0}' is a BlueprintEvent that hides base event '{1}.{0}'; declare it 'override' to correctly override the base",
+		category: Category,
+		defaultSeverity: DiagnosticSeverity.Error,
+		isEnabledByDefault: true);
 }

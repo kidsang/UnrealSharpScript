@@ -80,6 +80,18 @@ int USsObjectInterop::InvokeStaticFunctionCall(const UClass* InClass, const UFun
 	return InvokeFunctionCall(InClass->ClassDefaultObject, InFunc, InBaseParamsAddr);
 }
 
+int USsObjectInterop::InvokeVirtualFunctionCall(UObject* InObj, FName InFuncName, void* InBaseParamsAddr)
+{
+	// Virtual dispatch entry for blueprint events (BlueprintNativeEvent). Unlike InvokeFunctionCall — which
+	// receives a fixed UFunction pointer resolved from a static class and therefore cannot reach a blueprint
+	// override — this looks the function up on the object's ACTUAL class (FindFunctionChecked walks the
+	// object's UClass FuncMap + super chain). A base-class C# reference calling through here will resolve to
+	// the blueprint override's UFunction when the object is a blueprint subclass, or to the C# default
+	// implementation's UFunction otherwise. ProcessEvent then executes whichever function was resolved.
+	UFunction* Func = InObj->FindFunctionChecked(InFuncName);
+	return InvokeFunctionCall(InObj, Func, InBaseParamsAddr);
+}
+
 void USsObjectInterop::DoExportFunctions(FSsBindNativeCallbackFunc BindNativeCallbackFunc)
 {
 	BindNativeCallbackFunc(&IsValid, TEXT("ObjectInterop.IsValid"));
@@ -91,4 +103,5 @@ void USsObjectInterop::DoExportFunctions(FSsBindNativeCallbackFunc BindNativeCal
 	BindNativeCallbackFunc(&GetPackage, TEXT("ObjectInterop.GetPackage"));
 	BindNativeCallbackFunc(&InvokeFunctionCall, TEXT("ObjectInterop.InvokeFunctionCall"));
 	BindNativeCallbackFunc(&InvokeStaticFunctionCall, TEXT("ObjectInterop.InvokeStaticFunctionCall"));
+	BindNativeCallbackFunc(&InvokeVirtualFunctionCall, TEXT("ObjectInterop.InvokeVirtualFunctionCall"));
 }

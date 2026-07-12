@@ -8,8 +8,11 @@
 		<EnforceExtendedAnalyzerRules>true</EnforceExtendedAnalyzerRules>
 		<IsRoslynComponent>true</IsRoslynComponent>
 		<IncludeBuildOutput>false</IncludeBuildOutput>
-		<!-- RS2008: analyzer release tracking is not needed for this in-tree generator. -->
-		<NoWarn>$(NoWarn);RS2008</NoWarn>
+		<!-- RS2008: analyzer release tracking is not needed for this in-tree generator.
+		     RSEXPERIMENTAL002: SemanticModel.GetInterceptableLocation / InterceptableLocation still carry
+		     the experimental marker even though the C# interceptors feature is stable in .NET 10 / C# 14.
+		     The BlueprintNativeEvent call-site interceptor generator uses that stable API. -->
+		<NoWarn>$(NoWarn);RS2008;RSEXPERIMENTAL002</NoWarn>
 	</PropertyGroup>
 
 	<ItemGroup>

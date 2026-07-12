@@ -65,6 +65,7 @@ public static class ClassExporter
 
 				ExportProterties(codeBuilder, exportedProperties, getSetPairs);
 				ExportClassFunctions(codeBuilder, exportedFunctions, unsupportedFunctions);
+				ExportOverridableFunctions(codeBuilder, exportedOverrides, unsupportedFunctions);
 			}
 		}
 
@@ -102,6 +103,18 @@ public static class ClassExporter
 			using var unsupportedBlock = new UnsupportedBlock(codeBuilder, unsupported);
 			using var withEditorBlock = new WithEditorBlock(codeBuilder, function);
 			FunctionExporter.ExportFunction(codeBuilder, function);
+		}
+	}
+
+	private static void ExportOverridableFunctions(CodeBuilder codeBuilder, List<UhtFunction> exportedOverrides, HashSet<UhtFunction> unsupportedFunctions)
+	{
+		foreach (UhtFunction function in exportedOverrides)
+		{
+			codeBuilder.AppendLine();
+			bool unsupported = unsupportedFunctions.Contains(function);
+			using var unsupportedBlock = new UnsupportedBlock(codeBuilder, unsupported);
+			using var withEditorBlock = new WithEditorBlock(codeBuilder, function);
+			FunctionExporter.ExportEventFunction(codeBuilder, function);
 		}
 	}
 

@@ -10,6 +10,11 @@ void FSsFunctionSpecifiers::Apply(UFunction* Func, uint64 SpecifierBits, const F
 	// Accumulate the function flags, then OR them onto the function in one shot.
 	EFunctionFlags Flags = Func->FunctionFlags;
 
+	if (EnumHasAnyFlags(Specifiers, ESsFunctionSpecifier::BlueprintEvent))
+	{
+		Flags |= FUNC_Event | FUNC_BlueprintEvent;
+	}
+
 	if (EnumHasAnyFlags(Specifiers, ESsFunctionSpecifier::Exec))
 	{
 		Flags |= FUNC_Exec;
@@ -47,4 +52,10 @@ void FSsFunctionSpecifiers::Apply(UFunction* Func, uint64 SpecifierBits, const F
 		Func->SetMetaData(*Entry.Key.ToString(), Value);
 	}
 #endif
+}
+
+bool FSsFunctionSpecifiers::IsBlueprintEvent(uint64 SpecifierBits)
+{
+	const ESsFunctionSpecifier Specifiers = static_cast<ESsFunctionSpecifier>(SpecifierBits);
+	return EnumHasAnyFlags(Specifiers, ESsFunctionSpecifier::BlueprintEvent);
 }

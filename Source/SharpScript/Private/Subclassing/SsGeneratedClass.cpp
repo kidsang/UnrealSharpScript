@@ -183,12 +183,32 @@ bool FSsGeneratedClassBuilder::CreateFunctionFromDefinition(const FSsFunctionDef
 {
 	const FName& FuncName = FuncDef.FuncName;
 
-	// Overriding a base-class function is not supported by the subclassing UFunction feature yet.
-	if (ClassDef.SuperClass->FindFunctionByName(FuncName))
+	// A same-named base-class function is only allowed when both this function and the base function are blueprint events.
+	UFunction* SuperFunc = ClassDef.SuperClass->FindFunctionByName(FuncName);
+	if (SuperFunc)
 	{
-		UE_LOG(LogSharpScript, Error, TEXT("%s: Function %s cannot override a function from the base type"),
-		       *ClassDef.ClassName.ToString(), *FuncName.ToString());
-		return false;
+		const bool bIsBlueprintEvent = FSsFunctionSpecifiers::IsBlueprintEvent(FuncDef.Specifiers);
+		const bool bSuperIsBlueprintEvent = SuperFunc->HasAnyFunctionFlags(FUNC_BlueprintEvent);
+		if (bIsBlueprintEvent && !bSuperIsBlueprintEvent)
+		{
+			UE_LOG(LogSharpScript, Error, TEXT("%s: Function %s cannot override a non blueprint event function from the base type"),
+				   *ClassDef.ClassName.ToString(), *FuncName.ToString());
+			return false;
+		}
+
+		if (!bIsBlueprintEvent && bSuperIsBlueprintEvent)
+		{
+			UE_LOG(LogSharpScript, Error, TEXT("%s: Function %s cannot override a function from the base type (did you forget to specify 'BlueprintNativeEvent'?)"),
+				   *ClassDef.ClassName.ToString(), *FuncName.ToString());
+			return false;
+		}
+
+		if (!bIsBlueprintEvent && !bSuperIsBlueprintEvent)
+		{
+			UE_LOG(LogSharpScript, Error, TEXT("%s: Function %s cannot override a function from the base type"),
+			       *ClassDef.ClassName.ToString(), *FuncName.ToString());
+			return false;
+		}
 	}
 
 	if (!FuncDef.ManagedDispatch)
@@ -198,46 +218,66 @@ bool FSsGeneratedClassBuilder::CreateFunctionFromDefinition(const FSsFunctionDef
 		return false;
 	}
 
-	USsGeneratedFunction* Func = NewObject<USsGeneratedFunction>(NewClass, FuncName, RF_Public | RF_Transient | RF_MarkAsNative);
-	Func->FunctionFlags |= (FUNC_Public | FUNC_Native);
+	USsGeneratedFunction* Func;
+	if (SuperFunc)
+	{
+		// Overriding a base-class blueprint event: duplicate the super function so the override
+		// inherits the EXACT parameter layout of the base declaration.
+		// This guarantees ABI compatibility with the base's ProcessEvent params struct.
+		FObjectDuplicationParameters FuncDuplicationParams(SuperFunc, NewClass);
+		FuncDuplicationParams.DestName = FuncName;
+		FuncDuplicationParams.DestClass = USsGeneratedFunction::StaticClass();
+		Func = CastChecked<USsGeneratedFunction>(StaticDuplicateObjectEx(FuncDuplicationParams));
+		Func->FunctionFlags |= FUNC_Native;
+	}
+	else
+	{
+		Func = NewObject<USsGeneratedFunction>(NewClass, FuncName, RF_Public | RF_Transient | RF_MarkAsNative);
+		Func->FunctionFlags |= (FUNC_Public | FUNC_Native);
+	}
+
 	Func->FunctionFlags |= (EFunctionFlags)USsSubclassingUtils::TranslateFunctionFlags(FuncDef.FunctionFlags);
 	Func->ManagedDispatch = (FSsManagedFunctionDispatch)FuncDef.ManagedDispatch;
+
 	NewClass->GeneratedFunctions.Add(Func);
 
 	// Insert into the class field linked list so that field iterators and FindFunction work.
 	Func->Next = NewClass->Children;
 	NewClass->Children = Func;
 
-	// Create parameter properties.
-	// The C# side must order params so that appending in that order yields the correct reflection layout:
-	// return / out params first, then input params in reverse — matching AddCppProperty's list insertion.
-	for (int i = 0; i < FuncDef.ParamCount; ++i)
+	if (!SuperFunc)
 	{
-		const FSsFunctionParamDef& ParamDef = FuncDef.Params[i];
-
-		FSsPropertyDef PropDef;
-		PropDef.PropName = ParamDef.ParamName;
-		PropDef.PropType = ParamDef.PropType;
-		PropDef.UnderlyingType = ParamDef.UnderlyingType;
-		PropDef.InnerPropType = ParamDef.InnerPropType;
-		PropDef.InnerUnderlyingType = ParamDef.InnerUnderlyingType;
-		PropDef.KeyPropType = ParamDef.KeyPropType;
-		PropDef.KeyUnderlyingType = ParamDef.KeyUnderlyingType;
-
-		FProperty* ParamProp = USsSubclassingUtils::CreateProperty(Func, PropDef);
-		if (!ParamProp)
+		// Create parameter properties (fresh, non-override function only).
+		// The C# side must order params so that appending in that order yields the correct reflection layout:
+		// return / out params first, then input params in reverse — matching AddCppProperty's list insertion.
+		for (int i = 0; i < FuncDef.ParamCount; ++i)
 		{
-			UE_LOG(LogSharpScript, Error, TEXT("%s: Failed to create parameter %s for function %s"),
-			       *ClassDef.ClassName.ToString(), *ParamDef.ParamName.ToString(), *FuncName.ToString());
-			return false;
-		}
+			const FSsFunctionParamDef& ParamDef = FuncDef.Params[i];
 
-		ParamProp->SetPropertyFlags((EPropertyFlags)USsSubclassingUtils::TranslateParamFlags(ParamDef.ParamFlags));
-		Func->AddCppProperty(ParamProp);
+			FSsPropertyDef PropDef;
+			PropDef.PropName = ParamDef.ParamName;
+			PropDef.PropType = ParamDef.PropType;
+			PropDef.UnderlyingType = ParamDef.UnderlyingType;
+			PropDef.InnerPropType = ParamDef.InnerPropType;
+			PropDef.InnerUnderlyingType = ParamDef.InnerUnderlyingType;
+			PropDef.KeyPropType = ParamDef.KeyPropType;
+			PropDef.KeyUnderlyingType = ParamDef.KeyUnderlyingType;
 
-		if (ParamProp->HasAnyPropertyFlags(CPF_OutParm) && !ParamProp->HasAnyPropertyFlags(CPF_ReturnParm))
-		{
-			Func->FunctionFlags |= FUNC_HasOutParms;
+			FProperty* ParamProp = USsSubclassingUtils::CreateProperty(Func, PropDef);
+			if (!ParamProp)
+			{
+				UE_LOG(LogSharpScript, Error, TEXT("%s: Failed to create parameter %s for function %s"),
+				       *ClassDef.ClassName.ToString(), *ParamDef.ParamName.ToString(), *FuncName.ToString());
+				return false;
+			}
+
+			ParamProp->SetPropertyFlags((EPropertyFlags)USsSubclassingUtils::TranslateParamFlags(ParamDef.ParamFlags));
+			Func->AddCppProperty(ParamProp);
+
+			if (ParamProp->HasAnyPropertyFlags(CPF_OutParm) && !ParamProp->HasAnyPropertyFlags(CPF_ReturnParm))
+			{
+				Func->FunctionFlags |= FUNC_HasOutParms;
+			}
 		}
 	}
 
@@ -486,11 +526,29 @@ DEFINE_FUNCTION(USsGeneratedFunction::execCallManagedFunction)
 	else
 	{
 		// ProcessEvent path: the params already sit in Stack.Locals (a copy).
-		ParamsBuffer = Stack.Locals;	
+		ParamsBuffer = Stack.Locals;
 
+		bool bReturnCapturedFromOutParms = false;
 		for (FOutParmRec* Out = Stack.OutParms; Out; Out = Out->NextOutParm)
 		{
 			OutParamCopies.Add({Out->Property, Out->PropAddr});
+			if (Out->Property->HasAnyPropertyFlags(CPF_ReturnParm))
+			{
+				bReturnCapturedFromOutParms = true;
+			}
+		}
+
+		// The return value is delivered to the caller through RESULT_PARAM (ProcessEvent passes
+		// Parms + ReturnValueOffset), NOT reliably through Stack.OutParms: a return-only function (e.g. an
+		// int-returning event with no out params) does not set FUNC_HasOutParms, so ProcessEvent leaves
+		// Stack.OutParms empty and the loop above captures nothing. Capture the return property explicitly
+		// here (unless it already came through OutParms) so its value is copied back.
+		if (!bReturnCapturedFromOutParms && RESULT_PARAM)
+		{
+			if (FProperty* ReturnProp = Func->GetReturnProperty())
+			{
+				OutParamCopies.Add({ReturnProp, RESULT_PARAM});
+			}
 		}
 	}
 

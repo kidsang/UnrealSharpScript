@@ -52,6 +52,29 @@ public unsafe class UObjectBase : IComparable<UObjectBase>
 	}
 
 	/// <summary>
+	/// Calls a blueprint event UFunction (BlueprintNativeEvent) through virtual dispatch: the function is
+	/// looked up by name on this object's ACTUAL class (native FindFunctionChecked), then invoked via
+	/// ProcessEvent. This is what lets a base-class C# reference reach a blueprint subclass's override — a
+	/// fixed UFunction pointer resolved from a static class (see <see cref="InvokeFunctionCall"/>) cannot.
+	/// Generated event call-site interceptors route source-level calls here; the native dispatch thunk that
+	/// runs the C# default implementation is a separate physical path, so no recursion occurs.
+	/// </summary>
+	/// <param name="funcName">Name of the event UFunction to dispatch.</param>
+	/// <param name="paramsPtr">Pointer to the params/return-value buffer laid out per the UFunction.</param>
+	protected void InvokeVirtualFunctionCall(FName funcName, IntPtr paramsPtr)
+	{
+		ThrowIfNotValid();
+
+		int result = ObjectInterop.InvokeVirtualFunctionCall(NativeObject, funcName, paramsPtr);
+		if (result == 0)
+		{
+			string objName = ObjectInterop.GetName(NativeObject);
+			string message = $"error calling event function {objName}.{funcName}";
+			throw new FunctionCallException(message);
+		}
+	}
+
+	/// <summary>
 	/// Calls static UFunction.
 	/// </summary>
 	/// <param name="nativeClass">Pointer to the UClass that the static method belongs to</param>

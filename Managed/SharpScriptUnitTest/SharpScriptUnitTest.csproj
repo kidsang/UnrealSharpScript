@@ -9,6 +9,7 @@
 		<IsAotCompatible>True</IsAotCompatible>
 		<Configurations>Debug;Release;Debug_Editor;Release_Editor</Configurations>
 		<EmitCompilerGeneratedFiles>true</EmitCompilerGeneratedFiles>
+		<InterceptorsNamespaces>$(InterceptorsNamespaces);SharpScript.Generated.Interceptors</InterceptorsNamespaces>
 	</PropertyGroup>
 
 	<PropertyGroup Condition="'$(Configuration)'=='Debug_Editor'">

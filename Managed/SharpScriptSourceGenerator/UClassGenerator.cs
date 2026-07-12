@@ -13,6 +13,11 @@ public sealed class UClassGenerator : IIncrementalGenerator
 {
 	private const string UClassAttributeFullName = "SharpScript.Subclassing.UCLASSAttribute";
 
+	/// <summary>Fully-qualified display format with the <c>global::</c> prefix, used for the base-class name.</summary>
+	private static readonly SymbolDisplayFormat FullyQualifiedFormat = new(
+		globalNamespaceStyle: SymbolDisplayGlobalNamespaceStyle.Included,
+		typeQualificationStyle: SymbolDisplayTypeQualificationStyle.NameAndContainingTypesAndNamespaces);
+
 	public void Initialize(IncrementalGeneratorInitializationContext context)
 	{
 		IncrementalValuesProvider<INamedTypeSymbol?> classDeclarations = context.SyntaxProvider
@@ -62,7 +67,9 @@ public sealed class UClassGenerator : IIncrementalGenerator
 				: classSymbol.ContainingNamespace.ToDisplayString(),
 			ClassName = classSymbol.Name,
 			UnrealName = NamingUtils.StripTypePrefix(classSymbol.Name, 'U', 'A'),
-			SuperClass = classSymbol.BaseType?.Name ?? "UObject",
+			// Fully-qualified (global::) so ClassDef.SuperClass resolves regardless of the base type's namespace
+			// (e.g. a C++ binding base in UnrealEngine.<Module> vs the subclass in its own namespace).
+			SuperClass = classSymbol.BaseType?.ToDisplayString(FullyQualifiedFormat) ?? "global::UnrealEngine.CoreUObject.UObject",
 		};
 
 		// Carry the [UCLASS] specifiers + metadata through to the model. The generator only transports
@@ -116,11 +123,20 @@ public sealed class UClassGenerator : IIncrementalGenerator
 		{
 			Name = method.Name,
 			IsStatic = method.IsStatic,
+			IsOverride = method.IsOverride,
 		};
 
 		// Carry the [UFUNCTION] specifiers + metadata through to the model. The generator only transports
 		// these values; the C++ layer (FSsFunctionSpecifiers) is solely responsible for expanding them.
 		ParseFunctionAttribute(method, func);
+
+		// Validate BlueprintEvent constraints up front (mirrors UHT's BlueprintNativeEvent checks, restricted
+		// to specifiers this layer actually supports). On conflict we abort the whole function so no broken
+		// dispatch/interceptor glue is emitted.
+		if (func.IsBlueprintEvent && !ValidateBlueprintEvent(method, func, report))
+		{
+			return null;
+		}
 
 		// Return value (if any) becomes the synthetic "ReturnValue" parameter.
 		if (method.ReturnType.SpecialType != SpecialType.System_Void)
@@ -169,6 +185,69 @@ public sealed class UClassGenerator : IIncrementalGenerator
 		}
 
 		return func;
+	}
+
+	/// <summary>
+	/// Validates a BlueprintEvent method against the constraints this layer supports (a subset of UHT's
+	/// BlueprintNativeEvent rules, limited to specifiers that are actually enabled):
+	/// Reports one diagnostic per violation and returns <c>false</c> if any was found.
+	/// </summary>
+	private static bool ValidateBlueprintEvent(IMethodSymbol method, FunctionModel func, Action<Diagnostic> report)
+	{
+		bool valid = true;
+
+		if (func.IsStatic)
+		{
+			report(Diagnostic.Create(
+				Diagnostics.BlueprintEventCannotBeStatic,
+				method.Locations.FirstOrDefault(),
+				method.Name));
+			valid = false;
+		}
+
+		if (func.SpecifierNames.Contains("Exec"))
+		{
+			report(Diagnostic.Create(
+				Diagnostics.BlueprintEventConflictsWithExec,
+				method.Locations.FirstOrDefault(),
+				method.Name));
+			valid = false;
+		}
+
+		// If a same-named base event glue exists but this method is not 'override', it silently hides the base
+		// virtual glue (CS0108) and the generated Invoke_ would collide. Require 'override' (SS1010).
+		if (!method.IsOverride && FindBaseEventGlueOwner(method) is { } baseOwner)
+		{
+			report(Diagnostic.Create(
+				Diagnostics.BlueprintEventMustOverrideBase,
+				method.Locations.FirstOrDefault(),
+				method.Name,
+				baseOwner));
+			valid = false;
+		}
+
+		return valid;
+	}
+
+	/// <summary>
+	/// Walks the base-type chain looking for an accessible, same-named method that carries the binding-glue
+	/// marker <c>[BlueprintEventGlue]</c> (i.e. a C++ BlueprintEvent exposed via generated glue). Returns the
+	/// declaring type's display name when found, otherwise null. Used to require <c>override</c> (SS1010).
+	/// </summary>
+	private static string? FindBaseEventGlueOwner(IMethodSymbol method)
+	{
+		for (INamedTypeSymbol? baseType = method.ContainingType.BaseType; baseType != null; baseType = baseType.BaseType)
+		{
+			foreach (ISymbol member in baseType.GetMembers(method.Name))
+			{
+				if (member is IMethodSymbol { MethodKind: MethodKind.Ordinary } baseMethod
+					&& baseMethod.GetAttributes().Any(a => a.AttributeClass?.Name == "BlueprintEventGlueAttribute"))
+				{
+					return baseType.ToDisplayString();
+				}
+			}
+		}
+		return null;
 	}
 
 	/// <summary>
@@ -250,6 +329,10 @@ public sealed class UClassGenerator : IIncrementalGenerator
 
 		AttributeParsing.CollectSpecifierNames(attr, func.SpecifierNames);
 		AttributeParsing.CollectMetadata(attr, func.Metadata);
+
+		// A BlueprintEvent needs the virtual-dispatch entry + call-site interception treatment
+		// (the C++ layer expands the actual EFunctionFlags; here we only remember that it is an event).
+		func.IsBlueprintEvent = func.SpecifierNames.Contains("BlueprintEvent");
 	}
 
 	/// <summary>

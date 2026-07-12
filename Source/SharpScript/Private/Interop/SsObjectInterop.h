@@ -29,5 +29,7 @@ private:
 
 	static int InvokeStaticFunctionCall(const UClass* InClass, const UFunction* InFunc, void* InBaseParamsAddr);
 
+	static int InvokeVirtualFunctionCall(UObject* InObj, FName InFuncName, void* InBaseParamsAddr);
+
 	virtual void DoExportFunctions(FSsBindNativeCallbackFunc BindNativeCallbackFunc) override;
 };

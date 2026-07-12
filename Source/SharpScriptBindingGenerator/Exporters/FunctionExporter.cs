@@ -372,6 +372,18 @@ public class FunctionExporter
 		exporter.ExportFunction(codeBuilder);
 	}
 
+	public static void ExportEventFunction(CodeBuilder codeBuilder, UhtFunction function)
+	{
+		EFunctionProtectionMode protectionMode = EFunctionProtectionMode.UseUFunctionProtection;
+		EOverloadMode overloadMode = EOverloadMode.SuppressOverloads;
+		EBlueprintVisibility blueprintVisibility = EBlueprintVisibility.Event;
+
+		FunctionExporter exporter = new FunctionExporter(function, protectionMode, overloadMode, blueprintVisibility);
+		exporter.ExportEventFunction(codeBuilder);
+		codeBuilder.AppendLine();
+		exporter.ExportEventVirtualDispatchEntry(codeBuilder);
+	}
+
 	public static FunctionExporter ExportDelegateSignature(CodeBuilder codeBuilder, UhtFunction function)
 	{
 		EFunctionProtectionMode protectionMode = EFunctionProtectionMode.UseUFunctionProtection;
@@ -497,6 +509,52 @@ public class FunctionExporter
 		using (new CodeBlock(codeBuilder)) // function body
 		{
 			ExportInvoke(codeBuilder);
+		}
+	}
+
+	private void ExportEventFunction(CodeBuilder codeBuilder)
+	{
+		codeBuilder.AppendTooltip(Function);
+		ExportDeprecation(codeBuilder);
+		codeBuilder.AppendLine($"[global::SharpScript.Interop.BlueprintEventGlue(\"{Function.StrippedFunctionName}\")]");
+		ExportSignature(codeBuilder);
+		using (new CodeBlock(codeBuilder)) // function body
+		{
+			ExportInvoke(codeBuilder);
+		}
+	}
+
+	private void ExportEventVirtualDispatchEntry(CodeBuilder codeBuilder)
+	{
+		string savedFunctionName = FunctionName;
+		string savedProtection = Protection;
+		string savedModifiers = Modifiers;
+		string savedInvokeFunction = InvokeFunction;
+		string savedInvokeArguments = InvokeArguments;
+
+		// internal Invoke_<Name>(...) — no virtual/override/new; dispatch by engine FName.
+		FunctionName = $"Invoke_{savedFunctionName}";
+		Protection = "internal ";
+		Modifiers = "";
+		InvokeFunction = "InvokeVirtualFunctionCall";
+		InvokeArguments = $"\"{Function.StrippedFunctionName}\", ";
+
+		try
+		{
+			codeBuilder.AppendLine("[global::System.ComponentModel.EditorBrowsable(global::System.ComponentModel.EditorBrowsableState.Never)]");
+			ExportSignature(codeBuilder);
+			using (new CodeBlock(codeBuilder)) // function body
+			{
+				ExportInvoke(codeBuilder);
+			}
+		}
+		finally
+		{
+			FunctionName = savedFunctionName;
+			Protection = savedProtection;
+			Modifiers = savedModifiers;
+			InvokeFunction = savedInvokeFunction;
+			InvokeArguments = savedInvokeArguments;
 		}
 	}
 

@@ -18,5 +18,6 @@ static unsafe class ObjectInterop
 	internal static delegate* unmanaged<IntPtr, IntPtr> GetPackage;
 	internal static delegate* unmanaged<IntPtr, IntPtr, IntPtr, int> InvokeFunctionCall;
 	internal static delegate* unmanaged<IntPtr, IntPtr, IntPtr, int> InvokeStaticFunctionCall;
+	internal static delegate* unmanaged<IntPtr, FName, IntPtr, int> InvokeVirtualFunctionCall;
 #pragma warning restore CS0649
 }
