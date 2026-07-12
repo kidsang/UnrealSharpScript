@@ -73,7 +73,8 @@ internal static class FunctionEmitter
 		string flags = func.IsStatic ? ", FunctionFlags = SsFunctionFlags.Static" : "";
 		sb.AppendLine(
 			$"\t\t\t\tnew() {{ FuncName = \"{func.Name}\", Params = (IntPtr){paramsPtr}, ParamCount = {paramsLocal}.Length, " +
-			$"ManagedDispatch = (IntPtr)(delegate* unmanaged<IntPtr, IntPtr, void>)&Dispatch_{func.Name}{flags} }},");
+			$"ManagedDispatch = (IntPtr)(delegate* unmanaged<IntPtr, IntPtr, void>)&Dispatch_{func.Name}{flags}, " +
+			$"Specifiers = {func.SpecifiersExpr} }},");
 	}
 
 	/// <summary>

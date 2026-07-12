@@ -139,6 +139,16 @@ public static unsafe class TypeInterop
 		return NativeGetFunctionParamsSize(nativeFunc);
 	}
 
+	/// <summary>
+	/// Return the EFunctionFlags (FUNC_*) bit set of a UFunction.
+	/// </summary>
+	/// <param name="nativeFunc">UFunction pointer</param>
+	/// <returns>The raw FUNC_* flags as a uint.</returns>
+	public static uint GetFunctionFlags(IntPtr nativeFunc)
+	{
+		return NativeGetFunctionFlags(nativeFunc);
+	}
+
 
 	/// <summary>
 	/// Initialize function parameter buffer.
@@ -441,6 +451,7 @@ public static unsafe class TypeInterop
 	internal static delegate* unmanaged[Cdecl]<char*, IntPtr> NativeFindEnum;
 	internal static delegate* unmanaged[Cdecl]<IntPtr, FName, IntPtr> NativeFindFunction;
 	internal static delegate* unmanaged[Cdecl]<IntPtr, int> NativeGetFunctionParamsSize;
+	internal static delegate* unmanaged[Cdecl]<IntPtr, uint> NativeGetFunctionFlags;
 	internal static delegate* unmanaged[Cdecl]<IntPtr, IntPtr, void> NativeInitializeFunctionParams;
 	internal static delegate* unmanaged[Cdecl]<IntPtr, IntPtr, void> NativeDeinitializeFunctionParams;
 	internal static delegate* unmanaged[Cdecl]<IntPtr, IntPtr> NativeGetFirstProperty;

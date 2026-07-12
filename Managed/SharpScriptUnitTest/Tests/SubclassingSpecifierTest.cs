@@ -50,6 +50,11 @@ public class SubclassingSpecifierTest : IUnitTestInterface
 	private const ulong CPF_NonPIEDuplicateTransient = 0x0000800000000000u;
 	private const ulong CPF_PersistentInstance = 0x0002000000000000u;
 	private const ulong CPF_SkipSerialization = 0x0080000000000000u;
+
+	// EFunctionFlags (FUNC_*) bit values (Engine/Source/Runtime/CoreUObject/Public/UObject/Script.h).
+	private const uint FUNC_Exec = 0x00000200u;
+	private const uint FUNC_BlueprintCallable = 0x04000000u;
+	private const uint FUNC_BlueprintPure = 0x10000000u;
 	// ReSharper restore InconsistentNaming
 
 	public bool RunTest()
@@ -58,6 +63,7 @@ public class SubclassingSpecifierTest : IUnitTestInterface
 		TestPropertySpecifiers();
 		TestStructSpecifiers();
 		TestEnumSpecifiers();
+		TestFunctionSpecifiers();
 
 		return true;
 	}
@@ -288,6 +294,65 @@ public class SubclassingSpecifierTest : IUnitTestInterface
 		Utils.Assert(TypeInterop.GetTypeMetaData(metadata, "ToolTip") == "Generated for SubclassingSpecifierTest");
 		Utils.Assert(TypeInterop.GetTypeMetaData(metadata, "CustomFlag") == "true");
 		Utils.Assert(!TypeInterop.HasTypeMetaData(metadata, "NoSuchMetaKey"));
+	}
+
+	private static void TestFunctionSpecifiers()
+	{
+		UClass cls = USsTestGenFuncSpec.StaticClass.Class!;
+
+		// --- Exec -> FUNC_Exec (executable from the console). ---
+		AssertFuncFlagSet(cls, nameof(USsTestGenFuncSpec.FuncExec), FUNC_Exec);
+
+		// --- BlueprintCallable -> FUNC_BlueprintCallable. ---
+		AssertFuncFlagSet(cls, nameof(USsTestGenFuncSpec.FuncBlueprintCallable), FUNC_BlueprintCallable);
+		AssertFuncFlagClear(cls, nameof(USsTestGenFuncSpec.FuncBlueprintCallable), FUNC_BlueprintPure);
+
+		// --- BlueprintPure implies BlueprintCallable -> FUNC_BlueprintCallable | FUNC_BlueprintPure. ---
+		AssertFuncFlagSet(cls, nameof(USsTestGenFuncSpec.FuncBlueprintPure),
+			FUNC_BlueprintCallable | FUNC_BlueprintPure);
+
+		// --- CallInEditor: NOT a FunctionFlag; writes "CallInEditor"="true" metadata (editor-only). ---
+		IntPtr callInEditor = FindFunc(cls, nameof(USsTestGenFuncSpec.FuncCallInEditor));
+		Utils.Assert(TypeInterop.GetTypeMetaData(callInEditor, "CallInEditor") == "true");
+		// It must not introduce the blueprint FunctionFlags.
+		Utils.Assert((TypeInterop.GetFunctionFlags(callInEditor) & (FUNC_BlueprintCallable | FUNC_BlueprintPure | FUNC_Exec)) == 0);
+
+		// --- Combined: every requested bit must OR-fold in together. ---
+		AssertFuncFlagSet(cls, nameof(USsTestGenFuncSpec.FuncCombined), FUNC_Exec | FUNC_BlueprintCallable);
+
+		// --- Baseline: a specifier-less function must carry none of the specifier-driven bits/metadata. ---
+		IntPtr plain = FindFunc(cls, nameof(USsTestGenFuncSpec.FuncPlain));
+		Utils.Assert((TypeInterop.GetFunctionFlags(plain) & (FUNC_Exec | FUNC_BlueprintCallable | FUNC_BlueprintPure)) == 0);
+		Utils.Assert(!TypeInterop.HasTypeMetaData(plain, "CallInEditor"));
+		Utils.Assert(!TypeInterop.HasTypeMetaData(plain, "NoSuchMetaKey"));
+
+		// --- Metadata: BlueprintCallable plus DisplayName / Category / free-form Meta on a function. ---
+		IntPtr metadata = FindFunc(cls, nameof(USsTestGenFuncSpec.FuncMetadata));
+		AssertFuncFlagSet(cls, nameof(USsTestGenFuncSpec.FuncMetadata), FUNC_BlueprintCallable);
+		Utils.Assert(TypeInterop.GetTypeMetaData(metadata, "DisplayName") == "Function Metadata Test");
+		Utils.Assert(TypeInterop.GetTypeMetaData(metadata, "Category") == "CSharp|Internal");
+		Utils.Assert(TypeInterop.GetTypeMetaData(metadata, "ToolTip") == "Generated for SubclassingSpecifierTest");
+		Utils.Assert(TypeInterop.GetTypeMetaData(metadata, "CustomFlag") == "true");
+		Utils.Assert(!TypeInterop.HasTypeMetaData(metadata, "NoSuchMetaKey"));
+	}
+
+	private static IntPtr FindFunc(UClass cls, string funcName)
+	{
+		IntPtr func = TypeInterop.FindFunction(cls.NativeObject, funcName);
+		Utils.Assert(func != IntPtr.Zero);
+		return func;
+	}
+
+	private static void AssertFuncFlagSet(UClass cls, string funcName, uint expectedFlags)
+	{
+		uint flags = TypeInterop.GetFunctionFlags(FindFunc(cls, funcName));
+		Utils.Assert((flags & expectedFlags) == expectedFlags);
+	}
+
+	private static void AssertFuncFlagClear(UClass cls, string funcName, uint clearedFlags)
+	{
+		uint flags = TypeInterop.GetFunctionFlags(FindFunc(cls, funcName));
+		Utils.Assert((flags & clearedFlags) == 0);
 	}
 
 	private static IntPtr FindProp(UClass cls, string propName)

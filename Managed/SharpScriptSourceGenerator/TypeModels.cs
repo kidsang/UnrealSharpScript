@@ -251,6 +251,41 @@ internal sealed class FunctionModel
 	/// <summary>True when the method is a C# <c>static</c> method (maps to FUNC_Static).</summary>
 	public bool IsStatic;
 
+	/// <summary>
+	/// The <c>FuncSpecs</c> enum member names from the [UFUNCTION] attribute (e.g. "BlueprintCallable"),
+	/// carried through and emitted as <c>(ulong)(FuncSpecs.A | FuncSpecs.B)</c>. The generator never
+	/// interprets these — the C++ layer expands the bit set into EFunctionFlags + metadata. Empty = 0.
+	/// </summary>
+	public readonly List<string> SpecifierNames = new();
+
+	/// <summary>
+	/// The C# expression emitted for <c>FunctionDef.Specifiers</c>: <c>(ulong)(FuncSpecs.A | ...)</c>,
+	/// or <c>0UL</c> when no specifiers were given.
+	/// </summary>
+	public string SpecifiersExpr
+	{
+		get
+		{
+			if (SpecifierNames.Count == 0)
+			{
+				return "0UL";
+			}
+			string[] qualified = new string[SpecifierNames.Count];
+			for (int i = 0; i < SpecifierNames.Count; i++)
+			{
+				qualified[i] = $"FuncSpecs.{SpecifierNames[i]}";
+			}
+			return $"(ulong)({string.Join(" | ", qualified)})";
+		}
+	}
+
+	/// <summary>
+	/// Free-form metadata key/value pairs applied to the generated function (from DisplayName /
+	/// Category / the Meta array on the attribute). Emitted verbatim into a per-function native
+	/// <c>MetaDataEntry[]</c> (WITH_EDITOR guarded).
+	/// </summary>
+	public readonly List<(string Key, string Value)> Metadata = new();
+
 	/// <summary>The synthetic return-value parameter, or null for a void method.</summary>
 	public FunctionParamModel? ReturnParam;
 

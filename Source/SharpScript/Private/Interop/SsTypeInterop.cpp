@@ -71,6 +71,11 @@ int USsTypeInterop::GetFunctionParamsSize(const UFunction* InFunc)
 	return InFunc->ParmsSize;
 }
 
+uint32 USsTypeInterop::GetFunctionFlags(const UFunction* InFunc)
+{
+	return static_cast<uint32>(InFunc->FunctionFlags);
+}
+
 void USsTypeInterop::InitializeFunctionParams(const UFunction* InFunc, void* Buffer)
 {
 	// see: UObject::CallFunctionByNameWithArguments
@@ -241,6 +246,7 @@ void USsTypeInterop::DoExportFunctions(FSsBindNativeCallbackFunc BindNativeCallb
 	BindNativeCallbackFunc(&FindEnum, TEXT("TypeInterop.NativeFindEnum"));
 	BindNativeCallbackFunc(&FindFunction, TEXT("TypeInterop.NativeFindFunction"));
 	BindNativeCallbackFunc(&GetFunctionParamsSize, TEXT("TypeInterop.NativeGetFunctionParamsSize"));
+	BindNativeCallbackFunc(&GetFunctionFlags, TEXT("TypeInterop.NativeGetFunctionFlags"));
 	BindNativeCallbackFunc(&InitializeFunctionParams, TEXT("TypeInterop.NativeInitializeFunctionParams"));
 	BindNativeCallbackFunc(&DeinitializeFunctionParams, TEXT("TypeInterop.NativeDeinitializeFunctionParams"));
 	BindNativeCallbackFunc(&GetFirstProperty, TEXT("TypeInterop.NativeGetFirstProperty"));

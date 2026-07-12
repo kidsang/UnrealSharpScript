@@ -34,6 +34,8 @@ class USsTypeInterop : public USsNativeFuncExporter
 
 	static int GetFunctionParamsSize(const UFunction* InFunc);
 
+	static uint32 GetFunctionFlags(const UFunction* InFunc);
+
 	static void InitializeFunctionParams(const UFunction* InFunc, void* Buffer);
 
 	static void DeinitializeFunctionParams(const UFunction* InFunc, void* Buffer);

@@ -3,6 +3,7 @@
 #include "SsHouseKeeper.h"
 #include "SsSubclassingUtils.h"
 #include "SsClassSpecifiers.h"
+#include "SsFunctionSpecifiers.h"
 #include "Runtime/Launch/Resources/Version.h"
 
 class FSsGeneratedClassBuilder
@@ -239,6 +240,11 @@ bool FSsGeneratedClassBuilder::CreateFunctionFromDefinition(const FSsFunctionDef
 			Func->FunctionFlags |= FUNC_HasOutParms;
 		}
 	}
+
+	// Expand the C# UFUNCTION specifiers (EFunctionFlags + metadata) onto the function. Applied after the
+	// param properties are created (so ParmsSize-sensitive specifiers see the final shape) but before
+	// Bind/StaticLink, matching how FUNC_Static / FUNC_HasOutParms are OR-ed in above.
+	FSsFunctionSpecifiers::Apply(Func, FuncDef.Specifiers, FuncDef.MetaEntries, FuncDef.MetaCount);
 
 	// USsGeneratedFunction::Bind() installs our shared native thunk (no NativeFunctionLookupTable needed),
 	// then StaticLink computes ParmsSize / property offsets.

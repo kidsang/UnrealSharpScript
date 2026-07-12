@@ -118,6 +118,10 @@ public sealed class UClassGenerator : IIncrementalGenerator
 			IsStatic = method.IsStatic,
 		};
 
+		// Carry the [UFUNCTION] specifiers + metadata through to the model. The generator only transports
+		// these values; the C++ layer (FSsFunctionSpecifiers) is solely responsible for expanding them.
+		ParseFunctionAttribute(method, func);
+
 		// Return value (if any) becomes the synthetic "ReturnValue" parameter.
 		if (method.ReturnType.SpecialType != SpecialType.System_Void)
 		{
@@ -227,6 +231,25 @@ public sealed class UClassGenerator : IIncrementalGenerator
 				model.ConfigName = named.Value.Value as string;
 			}
 		}
+	}
+
+	/// <summary>
+	/// Reads the <c>[UFUNCTION]</c> attribute off the method symbol and copies its specifier bits and
+	/// metadata (DisplayName / Category / Meta) into the model. Purely a transport step: the raw
+	/// <c>FuncSpecs</c> bit set is OR-folded into <see cref="FunctionModel.SpecifierNames"/> and the
+	/// name/value metadata is collected verbatim; no bit is interpreted here (the C++ layer expands them).
+	/// </summary>
+	private static void ParseFunctionAttribute(IMethodSymbol method, FunctionModel func)
+	{
+		AttributeData? attr = method.GetAttributes().FirstOrDefault(
+			a => a.AttributeClass?.Name == "UFUNCTIONAttribute");
+		if (attr == null)
+		{
+			return;
+		}
+
+		AttributeParsing.CollectSpecifierNames(attr, func.SpecifierNames);
+		AttributeParsing.CollectMetadata(attr, func.Metadata);
 	}
 
 	/// <summary>

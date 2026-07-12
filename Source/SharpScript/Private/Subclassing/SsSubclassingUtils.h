@@ -199,6 +199,15 @@ struct FSsFunctionDef
 
 	/** Engine-agnostic function role flags. Translated to FUNC_* by TranslateFunctionFlags(). */
 	ESsFunctionFlags FunctionFlags = ESsFunctionFlags::None;
+
+	/** The raw C# FuncSpecs bit set, passed through unchanged. Expanded by FSsFunctionSpecifiers. */
+	uint64 Specifiers = 0;
+
+	/** Array of metadata entries (may be null when MetaCount is 0). */
+	const FSsMetaDataEntry* MetaEntries = nullptr;
+
+	/** Count of metadata entry array. */
+	int MetaCount = 0;
 };
 
 /**

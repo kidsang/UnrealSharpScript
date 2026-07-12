@@ -270,6 +270,23 @@ public struct FunctionDef
 	/// Translated to FUNC_* by the C++ layer.
 	/// </summary>
 	public SsFunctionFlags FunctionFlags;
+
+	/// <summary>
+	/// The raw <c>FuncSpecs</c> bit set, passed through unchanged. The C++ layer
+	/// (<c>FSsFunctionSpecifiers</c>) expands it into EFunctionFlags + editor-only metadata.
+	/// </summary>
+	public ulong Specifiers;
+
+	/// <summary>
+	/// Array of <see cref="MetaDataEntry"/> (DisplayName / Category / user Meta).
+	/// May be IntPtr.Zero when MetaCount is 0.
+	/// </summary>
+	public IntPtr MetaEntries;
+
+	/// <summary>
+	/// Count of metadata entry array.
+	/// </summary>
+	public int MetaCount;
 }
 
 /// <summary>
